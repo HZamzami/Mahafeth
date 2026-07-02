@@ -80,7 +80,7 @@
                     class="flex grow flex-col rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
                     <flux:heading size="lg">Asset Allocation</flux:heading>
                     <div class="relative flex grow items-center justify-center py-6">
-                        <svg class="size-40 -rotate-90" viewBox="0 0 100 100">
+                        <svg class="aspect-square w-full max-w-64 -rotate-90" viewBox="0 0 100 100">
                             <circle cx="50" cy="50" r="40" fill="transparent" stroke-width="12"
                                 class="stroke-blue-500 dark:stroke-blue-400" stroke-dasharray="138.23 113.1"
                                 stroke-dashoffset="0" />
@@ -140,13 +140,14 @@
                     <flux:heading size="lg">Portfolio Health Score</flux:heading>
                     <div class="relative my-8 flex grow items-center justify-center">
                         <svg class="size-56 -rotate-90" viewBox="0 0 224 224">
-                            <circle cx="112" cy="112" r="100" fill="transparent" stroke-width="16" stroke-linecap="round"
-                                class="stroke-neutral-100 dark:stroke-zinc-800" />
-                            <circle cx="112" cy="112" r="100" fill="transparent" stroke-width="16" stroke-linecap="round"
-                                stroke="url(#healthGradient)" stroke-dasharray="628" stroke-dashoffset="138"
-                                class="drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]" />
+                            <circle cx="112" cy="112" r="100" fill="transparent" stroke-width="16"
+                                stroke-linecap="round" class="stroke-neutral-100 dark:stroke-zinc-800" />
+                            <circle cx="112" cy="112" r="100" fill="transparent" stroke-width="16"
+                                stroke-linecap="round" stroke="url(#healthGradient)" stroke-dasharray="628"
+                                stroke-dashoffset="138" class="drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]" />
                             <defs>
-                                <linearGradient id="healthGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <linearGradient id="healthGradient" x1="0%" y1="0%" x2="100%"
+                                    y2="100%">
                                     <stop offset="0%" stop-color="#93c5fd" />
                                     <stop offset="100%" stop-color="#3b82f6" />
                                 </linearGradient>
@@ -178,19 +179,21 @@
                 <div
                     class="relative shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
                     <flux:heading class="mb-4" size="lg">Total Return</flux:heading>
-                    <flux:chart class="relative aspect-3/1" :value="[
-                        ['date' => 'Sep 01', 'return' => 1.2],
-                        ['date' => 'Sep 05', 'return' => 3.8],
-                        ['date' => 'Sep 10', 'return' => 6.4],
-                        ['date' => 'Sep 15', 'return' => 5.9],
-                        ['date' => 'Sep 20', 'return' => 7.5],
-                        ['date' => 'Sep 25', 'return' => 10.8],
-                        ['date' => 'Sep 30', 'return' => 9.6],
-                        ['date' => 'Oct 07', 'return' => 11.4],
-                        ['date' => 'Oct 14', 'return' => 13.2],
-                    ]">
+                    <flux:chart class="aspect-3/1 relative"
+                        :value="[
+                            ['date' => 'Sep 01', 'return' => 1.2],
+                            ['date' => 'Sep 05', 'return' => 3.8],
+                            ['date' => 'Sep 10', 'return' => 6.4],
+                            ['date' => 'Sep 15', 'return' => 5.9],
+                            ['date' => 'Sep 20', 'return' => 7.5],
+                            ['date' => 'Sep 25', 'return' => 10.8],
+                            ['date' => 'Sep 30', 'return' => 9.6],
+                            ['date' => 'Oct 07', 'return' => 11.4],
+                            ['date' => 'Oct 14', 'return' => 13.2],
+                        ]">
                         <flux:chart.svg>
-                            <flux:chart.line class="text-blue-500 dark:text-blue-400" curve="smooth" field="return" />
+                            <flux:chart.line class="text-blue-500 dark:text-blue-400" curve="smooth"
+                                field="return" />
                             <flux:chart.area class="text-blue-500/10 dark:text-blue-400/10" curve="smooth"
                                 field="return" />
                             <flux:chart.axis axis="x" field="date">
@@ -211,15 +214,20 @@
                 <div
                     class="flex grow flex-col rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
                     <div class="mb-6 flex items-center gap-3">
-                        <div class="flex size-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/20">
+                        <div
+                            class="flex size-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/20">
                             <flux:icon.sparkles class="size-5 text-blue-600 dark:text-blue-300" />
                         </div>
-                        <flux:heading class="!text-blue-600 dark:!text-blue-300" size="lg">Mahafeth AI</flux:heading>
+                        <flux:heading class="!text-blue-600 dark:!text-blue-300" size="lg">Mahafeth AI
+                        </flux:heading>
                     </div>
 
-                    <flux:callout color="amber" heading="Executive Summary" icon="light-bulb">
-                        High correlation detected between Robinhood and Fidelity tech holdings. Significant
-                        <strong>cross-app tech overlap risk</strong> identified (Microsoft &amp; Nvidia).
+                    <flux:callout color="amber" icon="light-bulb">
+                        <flux:callout.heading>Executive Summary</flux:callout.heading>
+                        <flux:callout.text>
+                            High correlation detected between Robinhood and Fidelity tech holdings. Significant
+                            <strong>cross-app tech overlap risk</strong> identified (Microsoft &amp; Nvidia).
+                        </flux:callout.text>
                     </flux:callout>
 
                     <div class="flex grow flex-col">
@@ -250,7 +258,8 @@
                 {{-- Market Context --}}
                 <div
                     class="shrink-0 space-y-4 rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
-                    <flux:heading class="uppercase tracking-widest !text-neutral-500 dark:!text-neutral-400" size="sm">
+                    <flux:heading class="uppercase tracking-widest !text-neutral-500 dark:!text-neutral-400"
+                        size="sm">
                         Market Context
                     </flux:heading>
 
@@ -261,7 +270,8 @@
                             <flux:icon.newspaper class="size-6 text-neutral-400 dark:text-zinc-500" />
                         </div>
                         <div>
-                            <flux:heading class="leading-snug" size="sm">Tech Overlap: Why dual-broker setups are risky
+                            <flux:heading class="leading-snug" size="sm">Tech Overlap: Why dual-broker setups are
+                                risky
                                 right now...</flux:heading>
                             <flux:text class="mt-1 text-xs">4 min read &bull; Alpha Insights</flux:text>
                         </div>

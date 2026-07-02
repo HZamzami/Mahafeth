@@ -223,3 +223,4 @@ Charts render as a `ui-chart` custom element driven by JavaScript; the inner `fl
 - Forgetting `dark:` variants — this app supports both themes even when mockups are dark-only
 - Not following existing project patterns for Flux usage
 - Overriding Flux views in `resources/views/flux/` without checking the vendor original first
+- Passing loose mixed content (text + inline tags like `<strong>`) directly into the slot of structural components (`flux:callout`, etc.) — their roots are often flex containers, so each chunk becomes a separate flex item and inline elements land on their own line. Wrap body copy in the component's text subcomponent (`flux:callout.text`) or a single `<p>`/`flux:text`.
