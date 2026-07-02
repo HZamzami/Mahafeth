@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" class="dark">
 
 <head>
     @include('partials.head')
@@ -12,16 +12,16 @@
         <div>
             <h1 class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">Mahafeth</h1>
             <p class="mt-2 max-w-sm text-zinc-500 dark:text-zinc-400">
-                All your portfolios, one clear picture.
+                {{ __('All your portfolios, one clear picture.') }}
             </p>
         </div>
 
         <div class="mt-2 flex items-center gap-3">
             @auth
-                <flux:button href="{{ route('dashboard') }}" variant="primary">Open Dashboard</flux:button>
+                <flux:button href="{{ route('dashboard') }}" variant="primary">{{ __('Open Dashboard') }}</flux:button>
             @else
-                <flux:button href="{{ route('login') }}" variant="primary">Log in</flux:button>
-                <flux:button href="{{ route('register') }}" variant="ghost">Register</flux:button>
+                <flux:button href="{{ route('login') }}" variant="primary">{{ __('Log in') }}</flux:button>
+                <flux:button href="{{ route('register') }}" variant="ghost">{{ __('Register') }}</flux:button>
             @endauth
         </div>
     </main>

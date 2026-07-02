@@ -5,19 +5,19 @@
             <div
                 class="flex flex-col justify-between rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
                 <div>
-                    <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">Expected Annualized Return
+                    <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Expected Annualized Return') }}
                     </flux:text>
                     <flux:heading class="!text-emerald-600 dark:!text-emerald-400" size="xl">16.4%</flux:heading>
                 </div>
                 <flux:text class="mt-2 flex items-center gap-1 text-xs !text-emerald-600 dark:!text-emerald-400">
-                    <flux:icon.arrow-trending-up class="size-4" /> Above average
+                    <flux:icon.arrow-trending-up class="size-4" /> {{ __('Above average') }}
                 </flux:text>
             </div>
 
             <div
                 class="flex flex-col justify-between rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
                 <div>
-                    <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">Annualized Volatility
+                    <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Annualized Volatility') }}
                     </flux:text>
                     <flux:heading class="!text-amber-600 dark:!text-amber-400" size="xl">14.2%</flux:heading>
                 </div>
@@ -29,17 +29,17 @@
             <div
                 class="flex flex-col justify-between rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
                 <div>
-                    <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">Largest Holding</flux:text>
-                    <flux:heading size="xl">Apple (AAPL)</flux:heading>
+                    <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Largest Holding') }}</flux:text>
+                    <flux:heading size="xl">{{ __('Apple (AAPL)') }}</flux:heading>
                 </div>
-                <flux:text class="mt-2 text-xs">12.4% of Portfolio</flux:text>
+                <flux:text class="mt-2 text-xs">{{ __(':percent of Portfolio', ['percent' => '12.4%']) }}</flux:text>
             </div>
 
             <div
                 class="flex flex-col justify-between rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
                 <div>
-                    <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">Largest Sector</flux:text>
-                    <flux:heading class="leading-tight" size="xl">Information Technology</flux:heading>
+                    <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Largest Sector') }}</flux:text>
+                    <flux:heading class="leading-tight" size="xl">{{ __('Information Technology') }}</flux:heading>
                 </div>
                 <div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
                     <div class="h-full w-[60%] bg-blue-500 dark:bg-blue-400"></div>
@@ -56,8 +56,8 @@
                     class="shrink-0 rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
                     <div class="mb-4 flex items-start justify-between">
                         <div>
-                            <flux:heading size="lg">Open Banking</flux:heading>
-                            <flux:text class="text-sm">Active connections</flux:text>
+                            <flux:heading size="lg">{{ __('Open Banking') }}</flux:heading>
+                            <flux:text class="text-sm">{{ __('Active connections') }}</flux:text>
                         </div>
                         <flux:icon.cloud-arrow-up class="size-6 text-emerald-600 dark:text-emerald-400" />
                     </div>
@@ -67,18 +67,18 @@
                             <flux:icon.building-library class="size-5 text-blue-600 dark:text-blue-300" />
                         </div>
                         <div class="flex-1">
-                            <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">3/3 Sources
+                            <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">{{ __(':count Sources', ['count' => '3/3']) }}
                             </flux:text>
-                            <flux:text class="text-xs">Last sync: 2m ago</flux:text>
+                            <flux:text class="text-xs">{{ __('Last sync: :time ago', ['time' => '2m']) }}</flux:text>
                         </div>
                     </div>
-                    <flux:button class="mt-4 w-full" size="sm" variant="outline">Manage Sources</flux:button>
+                    <flux:button class="mt-4 w-full" size="sm" variant="outline">{{ __('Manage Sources') }}</flux:button>
                 </div>
 
                 {{-- Asset Allocation --}}
                 <div
                     class="flex grow flex-col rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
-                    <flux:heading size="lg">Asset Allocation</flux:heading>
+                    <flux:heading size="lg">{{ __('Asset Allocation') }}</flux:heading>
                     <div class="relative flex grow items-center justify-center py-6">
                         <svg class="aspect-square w-full max-w-64 -rotate-90" viewBox="0 0 100 100">
                             <circle cx="50" cy="50" r="40" fill="transparent" stroke-width="12"
@@ -95,36 +95,36 @@
                                 stroke-dashoffset="-238.76" />
                         </svg>
                         <div class="absolute inset-0 flex flex-col items-center justify-center">
-                            <flux:heading size="lg">$1.4M</flux:heading>
-                            <flux:text class="text-xs">Total</flux:text>
+                            <flux:heading size="lg" dir="ltr">$1.4M</flux:heading>
+                            <flux:text class="text-xs">{{ __('Total') }}</flux:text>
                         </div>
                     </div>
                     <div class="mt-4 space-y-2">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span class="size-2 rounded-full bg-blue-500 dark:bg-blue-400"></span>
-                                <flux:text class="text-sm">Equities</flux:text>
+                                <flux:text class="text-sm">{{ __('Equities') }}</flux:text>
                             </div>
                             <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">55%</flux:text>
                         </div>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span class="size-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span>
-                                <flux:text class="text-sm">Crypto</flux:text>
+                                <flux:text class="text-sm">{{ __('Crypto') }}</flux:text>
                             </div>
                             <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">25%</flux:text>
                         </div>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span class="size-2 rounded-full bg-amber-500 dark:bg-amber-400"></span>
-                                <flux:text class="text-sm">Fixed Income</flux:text>
+                                <flux:text class="text-sm">{{ __('Fixed Income') }}</flux:text>
                             </div>
                             <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">15%</flux:text>
                         </div>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span class="size-2 rounded-full bg-neutral-300 dark:bg-zinc-700"></span>
-                                <flux:text class="text-sm">Cash</flux:text>
+                                <flux:text class="text-sm">{{ __('Cash') }}</flux:text>
                             </div>
                             <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">5%</flux:text>
                         </div>
@@ -137,7 +137,7 @@
                 {{-- Portfolio Health Score --}}
                 <div
                     class="flex grow flex-col items-center rounded-xl border border-neutral-200 bg-white p-6 text-center dark:border-neutral-700 dark:bg-zinc-900">
-                    <flux:heading size="lg">Portfolio Health Score</flux:heading>
+                    <flux:heading size="lg">{{ __('Portfolio Health Score') }}</flux:heading>
                     <div class="relative my-8 flex grow items-center justify-center">
                         <svg class="size-56 -rotate-90" viewBox="0 0 224 224">
                             <circle cx="112" cy="112" r="100" fill="transparent" stroke-width="16"
@@ -155,22 +155,22 @@
                         </svg>
                         <div class="absolute inset-0 flex flex-col items-center justify-center">
                             <span class="text-6xl font-bold text-blue-600 dark:text-blue-300">78</span>
-                            <flux:text class="text-sm uppercase tracking-widest">Strong</flux:text>
+                            <flux:text class="text-sm uppercase tracking-widest">{{ __('Strong') }}</flux:text>
                         </div>
                     </div>
                     <div
                         class="grid w-full grid-cols-3 gap-4 border-t border-neutral-200 pt-6 dark:border-neutral-700">
                         <div class="text-center">
-                            <flux:text class="mb-1 text-xs">Diversification</flux:text>
-                            <flux:heading class="!text-emerald-600 dark:!text-emerald-400">85/100</flux:heading>
+                            <flux:text class="mb-1 text-xs">{{ __('Diversification') }}</flux:text>
+                            <flux:heading class="!text-emerald-600 dark:!text-emerald-400" dir="ltr">85/100</flux:heading>
                         </div>
                         <div class="border-x border-neutral-200 text-center dark:border-neutral-700">
-                            <flux:text class="mb-1 text-xs">Concentration</flux:text>
-                            <flux:heading class="!text-amber-600 dark:!text-amber-400">55/100</flux:heading>
+                            <flux:text class="mb-1 text-xs">{{ __('Concentration') }}</flux:text>
+                            <flux:heading class="!text-amber-600 dark:!text-amber-400" dir="ltr">55/100</flux:heading>
                         </div>
                         <div class="text-center">
-                            <flux:text class="mb-1 text-xs">Risk Alignment</flux:text>
-                            <flux:heading class="!text-blue-600 dark:!text-blue-400">90/100</flux:heading>
+                            <flux:text class="mb-1 text-xs">{{ __('Risk Alignment') }}</flux:text>
+                            <flux:heading class="!text-blue-600 dark:!text-blue-400" dir="ltr">90/100</flux:heading>
                         </div>
                     </div>
                 </div>
@@ -178,8 +178,8 @@
                 {{-- Total Return --}}
                 <div
                     class="relative shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
-                    <flux:heading class="mb-4" size="lg">Total Return</flux:heading>
-                    <flux:chart class="aspect-3/1 relative"
+                    <flux:heading class="mb-4" size="lg">{{ __('Total Return') }}</flux:heading>
+                    <flux:chart class="aspect-3/1 relative" dir="ltr"
                         :value="[
                             ['date' => 'Sep 01', 'return' => 1.2],
                             ['date' => 'Sep 05', 'return' => 3.8],
@@ -218,20 +218,20 @@
                             class="flex size-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/20">
                             <flux:icon.sparkles class="size-5 text-blue-600 dark:text-blue-300" />
                         </div>
-                        <flux:heading class="!text-blue-600 dark:!text-blue-300" size="lg">Mahafeth AI
+                        <flux:heading class="!text-blue-600 dark:!text-blue-300" size="lg">{{ __('Mahafeth AI') }}
                         </flux:heading>
                     </div>
 
                     <flux:callout color="amber" icon="light-bulb">
-                        <flux:callout.heading>Executive Summary</flux:callout.heading>
+                        <flux:callout.heading>{{ __('Executive Summary') }}</flux:callout.heading>
                         <flux:callout.text>
-                            High correlation detected between Robinhood and Fidelity tech holdings. Significant
-                            <strong>cross-app tech overlap risk</strong> identified (Microsoft &amp; Nvidia).
+                            {{ __('High correlation detected between Robinhood and Fidelity tech holdings. Significant') }}
+                            <strong>{{ __('cross-app tech overlap risk') }}</strong> {{ __('identified (Microsoft & Nvidia).') }}
                         </flux:callout.text>
                     </flux:callout>
 
                     <div class="flex grow flex-col">
-                        <flux:text class="mb-4 mt-6 text-xs">Rebalancing Impact Analysis</flux:text>
+                        <flux:text class="mb-4 mt-6 text-xs">{{ __('Rebalancing Impact Analysis') }}</flux:text>
                         <div class="flex grow items-end gap-6 px-4">
                             <div class="flex flex-1 flex-col items-center">
                                 <div class="relative h-24 w-full rounded-t-sm bg-neutral-100 dark:bg-zinc-800">
@@ -239,7 +239,7 @@
                                         class="absolute bottom-0 h-20 w-full rounded-t-sm bg-neutral-400/50 dark:bg-zinc-500/50">
                                     </div>
                                 </div>
-                                <flux:text class="mt-2 text-xs">Current</flux:text>
+                                <flux:text class="mt-2 text-xs">{{ __('Current') }}</flux:text>
                             </div>
                             <div class="flex flex-1 flex-col items-center">
                                 <div class="relative h-24 w-full rounded-t-sm bg-neutral-100 dark:bg-zinc-800">
@@ -247,12 +247,12 @@
                                         class="absolute bottom-0 h-24 w-full rounded-t-sm bg-emerald-500 dark:bg-emerald-400">
                                     </div>
                                 </div>
-                                <flux:text class="mt-2 text-xs">Optimized</flux:text>
+                                <flux:text class="mt-2 text-xs">{{ __('Optimized') }}</flux:text>
                             </div>
                         </div>
                     </div>
 
-                    <flux:button class="mt-8 w-full" icon="scale" variant="primary">Approve Rebalance</flux:button>
+                    <flux:button class="mt-8 w-full" icon="scale" variant="primary">{{ __('Approve Rebalance') }}</flux:button>
                 </div>
 
                 {{-- Market Context --}}
@@ -260,7 +260,7 @@
                     class="shrink-0 space-y-4 rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
                     <flux:heading class="uppercase tracking-widest !text-neutral-500 dark:!text-neutral-400"
                         size="sm">
-                        Market Context
+                        {{ __('Market Context') }}
                     </flux:heading>
 
                     <a class="flex cursor-pointer gap-4 rounded-lg border border-neutral-200/60 bg-neutral-50 p-4 transition-colors hover:bg-neutral-100 dark:border-neutral-700/60 dark:bg-zinc-800/50 dark:hover:bg-zinc-800"
@@ -270,10 +270,8 @@
                             <flux:icon.newspaper class="size-6 text-neutral-400 dark:text-zinc-500" />
                         </div>
                         <div>
-                            <flux:heading class="leading-snug" size="sm">Tech Overlap: Why dual-broker setups are
-                                risky
-                                right now...</flux:heading>
-                            <flux:text class="mt-1 text-xs">4 min read &bull; Alpha Insights</flux:text>
+                            <flux:heading class="leading-snug" size="sm">{{ __('Tech Overlap: Why dual-broker setups are risky right now...') }}</flux:heading>
+                            <flux:text class="mt-1 text-xs">{{ __(':minutes min read', ['minutes' => 4]) }} &bull; {{ __('Alpha Insights') }}</flux:text>
                         </div>
                     </a>
 
@@ -284,9 +282,8 @@
                             <flux:icon.chart-bar class="size-6 text-neutral-400 dark:text-zinc-500" />
                         </div>
                         <div>
-                            <flux:heading class="leading-snug" size="sm">Fed Policy Update: How it impacts your
-                                crypto-equity ratio...</flux:heading>
-                            <flux:text class="mt-1 text-xs">7 min read &bull; Market Pulse</flux:text>
+                            <flux:heading class="leading-snug" size="sm">{{ __('Fed Policy Update: How it impacts your crypto-equity ratio...') }}</flux:heading>
+                            <flux:text class="mt-1 text-xs">{{ __(':minutes min read', ['minutes' => 7]) }} &bull; {{ __('Market Pulse') }}</flux:text>
                         </div>
                     </a>
                 </div>
