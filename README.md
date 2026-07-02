@@ -2,6 +2,8 @@
 
 A Laravel 12 application built on the official [Livewire starter kit](https://github.com/laravel/livewire-starter-kit).
 
+**Live site:** <https://mahafeth-production-ws31xa.laravel.cloud/>
+
 ## Stack
 
 - PHP 8.4 / Laravel 12
