@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Actions\SyncConnection;
+use App\Models\Connection;
+use App\Models\Institution;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -23,5 +26,23 @@ class DashboardTest extends TestCase
 
         $response = $this->get('/dashboard');
         $response->assertStatus(200);
+    }
+
+    public function test_the_dashboard_shows_the_synced_portfolio(): void
+    {
+        $user = User::factory()->create();
+        $institution = Institution::factory()->create(['slug' => 'derayah']);
+        $connection = Connection::factory()->pending()->create([
+            'user_id' => $user->id,
+            'institution_id' => $institution->id,
+        ]);
+
+        app(SyncConnection::class)->handle($connection);
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertSee('AAPL')
+            ->assertSee('Technology');
     }
 }
