@@ -29,6 +29,10 @@ Volt::route('analytics', 'analytics.index')
     ->middleware(['auth', 'verified'])
     ->name('analytics');
 
+Volt::route('investor-profile', 'investor-profile.index')
+    ->middleware(['auth', 'verified'])
+    ->name('investor-profile');
+
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 

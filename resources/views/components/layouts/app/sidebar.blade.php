@@ -23,6 +23,9 @@
                 <flux:navlist.item icon="building-library" :href="route('connections')"
                     :current="request()->routeIs('connections')" wire:navigate>{{ __('Connections') }}
                 </flux:navlist.item>
+                <flux:navlist.item icon="clipboard-document-check" :href="route('investor-profile')"
+                    :current="request()->routeIs('investor-profile')" wire:navigate>{{ __('Investor Profile') }}
+                </flux:navlist.item>
             </flux:navlist.group>
         </flux:navlist>
 

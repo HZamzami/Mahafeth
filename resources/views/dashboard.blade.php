@@ -1,5 +1,18 @@
 <x-layouts.app>
     <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
+        @if (auth()->user()->riskProfile === null)
+            <flux:callout color="blue" icon="clipboard-document-check">
+                <flux:callout.heading>{{ __('Complete your investor profile') }}</flux:callout.heading>
+                <flux:callout.text>
+                    {{ __('Answer five quick questions so Mahafeth can score how well your portfolio fits your goals and risk tolerance.') }}
+                </flux:callout.text>
+                <x-slot name="actions">
+                    <flux:button :href="route('investor-profile')" wire:navigate variant="primary" size="sm">
+                        {{ __('Start') }}</flux:button>
+                </x-slot>
+            </flux:callout>
+        @endif
+
         {{-- Key metrics row --}}
         <livewire:dashboard.stat-cards />
 
@@ -18,6 +31,9 @@
             <div class="flex flex-col gap-4 lg:col-span-5">
                 {{-- Portfolio Health Score --}}
                 <livewire:dashboard.health-score />
+
+                {{-- Health Trend --}}
+                <livewire:dashboard.health-trend />
 
                 {{-- Total Return --}}
                 <livewire:dashboard.performance-chart />

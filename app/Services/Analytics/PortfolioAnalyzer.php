@@ -23,6 +23,7 @@ class PortfolioAnalyzer
         private CorrelationAnalyzer $correlationAnalyzer,
         private RiskAnalyzer $riskAnalyzer,
         private DiversificationAnalyzer $diversificationAnalyzer,
+        private HealthScoreCalculator $healthScoreCalculator,
     ) {}
 
     /**
@@ -92,9 +93,22 @@ class PortfolioAnalyzer
             ],
         ];
 
+        $attributes = ['total_value' => $totalValue, 'metrics' => $metrics];
+
+        // Health scoring requires the investor's target volatility from
+        // their IPS; without a risk profile the gauge stays locked.
+        $riskProfile = $user->riskProfile;
+
+        if ($riskProfile !== null) {
+            $health = $this->healthScoreCalculator->calculate($metrics, $riskProfile->target_volatility);
+
+            $attributes['component_scores'] = $health['components'];
+            $attributes['health_score'] = $health['overall'];
+        }
+
         return $user->portfolioSnapshots()->updateOrCreate(
             ['as_of' => today()->toDateString()],
-            ['total_value' => $totalValue, 'metrics' => $metrics],
+            $attributes,
         );
     }
 

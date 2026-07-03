@@ -59,7 +59,7 @@ class DashboardTest extends TestCase
 
         Volt::test('dashboard.health-score')
             ->call('refresh')
-            ->assertSee(__('Sharpe Ratio'));
+            ->assertSee(__('Diversification'));
 
         $this->assertSame(1, $user->portfolioSnapshots()->count());
     }

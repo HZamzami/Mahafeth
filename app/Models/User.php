@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -53,6 +54,11 @@ class User extends Authenticatable // implements MustVerifyEmail
     public function connections(): HasMany
     {
         return $this->hasMany(Connection::class);
+    }
+
+    public function riskProfile(): HasOne
+    {
+        return $this->hasOne(RiskProfile::class);
     }
 
     public function portfolioSnapshots(): HasMany

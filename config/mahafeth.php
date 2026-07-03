@@ -24,4 +24,22 @@ return [
     // Trailing window (in years) of price history used by the analyzer.
     'analysis_window_years' => 1,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Portfolio Health Score
+    |--------------------------------------------------------------------------
+    |
+    | Component weights of the composite health score. Must sum to 1.
+    |
+    */
+
+    'health_weights' => [
+        'diversification' => 0.25,
+        'risk_alignment' => 0.20,
+        'correlation' => 0.15,
+        'performance' => 0.15,
+        'drawdown' => 0.15,
+        'concentration' => 0.10,
+    ],
+
 ];

@@ -2,7 +2,6 @@
 
 use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Number;
 use Livewire\Volt\Component;
 
 new class extends Component {
@@ -22,13 +21,25 @@ new class extends Component {
     {
         $snapshot = Auth::user()->latestSnapshot();
         $score = $snapshot?->health_score;
-        $metrics = $snapshot?->metrics;
 
         return [
             'score' => $score,
+            'scoreLabel' => $this->scoreLabel($score),
             'dashoffset' => $score !== null ? round(self::GAUGE_CIRCUMFERENCE * (1 - $score / 100)) : self::GAUGE_CIRCUMFERENCE,
-            'metrics' => $metrics,
+            'components' => $snapshot?->component_scores,
+            'hasProfile' => Auth::user()->riskProfile !== null,
         ];
+    }
+
+    private function scoreLabel(?int $score): ?string
+    {
+        return match (true) {
+            $score === null => null,
+            $score >= 80 => __('Excellent'),
+            $score >= 65 => __('Strong'),
+            $score >= 50 => __('Fair'),
+            default => __('Needs Attention'),
+        };
     }
 }; ?>
 
@@ -57,10 +68,16 @@ new class extends Component {
         <div class="absolute inset-0 flex flex-col items-center justify-center">
             @if ($score !== null)
                 <span class="text-6xl font-bold text-blue-600 dark:text-blue-300">{{ $score }}</span>
-                <flux:text class="text-sm uppercase tracking-widest">{{ __('Overall Health') }}</flux:text>
-            @else
+                <flux:text class="text-sm uppercase tracking-widest">{{ $scoreLabel }}</flux:text>
+            @elseif (! $hasProfile)
                 <span class="text-4xl font-bold text-neutral-300 dark:text-zinc-600">—</span>
                 <flux:text class="mt-1 max-w-40 text-xs">{{ __('Complete your investor profile to unlock scoring') }}
+                </flux:text>
+                <flux:button class="mt-3" size="xs" variant="primary" :href="route('investor-profile')"
+                    wire:navigate>{{ __('Start') }}</flux:button>
+            @else
+                <span class="text-4xl font-bold text-neutral-300 dark:text-zinc-600">—</span>
+                <flux:text class="mt-1 max-w-40 text-xs">{{ __('Refresh the analysis to compute your score') }}
                 </flux:text>
             @endif
         </div>
@@ -68,21 +85,19 @@ new class extends Component {
 
     <div class="grid w-full grid-cols-3 gap-4 border-t border-neutral-200 pt-6 dark:border-neutral-700">
         <div class="text-center">
-            <flux:text class="mb-1 text-xs">{{ __('Effective Holdings') }}</flux:text>
+            <flux:text class="mb-1 text-xs">{{ __('Diversification') }}</flux:text>
             <flux:heading class="!text-emerald-600 dark:!text-emerald-400" dir="ltr">
-                {{ isset($metrics['effective_holdings']) ? number_format($metrics['effective_holdings'], 1) : '—' }}
-            </flux:heading>
+                {{ isset($components['diversification']) ? $components['diversification'].'/100' : '—' }}</flux:heading>
         </div>
         <div class="border-x border-neutral-200 text-center dark:border-neutral-700">
-            <flux:text class="mb-1 text-xs">{{ __('Sharpe Ratio') }}</flux:text>
+            <flux:text class="mb-1 text-xs">{{ __('Concentration') }}</flux:text>
             <flux:heading class="!text-amber-600 dark:!text-amber-400" dir="ltr">
-                {{ isset($metrics['sharpe']) ? number_format($metrics['sharpe'], 2) : '—' }}</flux:heading>
+                {{ isset($components['concentration']) ? $components['concentration'].'/100' : '—' }}</flux:heading>
         </div>
         <div class="text-center">
-            <flux:text class="mb-1 text-xs">{{ __('Max Drawdown') }}</flux:text>
+            <flux:text class="mb-1 text-xs">{{ __('Risk Alignment') }}</flux:text>
             <flux:heading class="!text-blue-600 dark:!text-blue-400" dir="ltr">
-                {{ isset($metrics['max_drawdown']) ? Number::percentage($metrics['max_drawdown'] * 100, 1) : '—' }}
-            </flux:heading>
+                {{ isset($components['risk_alignment']) ? $components['risk_alignment'].'/100' : '—' }}</flux:heading>
         </div>
     </div>
 </div>
