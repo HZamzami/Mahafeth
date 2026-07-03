@@ -24,6 +24,8 @@ class PortfolioAnalyzer
         private RiskAnalyzer $riskAnalyzer,
         private DiversificationAnalyzer $diversificationAnalyzer,
         private HealthScoreCalculator $healthScoreCalculator,
+        private EfficientFrontierService $efficientFrontierService,
+        private RiskDecomposer $riskDecomposer,
     ) {}
 
     /**
@@ -65,10 +67,22 @@ class PortfolioAnalyzer
 
         $largestSymbol = array_search(max($weights), $weights, true);
 
+        $benchmark = $this->benchmarkStats($portfolioReturns, $from);
+
+        $assetExpectedReturns = array_map(
+            fn (array $returns): float => $this->returnCalculator->annualizedReturn($returns),
+            $aligned,
+        );
+
+        $frontier = $this->efficientFrontierService->analyze($assetExpectedReturns, $covariance, $weights, samples: 4000);
+
+        $sectors = array_filter(array_map(fn (array $asset) => $asset['sector'], $data['assets']));
+        $countries = array_filter(array_map(fn (array $asset) => $asset['country'], $data['assets']));
+
         $metrics = [
             'expected_return' => $annualReturn,
             'volatility' => $volatility,
-            'beta' => $this->beta($portfolioReturns, $from),
+            'beta' => $benchmark['beta'],
             'sharpe' => $this->riskAnalyzer->sharpeRatio($annualReturn, $volatility),
             'sortino' => $this->riskAnalyzer->sortinoRatio($annualReturn, $downsideDeviation),
             'var_95' => $this->riskAnalyzer->valueAtRisk($annualReturn, $volatility),
@@ -87,9 +101,23 @@ class PortfolioAnalyzer
             'weights' => $weights,
             'allocations' => [
                 'asset_class' => $this->diversificationAnalyzer->groupWeights($weights, array_map(fn (array $asset) => $asset['asset_class'], $data['assets'])),
-                'sector' => $this->diversificationAnalyzer->groupWeights($weights, array_filter(array_map(fn (array $asset) => $asset['sector'], $data['assets']))),
-                'country' => $this->diversificationAnalyzer->groupWeights($weights, array_filter(array_map(fn (array $asset) => $asset['country'], $data['assets']))),
+                'sector' => $this->diversificationAnalyzer->groupWeights($weights, $sectors),
+                'country' => $this->diversificationAnalyzer->groupWeights($weights, $countries),
                 'currency' => $this->diversificationAnalyzer->groupWeights($weights, array_map(fn (array $asset) => $asset['currency'], $data['assets'])),
+            ],
+            'frontier' => [
+                'points' => $frontier['frontier'],
+                'tangency' => $frontier['tangency'],
+                'current' => $frontier['current'],
+                'efficiency_gap' => $frontier['efficiency_gap'],
+            ],
+            'risk_decomposition' => $this->riskDecomposer->systematicSplit(
+                $benchmark['beta'],
+                $benchmark['variance'],
+                $volatility ** 2,
+            ) + [
+                'sector_contributions' => $this->riskDecomposer->contributions($weights, $covariance, $sectors),
+                'country_contributions' => $this->riskDecomposer->contributions($weights, $covariance, $countries),
             ],
         ];
 
@@ -132,16 +160,18 @@ class PortfolioAnalyzer
     }
 
     /**
-     * Portfolio beta against the configured benchmark, aligned by date.
+     * Portfolio beta against the configured benchmark (aligned by date) and
+     * the benchmark's annualized variance.
      *
      * @param  array<string, float>  $portfolioReturns  date => log return
+     * @return array{beta: float, variance: float}
      */
-    private function beta(array $portfolioReturns, CarbonInterface $from): float
+    private function benchmarkStats(array $portfolioReturns, CarbonInterface $from): array
     {
         $benchmarkPrices = $this->assembler->benchmarkSeries($from);
 
         if ($benchmarkPrices === []) {
-            return 0.0;
+            return ['beta' => 0.0, 'variance' => 0.0];
         }
 
         $benchmarkReturns = $this->returnCalculator->logReturns($benchmarkPrices);
@@ -155,6 +185,9 @@ class PortfolioAnalyzer
             $benchmark[] = $benchmarkReturns[$date];
         }
 
-        return $this->riskAnalyzer->beta($portfolio, $benchmark);
+        return [
+            'beta' => $this->riskAnalyzer->beta($portfolio, $benchmark),
+            'variance' => $this->covarianceMatrixService->variance($benchmark) * ReturnCalculator::TRADING_DAYS_PER_YEAR,
+        ];
     }
 }

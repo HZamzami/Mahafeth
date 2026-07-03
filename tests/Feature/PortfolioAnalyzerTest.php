@@ -45,10 +45,18 @@ class PortfolioAnalyzerTest extends TestCase
             'expected_return', 'volatility', 'beta', 'sharpe', 'sortino',
             'var_95', 'cvar_95', 'max_drawdown', 'hhi', 'effective_holdings',
             'diversification_ratio', 'largest_position', 'average_correlation',
-            'stress_correlation', 'weights', 'allocations',
+            'stress_correlation', 'weights', 'allocations', 'frontier', 'risk_decomposition',
         ] as $key) {
             $this->assertArrayHasKey($key, $metrics);
         }
+
+        $this->assertGreaterThanOrEqual(0, $metrics['frontier']['efficiency_gap']);
+        $this->assertEqualsWithDelta(1.0, array_sum($metrics['frontier']['tangency']['weights']), 1e-6);
+        $this->assertEqualsWithDelta(
+            1.0,
+            $metrics['risk_decomposition']['systematic_share'] + $metrics['risk_decomposition']['unsystematic_share'],
+            1e-6,
+        );
 
         $this->assertGreaterThan(0, $metrics['volatility']);
         $this->assertEqualsWithDelta(1.0, array_sum($metrics['weights']), 1e-6);

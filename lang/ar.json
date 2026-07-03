@@ -551,5 +551,22 @@
     "Fair": "مقبول",
     "Needs Attention": "يحتاج إلى انتباه",
     "Refresh the analysis to compute your score": "حدّث التحليل لاحتساب درجتك",
-    "Health Trend": "اتجاه صحة المحفظة"
+    "Health Trend": "اتجاه صحة المحفظة",
+    "Efficient Frontier": "الحد الكفء",
+    "Each dot is a possible allocation of your current assets. The green line is the efficient frontier; the gap between your portfolio and it is recoverable performance.": "كل نقطة تمثل توزيعًا ممكنًا لأصولك الحالية. الخط الأخضر هو الحد الكفء، والفجوة بين محفظتك وبينه أداء يمكن استعادته.",
+    "Risk (volatility)": "المخاطر (التقلب)",
+    "Your portfolio": "محفظتك",
+    "Optimal (max Sharpe)": "المثلى (أعلى شارب)",
+    "Efficiency Gap": "فجوة الكفاءة",
+    "Sharpe ratio improvement available at the optimal allocation.": "تحسّن نسبة شارب المتاح عند التوزيع الأمثل.",
+    "Current vs Optimal": "الحالية مقابل المثلى",
+    "Return": "العائد",
+    "Risk": "المخاطر",
+    "Suggested Allocation": "التوزيع المقترح",
+    "Risk Decomposition": "تفكيك المخاطر",
+    "Systematic risk follows the market and cannot be diversified away; unsystematic risk can.": "المخاطر المنتظمة تتبع السوق ولا يمكن تنويعها، أما غير المنتظمة فيمكن تقليلها بالتنويع.",
+    "Systematic :percent": "منتظمة :percent",
+    "Unsystematic :percent": "غير منتظمة :percent",
+    "Risk by Sector": "المخاطر حسب القطاع",
+    "Share of total portfolio risk contributed by each sector.": "نصيب كل قطاع من إجمالي مخاطر المحفظة."
 }

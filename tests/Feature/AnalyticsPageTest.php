@@ -6,6 +6,7 @@ use App\Actions\SyncConnection;
 use App\Models\Connection;
 use App\Models\Institution;
 use App\Models\User;
+use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -44,5 +45,27 @@ class AnalyticsPageTest extends TestCase
             ->assertSee('AAPL')
             ->assertSee('MSFT')
             ->assertSee('Average Correlation');
+    }
+
+    public function test_the_efficient_frontier_and_risk_sections_are_rendered(): void
+    {
+        $user = User::factory()->create();
+        $institution = Institution::factory()->create(['slug' => 'derayah']);
+        $connection = Connection::factory()->pending()->create([
+            'user_id' => $user->id,
+            'institution_id' => $institution->id,
+        ]);
+
+        app(SyncConnection::class)->handle($connection);
+        app(PortfolioAnalyzer::class)->analyze($user);
+
+        $this->actingAs($user)
+            ->get('/analytics')
+            ->assertOk()
+            ->assertSee(__('Efficient Frontier'))
+            ->assertSee(__('Efficiency Gap'))
+            ->assertSee(__('Suggested Allocation'))
+            ->assertSee(__('Risk Decomposition'))
+            ->assertSee(__('Risk by Sector'));
     }
 }
