@@ -17,7 +17,7 @@ class HealthScoreCalculator
      * @param  array<string, mixed>  $metrics  a portfolio snapshot's metrics payload
      * @return array{components: array<string, int>, overall: int}
      */
-    public function calculate(array $metrics, float $targetVolatility): array
+    public function calculate(array $metrics, float $targetVolatility, ?float $targetReturn = null): array
     {
         $components = [
             'diversification' => $this->diversificationScore(
@@ -29,7 +29,12 @@ class HealthScoreCalculator
                 isset($metrics['pca_first_factor_share']) ? (float) $metrics['pca_first_factor_share'] : null,
             ),
             'risk_alignment' => $this->riskAlignmentScorer->score((float) $metrics['volatility'], $targetVolatility),
-            'performance' => $this->performanceScore((float) $metrics['sharpe']),
+            'performance' => $this->performanceScore(
+                (float) $metrics['sharpe'],
+                (float) ($metrics['sortino'] ?? 0.0),
+                (float) ($metrics['expected_return'] ?? 0.0),
+                $targetReturn,
+            ),
             'drawdown' => $this->drawdownScore((float) $metrics['max_drawdown']),
             'concentration' => $this->concentrationScore((float) $metrics['largest_position']['weight']),
         ];
@@ -79,11 +84,24 @@ class HealthScoreCalculator
     }
 
     /**
-     * Sharpe ratio: −0.5 → 0, 1.5+ → 100.
+     * Per the spec, performance blends Sharpe, Sortino, and the realized
+     * return against the IPS target: 50% Sharpe (−0.5 → 0, 1.5+ → 100),
+     * 25% Sortino (−0.5 → 0, 2.0+ → 100), 25% return achievement
+     * (realized / target, clamped). Without a target return the Sharpe
+     * curve stands alone.
      */
-    private function performanceScore(float $sharpe): float
+    private function performanceScore(float $sharpe, float $sortino, float $realizedReturn, ?float $targetReturn): float
     {
-        return $this->linear($sharpe, -0.5, 1.5);
+        $sharpeScore = $this->linear($sharpe, -0.5, 1.5);
+
+        if ($targetReturn === null || $targetReturn <= 0) {
+            return $sharpeScore;
+        }
+
+        $sortinoScore = $this->linear($sortino, -0.5, 2.0);
+        $returnScore = 100 * min(1.0, max(0.0, $realizedReturn / $targetReturn));
+
+        return 0.5 * $sharpeScore + 0.25 * $sortinoScore + 0.25 * $returnScore;
     }
 
     /**

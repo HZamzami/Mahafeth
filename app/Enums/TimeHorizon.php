@@ -18,4 +18,17 @@ enum TimeHorizon: string
             self::VeryLong => __('Over 15 years'),
         };
     }
+
+    /**
+     * Trailing price-history window (in years) the analytics engine uses
+     * for an investor with this horizon. Longer horizons look further back.
+     */
+    public function analysisWindowYears(): int
+    {
+        return match ($this) {
+            self::Short => 1,
+            self::Medium => 2,
+            self::Long, self::VeryLong => 3,
+        };
+    }
 }

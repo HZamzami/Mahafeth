@@ -65,6 +65,10 @@ new class extends Component {
     @foreach ($alerts as $alert)
         <flux:callout :color="$alert['color']" icon="exclamation-triangle" inline>
             <flux:callout.text>{{ $alert['text'] }}</flux:callout.text>
+            <x-slot name="actions">
+                <flux:button size="xs" variant="ghost" :href="route('analytics')" wire:navigate>
+                    {{ __('Details') }}</flux:button>
+            </x-slot>
         </flux:callout>
     @endforeach
 </div>

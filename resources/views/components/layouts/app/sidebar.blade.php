@@ -11,21 +11,21 @@
         <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
         <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2" wire:navigate>
-            <x-app-logo class="size-8" href="#"></x-app-logo>
+            <x-app-logo class="size-8"></x-app-logo>
         </a>
 
         <flux:navlist variant="outline">
             <flux:navlist.group :heading="__('Platform')" class="grid">
                 <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
                     wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                <flux:navlist.item icon="chart-bar" :href="route('analytics')"
-                    :current="request()->routeIs('analytics')" wire:navigate>{{ __('Analytics') }}
-                </flux:navlist.item>
                 <flux:navlist.item icon="building-library" :href="route('connections')"
                     :current="request()->routeIs('connections')" wire:navigate>{{ __('Connections') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="clipboard-document-check" :href="route('investor-profile')"
                     :current="request()->routeIs('investor-profile')" wire:navigate>{{ __('Investor Profile') }}
+                </flux:navlist.item>
+                <flux:navlist.item icon="chart-bar" :href="route('analytics')"
+                    :current="request()->routeIs('analytics')" wire:navigate>{{ __('Analytics') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="document-text" :href="route('report')"
                     :current="request()->routeIs('report')" wire:navigate>{{ __('Report') }}
@@ -73,7 +73,7 @@
                 <flux:menu.separator />
 
                 <flux:menu.radio.group>
-                    <flux:menu.item href="/settings/profile" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
+                    <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
                     <flux:menu.item :href="route('locale.update', app()->getLocale() === 'ar' ? 'en' : 'ar')" icon="language">
                         {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
                     </flux:menu.item>
@@ -122,7 +122,7 @@
                 <flux:menu.separator />
 
                 <flux:menu.radio.group>
-                    <flux:menu.item href="/settings/profile" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
+                    <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
                     <flux:menu.item :href="route('locale.update', app()->getLocale() === 'ar' ? 'en' : 'ar')" icon="language">
                         {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
                     </flux:menu.item>

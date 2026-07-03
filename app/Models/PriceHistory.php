@@ -47,25 +47,4 @@ class PriceHistory extends Model
     {
         return $this->belongsTo(Asset::class);
     }
-
-    /**
-     * Get the latest closing price per asset.
-     *
-     * @param  list<int>  $assetIds
-     * @return array<int, float> asset_id => close
-     */
-    public static function latestCloses(array $assetIds): array
-    {
-        $latestDates = static::selectRaw('asset_id, MAX(date) AS max_date')
-            ->whereIn('asset_id', $assetIds)
-            ->groupBy('asset_id');
-
-        return static::joinSub($latestDates, 'latest', function ($join) {
-            $join->on('price_histories.asset_id', '=', 'latest.asset_id')
-                ->on('price_histories.date', '=', 'latest.max_date');
-        })
-            ->pluck('close', 'price_histories.asset_id')
-            ->map(fn ($close): float => (float) $close)
-            ->all();
-    }
 }

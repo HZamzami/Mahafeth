@@ -27,7 +27,8 @@ new class extends Component {
             <flux:heading size="lg">{{ __('Open Banking') }}</flux:heading>
             <flux:text class="text-sm">{{ __('Active connections') }}</flux:text>
         </div>
-        <flux:icon.cloud-arrow-up class="size-6 text-emerald-600 dark:text-emerald-400" />
+        <flux:icon.cloud-arrow-up
+            class="size-6 {{ $connectedCount > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-neutral-300 dark:text-zinc-600' }}" />
     </div>
     <div
         class="flex items-center gap-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-zinc-800">

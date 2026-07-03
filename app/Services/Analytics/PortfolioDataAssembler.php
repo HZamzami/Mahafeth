@@ -13,6 +13,10 @@ use Carbon\CarbonInterface;
  * Assembles a user's unified portfolio (quantities per symbol, asset
  * metadata, and historical price series) from the database into the plain
  * arrays the analytics services operate on.
+ *
+ * Prices are stored in each asset's native currency and converted to the
+ * base currency (config mahafeth.base_currency) here, at read time — so
+ * every downstream value, weight, and metric is in one currency.
  */
 class PortfolioDataAssembler
 {
@@ -32,13 +36,13 @@ class PortfolioDataAssembler
             ->get();
 
         $quantities = [];
-        $assetIds = [];
+        $sources = [];
         $assets = [];
 
         foreach ($holdings as $holding) {
             $symbol = $holding->asset->symbol;
             $quantities[$symbol] = ($quantities[$symbol] ?? 0.0) + $holding->quantity;
-            $assetIds[$symbol] = $holding->asset_id;
+            $sources[$symbol] = ['id' => $holding->asset_id, 'rate' => $this->fxRate($holding->asset->currency)];
 
             $assets[$symbol] = [
                 'name' => $holding->asset->localizedName(),
@@ -51,42 +55,61 @@ class PortfolioDataAssembler
 
         return [
             'quantities' => $quantities,
-            'priceSeries' => $this->priceSeries($assetIds, $from),
+            'priceSeries' => $this->priceSeries($sources, $from),
             'assets' => $assets,
         ];
     }
 
     /**
-     * Daily close series for the configured benchmark index.
+     * Daily close series for the primary benchmark index, in base currency.
      *
      * @return array<string, float> date => close
      */
     public function benchmarkSeries(CarbonInterface $from): array
     {
-        $benchmark = Asset::where('symbol', config('mahafeth.benchmark_symbol'))
-            ->where('is_benchmark', true)
-            ->first();
+        $series = $this->benchmarkSeriesFor([config('mahafeth.benchmark_symbol')], $from);
 
-        if ($benchmark === null) {
-            return [];
-        }
-
-        $series = $this->priceSeries([$benchmark->symbol => $benchmark->id], $from);
-
-        return $series[$benchmark->symbol] ?? [];
+        return reset($series) ?: [];
     }
 
     /**
-     * @param  array<string, int>  $assetIds  symbol => asset id
+     * Daily close series for several benchmark indices, in base currency.
+     *
+     * @param  list<string>  $symbols
      * @return array<string, array<string, float>> symbol => [date => close]
      */
-    private function priceSeries(array $assetIds, CarbonInterface $from): array
+    public function benchmarkSeriesFor(array $symbols, CarbonInterface $from): array
     {
-        if ($assetIds === []) {
+        $sources = Asset::whereIn('symbol', $symbols)
+            ->where('is_benchmark', true)
+            ->get()
+            ->mapWithKeys(fn (Asset $asset) => [
+                $asset->symbol => ['id' => $asset->id, 'rate' => $this->fxRate($asset->currency)],
+            ])
+            ->all();
+
+        return $this->priceSeries($sources, $from);
+    }
+
+    /**
+     * Base-currency units per one unit of the given currency.
+     */
+    private function fxRate(string $currency): float
+    {
+        return (float) (config('mahafeth.fx_rates')[$currency] ?? 1.0);
+    }
+
+    /**
+     * @param  array<string, array{id: int, rate: float}>  $sources  symbol => asset id + fx rate
+     * @return array<string, array<string, float>> symbol => [date => close in base currency]
+     */
+    private function priceSeries(array $sources, CarbonInterface $from): array
+    {
+        if ($sources === []) {
             return [];
         }
 
-        $prices = PriceHistory::whereIn('asset_id', array_values($assetIds))
+        $prices = PriceHistory::whereIn('asset_id', array_column($sources, 'id'))
             ->where('date', '>=', $from->toDateString())
             ->orderBy('date')
             ->get(['asset_id', 'date', 'close'])
@@ -94,9 +117,11 @@ class PortfolioDataAssembler
 
         $priceSeries = [];
 
-        foreach ($assetIds as $symbol => $assetId) {
-            $series = ($prices[$assetId] ?? collect())
-                ->mapWithKeys(fn (PriceHistory $price) => [$price->date->toDateString() => $price->close])
+        foreach ($sources as $symbol => $source) {
+            $series = ($prices[$source['id']] ?? collect())
+                ->mapWithKeys(fn (PriceHistory $price) => [
+                    $price->date->toDateString() => $price->close * $source['rate'],
+                ])
                 ->all();
 
             if ($series !== []) {

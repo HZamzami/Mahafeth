@@ -16,7 +16,11 @@ new class extends Component {
      */
     public function with(): array
     {
-        $data = app(PortfolioDataAssembler::class)->forUser(Auth::user(), now()->subYear());
+        // Same IPS-driven lookback window as the analyzer.
+        $windowYears = Auth::user()->riskProfile?->time_horizon->analysisWindowYears()
+            ?? (int) config('mahafeth.analysis_window_years');
+
+        $data = app(PortfolioDataAssembler::class)->forUser(Auth::user(), now()->subYears($windowYears));
 
         if (count($data['priceSeries']) < 2) {
             return ['symbols' => []];
@@ -72,10 +76,14 @@ new class extends Component {
      */
     private function frontierPlot(array $frontier): array
     {
+        $riskFree = (float) config('mahafeth.risk_free_rate');
+
         $points = [...$frontier['cloud'], ['risk' => $frontier['current']['risk'], 'return' => $frontier['current']['return']]];
 
-        $xAxis = $this->niceAxis(array_column($points, 'risk'));
-        $yAxis = $this->niceAxis(array_column($points, 'return'));
+        // Include the origin and the risk-free rate so the Capital Market
+        // Line has its anchor on the y-axis.
+        $xAxis = $this->niceAxis([0.0, ...array_column($points, 'risk')]);
+        $yAxis = $this->niceAxis([$riskFree, ...array_column($points, 'return')]);
 
         $plot = ['left' => 52, 'top' => 14, 'width' => 334, 'height' => 196];
 
@@ -87,11 +95,27 @@ new class extends Component {
         // points, so all of its support must be visible.
         $cloud = array_map($project, $frontier['cloud']);
 
+        // Capital Market Line: E(R) = Rf + tangency Sharpe × σ, from the
+        // risk-free anchor through the tangency portfolio, extended a bit.
+        $cml = null;
+        if ($frontier['tangency']['risk'] > 0) {
+            $slope = ($frontier['tangency']['return'] - $riskFree) / $frontier['tangency']['risk'];
+            $endRisk = min($xAxis['max'], $frontier['tangency']['risk'] * 1.35);
+
+            $cml = [
+                'x1' => $projectX(0.0),
+                'y1' => $projectY($riskFree),
+                'x2' => $projectX($endRisk),
+                'y2' => $projectY($riskFree + $slope * $endRisk),
+            ];
+        }
+
         return [
             'cloud' => $cloud,
             'path' => $this->smoothPath(array_map($project, $frontier['frontier'])),
             'current' => $project(['risk' => $frontier['current']['risk'], 'return' => $frontier['current']['return']]),
             'tangency' => $project(['risk' => $frontier['tangency']['risk'], 'return' => $frontier['tangency']['return']]),
+            'cml' => $cml,
             'plot' => $plot,
             'xTicks' => array_map(fn (float $tick): array => ['x' => $projectX($tick), 'label' => round($tick * 100).'%'], $xAxis['ticks']),
             'yTicks' => array_map(fn (float $tick): array => ['y' => $projectY($tick), 'label' => round($tick * 100).'%', 'zero' => abs($tick) < 1e-9], $yAxis['ticks']),
@@ -164,8 +188,10 @@ new class extends Component {
 
     @if ($symbols === [])
         <div
-            class="flex items-center justify-center rounded-xl border border-neutral-200 bg-white p-16 dark:border-neutral-700 dark:bg-zinc-900">
+            class="flex flex-col items-center justify-center gap-4 rounded-xl border border-neutral-200 bg-white p-16 dark:border-neutral-700 dark:bg-zinc-900">
             <flux:text>{{ __('Connect at least two holdings to see correlation analytics.') }}</flux:text>
+            <flux:button variant="primary" :href="route('connections')" wire:navigate>
+                {{ __('Connect accounts') }}</flux:button>
         </div>
     @else
         {{-- Efficient Frontier --}}
@@ -209,13 +235,21 @@ new class extends Component {
                         class="fill-neutral-400 text-[9px]">{{ __('Risk (volatility)') }}</text>
                     <text x="12" y="{{ $plot['top'] + $plot['height'] / 2 }}" text-anchor="middle"
                         transform="rotate(-90, 12, {{ $plot['top'] + $plot['height'] / 2 }})"
-                        class="fill-neutral-400 text-[9px]">{{ __('Expected return') }}</text>
+                        class="fill-neutral-400 text-[9px]">{{ __('Return (annualized, trailing)') }}</text>
 
                     {{-- Cloud --}}
                     @foreach ($frontierPlot['cloud'] as $dot)
                         <circle cx="{{ $dot['x'] }}" cy="{{ $dot['y'] }}" r="1.3"
                             class="fill-blue-400/25 dark:fill-blue-300/20" />
                     @endforeach
+
+                    {{-- Capital Market Line --}}
+                    @if ($frontierPlot['cml'] !== null)
+                        <line x1="{{ $frontierPlot['cml']['x1'] }}" y1="{{ $frontierPlot['cml']['y1'] }}"
+                            x2="{{ $frontierPlot['cml']['x2'] }}" y2="{{ $frontierPlot['cml']['y2'] }}"
+                            stroke-width="1.5" stroke-dasharray="5 4"
+                            class="stroke-blue-400 dark:stroke-blue-300" />
+                    @endif
 
                     {{-- Frontier --}}
                     <path d="{{ $frontierPlot['path'] }}" fill="none" stroke-width="2.5" stroke-linecap="round"
@@ -237,16 +271,25 @@ new class extends Component {
                     <span class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-emerald-500"></span>
                         <flux:text class="text-xs">{{ __('Optimal (max Sharpe)') }}</flux:text>
                     </span>
+                    <span class="flex items-center gap-2">
+                        <span class="h-0 w-5 border-t-2 border-dashed border-blue-400"></span>
+                        <flux:text class="text-xs">{{ __('Capital Market Line') }}</flux:text>
+                    </span>
                 </div>
             </div>
 
             <div class="flex flex-col gap-4">
+                @php($signed = fn (float $value): string => ($value < 0 ? '−' : '').number_format(abs($value), 2))
                 <div class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
                     <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Efficiency Gap') }}
                     </flux:text>
-                    <flux:heading size="xl" dir="ltr">+{{ number_format($frontier['efficiency_gap'], 2) }}</flux:heading>
+                    <flux:heading size="xl" dir="ltr">{{ $signed($frontier['efficiency_gap']) }}</flux:heading>
                     <flux:text class="mt-2 text-xs">
-                        {{ __('Sharpe ratio improvement available at the optimal allocation.') }}</flux:text>
+                        {{ __('Your return per unit of risk (Sharpe ratio) would improve from :from to :to at the optimal mix.', [
+                            'from' => $signed($frontier['current']['sharpe']),
+                            'to' => $signed($frontier['tangency']['sharpe']),
+                        ]) }}
+                    </flux:text>
                 </div>
                 <div class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
                     <flux:text class="mb-2 text-xs font-medium uppercase tracking-widest">{{ __('Current vs Optimal') }}
@@ -271,6 +314,10 @@ new class extends Component {
                     <flux:text class="mb-3 text-xs font-medium uppercase tracking-widest">
                         {{ __('Suggested Allocation') }}</flux:text>
                     <div class="grid grid-cols-[1fr_auto_auto] items-center gap-x-4 gap-y-2.5">
+                        <flux:text class="text-[10px] uppercase tracking-wide">{{ __('Asset') }}</flux:text>
+                        <flux:text class="text-end text-[10px] uppercase tracking-wide">{{ __('Target') }}</flux:text>
+                        <flux:text class="text-center text-[10px] uppercase tracking-wide">{{ __('Change') }}
+                        </flux:text>
                         @foreach (collect($frontier['tangency']['weights'])->sortDesc()->take(5) as $symbol => $weight)
                             @php($delta = $weight - ($weights[$symbol] ?? 0))
                             <flux:text class="text-sm">{{ $symbol }}</flux:text>

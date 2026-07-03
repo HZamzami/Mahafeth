@@ -94,6 +94,6 @@ class AiInsightTest extends TestCase
         $this->actingAs(User::factory()->create());
 
         Volt::test('dashboard.ai-summary')
-            ->assertSee(__('Run an analysis first to generate AI insights.'));
+            ->assertSee(__('Connect your accounts and Mahafeth AI will explain your portfolio in plain language.'));
     }
 }

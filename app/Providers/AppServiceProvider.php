@@ -8,6 +8,7 @@ use App\Services\Insights\ClaudeInsightGenerator;
 use App\Services\Insights\FakeInsightGenerator;
 use App\Services\OpenBanking\FakeOpenBankingProvider;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -33,6 +34,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Financial figures render with Western digits in both locales
+        // (as Saudi financial apps conventionally do) — this also avoids
+        // mixed-direction glitches around +/− signs in RTL layouts.
+        Number::useLocale('en');
     }
 }

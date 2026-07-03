@@ -17,6 +17,18 @@ return [
 
     'benchmark_symbol' => env('MAHAFETH_BENCHMARK', 'SPY'),
 
+    // Indices overlaid on the performance chart for comparison.
+    'comparison_benchmarks' => ['SPY', 'TASI'],
+
+    // All valuation happens in the base currency; native-currency prices are
+    // converted at read time. SAR is pegged to the dollar at 3.75.
+    'base_currency' => 'USD',
+
+    'fx_rates' => [
+        'USD' => 1.0,
+        'SAR' => 1 / 3.75,
+    ],
+
     // One-tailed z-score for the VaR confidence level (1.645 ≈ 95%).
     'var_confidence' => 0.95,
     'var_z_score' => 1.645,

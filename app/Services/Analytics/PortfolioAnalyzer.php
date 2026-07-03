@@ -34,7 +34,12 @@ class PortfolioAnalyzer
      */
     public function analyze(User $user): ?PortfolioSnapshot
     {
-        $from = now()->subYears((int) config('mahafeth.analysis_window_years'));
+        // The IPS drives the lookback: longer horizons analyze more history.
+        $riskProfile = $user->riskProfile()->first();
+        $windowYears = $riskProfile?->time_horizon->analysisWindowYears()
+            ?? (int) config('mahafeth.analysis_window_years');
+
+        $from = now()->subYears($windowYears);
         $data = $this->assembler->forUser($user, $from);
 
         if ($data['priceSeries'] === []) {
@@ -80,6 +85,7 @@ class PortfolioAnalyzer
         $countries = array_filter(array_map(fn (array $asset) => $asset['country'], $data['assets']));
 
         $metrics = [
+            'window_years' => $windowYears,
             'expected_return' => $annualReturn,
             'volatility' => $volatility,
             'beta' => $benchmark['beta'],
@@ -124,13 +130,14 @@ class PortfolioAnalyzer
 
         $attributes = ['total_value' => $totalValue, 'metrics' => $metrics];
 
-        // Health scoring requires the investor's target volatility from
-        // their IPS; without a risk profile the gauge stays locked. Queried
-        // directly so a stale memoized relation can never hide a profile.
-        $riskProfile = $user->riskProfile()->first();
-
+        // Health scoring requires the investor's IPS targets; without a
+        // risk profile the gauge stays locked.
         if ($riskProfile !== null) {
-            $health = $this->healthScoreCalculator->calculate($metrics, $riskProfile->target_volatility);
+            $health = $this->healthScoreCalculator->calculate(
+                $metrics,
+                $riskProfile->target_volatility,
+                $riskProfile->target_return,
+            );
 
             $attributes['component_scores'] = $health['components'];
             $attributes['health_score'] = $health['overall'];

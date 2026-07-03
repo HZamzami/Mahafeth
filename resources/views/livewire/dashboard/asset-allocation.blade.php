@@ -83,8 +83,10 @@ new class extends Component {
             @endforeach
         </div>
     @else
-        <div class="flex grow items-center justify-center py-12">
+        <div class="flex grow flex-col items-center justify-center gap-3 py-12">
             <flux:text class="text-sm">{{ __('No sources connected yet') }}</flux:text>
+            <flux:button size="sm" variant="primary" :href="route('connections')" wire:navigate>
+                {{ __('Connect accounts') }}</flux:button>
         </div>
     @endif
 </div>

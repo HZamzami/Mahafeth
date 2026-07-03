@@ -82,7 +82,6 @@ new class extends Component {
             <div class="min-w-0">
                 <flux:heading class="leading-snug" size="sm">{{ $entry['item']->localizedHeadline() }}</flux:heading>
                 <flux:text class="mt-1 text-xs">
-                    {{ __(':minutes min read', ['minutes' => $entry['item']->minutes]) }} &bull;
                     {{ $entry['item']->source }} &bull; {{ $entry['item']->published_at->diffForHumans() }}
                 </flux:text>
                 <flux:text class="mt-1.5 flex items-center gap-1 text-xs !text-blue-600 dark:!text-blue-400">

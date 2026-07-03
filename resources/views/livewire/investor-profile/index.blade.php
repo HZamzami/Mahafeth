@@ -148,6 +148,13 @@ new class extends Component {
         <flux:text class="mt-1">
             {{ __('Five quick questions build your Investment Policy Statement, so Mahafeth can judge whether your portfolio actually fits you.') }}
         </flux:text>
+        @if (auth()->user()->riskProfile !== null)
+            <flux:callout class="mt-4" color="zinc" icon="check-circle" inline>
+                <flux:callout.text>
+                    {{ __('Completed on :date — your previous answers are prefilled. Saving again updates your profile.', ['date' => auth()->user()->riskProfile->updated_at->isoFormat('LL')]) }}
+                </flux:callout.text>
+            </flux:callout>
+        @endif
     </div>
 
     <div class="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-zinc-900">

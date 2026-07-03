@@ -83,8 +83,12 @@ new class extends Component {
                     {{ __('Generate Insights') }}</flux:button>
             </div>
         @else
-            <div class="flex grow items-center justify-center py-10">
-                <flux:text class="text-sm">{{ __('Run an analysis first to generate AI insights.') }}</flux:text>
+            <div class="flex grow flex-col items-center justify-center gap-3 py-10 text-center">
+                <flux:text class="max-w-56 text-sm">
+                    {{ __('Connect your accounts and Mahafeth AI will explain your portfolio in plain language.') }}
+                </flux:text>
+                <flux:button size="sm" variant="primary" :href="route('connections')" wire:navigate>
+                    {{ __('Connect accounts') }}</flux:button>
             </div>
         @endif
     </div>

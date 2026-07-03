@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Actions\SyncConnection;
 use App\Models\Connection;
 use App\Models\Institution;
+use App\Models\PortfolioSnapshot;
 use App\Models\RiskProfile;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
@@ -88,5 +89,22 @@ class StretchFeaturesTest extends TestCase
     public function test_the_report_page_redirects_guests(): void
     {
         $this->get('/report')->assertRedirect('/login');
+    }
+
+    public function test_the_report_survives_a_snapshot_without_metrics(): void
+    {
+        $user = User::factory()->create();
+        PortfolioSnapshot::factory()->create([
+            'user_id' => $user->id,
+            'metrics' => null,
+            'component_scores' => null,
+            'health_score' => null,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/report')
+            ->assertOk()
+            ->assertSee(__('Key Metrics'))
+            ->assertSee('—');
     }
 }

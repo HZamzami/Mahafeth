@@ -27,6 +27,7 @@ new class extends Component {
             'scoreLabel' => $this->scoreLabel($score),
             'dashoffset' => $score !== null ? round(self::GAUGE_CIRCUMFERENCE * (1 - $score / 100)) : self::GAUGE_CIRCUMFERENCE,
             'components' => $snapshot?->component_scores,
+            'hasSnapshot' => $snapshot !== null,
             'hasProfile' => Auth::user()->riskProfile !== null,
         ];
     }
@@ -47,8 +48,10 @@ new class extends Component {
     class="flex grow flex-col items-center rounded-xl border border-neutral-200 bg-white p-6 text-center dark:border-neutral-700 dark:bg-zinc-900">
     <div class="flex w-full items-center justify-between">
         <flux:heading size="lg">{{ __('Portfolio Health Score') }}</flux:heading>
-        <flux:button size="sm" variant="subtle" icon="arrow-path" wire:click="refresh" wire:loading.attr="disabled"
-            :tooltip="__('Refresh Analysis')" />
+        @if ($hasSnapshot)
+            <flux:button size="sm" variant="subtle" icon="arrow-path" wire:click="refresh"
+                wire:loading.attr="disabled" :tooltip="__('Refresh Analysis')" />
+        @endif
     </div>
 
     <div class="relative my-8 flex grow items-center justify-center">
@@ -100,4 +103,38 @@ new class extends Component {
                 {{ isset($components['risk_alignment']) ? $components['risk_alignment'].'/100' : '—' }}</flux:heading>
         </div>
     </div>
+
+    <flux:modal.trigger name="health-methodology">
+        <flux:button class="mt-4" size="xs" variant="ghost" icon="question-mark-circle">
+            {{ __('How is this calculated?') }}</flux:button>
+    </flux:modal.trigger>
+
+    <flux:modal name="health-methodology" class="md:w-[28rem]">
+        <div class="space-y-4 text-start">
+            <flux:heading size="lg">{{ __('How the Health Score works') }}</flux:heading>
+            <flux:text class="text-sm">
+                {{ __('The score is a weighted average of six components, each rated 0–100 where higher is always better:') }}
+            </flux:text>
+            <div class="space-y-2">
+                @foreach ([
+                    'diversification' => [__('Diversification'), __('How many truly independent positions you hold.')],
+                    'risk_alignment' => [__('Risk Alignment'), __('How closely your volatility matches your investor profile target.')],
+                    'correlation' => [__('Correlation'), __('Whether your assets move independently or as one bet.')],
+                    'performance' => [__('Performance'), __('Risk-adjusted return (Sharpe, Sortino) and progress toward your target return.')],
+                    'drawdown' => [__('Drawdown'), __('The worst historical peak-to-trough loss.')],
+                    'concentration' => [__('Concentration'), __('How large your single biggest position is.')],
+                ] as $key => [$label, $description])
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">{{ $label }}
+                            </flux:text>
+                            <flux:text class="text-xs">{{ $description }}</flux:text>
+                        </div>
+                        <flux:badge size="sm" dir="ltr">{{ round(config('mahafeth.health_weights')[$key] * 100) }}%
+                        </flux:badge>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </flux:modal>
 </div>
