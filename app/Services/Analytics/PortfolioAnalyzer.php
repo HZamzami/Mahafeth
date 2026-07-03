@@ -124,8 +124,9 @@ class PortfolioAnalyzer
         $attributes = ['total_value' => $totalValue, 'metrics' => $metrics];
 
         // Health scoring requires the investor's target volatility from
-        // their IPS; without a risk profile the gauge stays locked.
-        $riskProfile = $user->riskProfile;
+        // their IPS; without a risk profile the gauge stays locked. Queried
+        // directly so a stale memoized relation can never hide a profile.
+        $riskProfile = $user->riskProfile()->first();
 
         if ($riskProfile !== null) {
             $health = $this->healthScoreCalculator->calculate($metrics, $riskProfile->target_volatility);

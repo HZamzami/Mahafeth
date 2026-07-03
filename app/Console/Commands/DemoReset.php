@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\AiInsight;
+use App\Models\User;
+use Database\Seeders\DemoPortfolioSeeder;
+use Database\Seeders\InstitutionSeeder;
+use Illuminate\Console\Command;
+
+class DemoReset extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'demo:reset {--fresh : Delete the demo user first for a completely clean rebuild}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Rebuild the golden demo portfolio (institutions, demo user, sync, analysis, health history) in one shot';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle(): int
+    {
+        if ($this->option('fresh')) {
+            $deleted = User::where('email', 'demo@mahafeth.test')->delete();
+            $this->components->info($deleted ? 'Existing demo user removed.' : 'No existing demo user found.');
+        }
+
+        $this->components->task('Seeding institutions', function (): void {
+            (new InstitutionSeeder)->run();
+        });
+
+        $this->components->task('Building demo portfolio (connections, sync, analysis, history)', function (): void {
+            (new DemoPortfolioSeeder)->run();
+        });
+
+        $this->components->task('Clearing stale AI insights', function (): void {
+            AiInsight::whereHas(
+                'portfolioSnapshot.user',
+                fn ($query) => $query->where('email', 'demo@mahafeth.test'),
+            )->delete();
+        });
+
+        $this->components->info('Demo ready: demo@mahafeth.test / password');
+
+        return self::SUCCESS;
+    }
+}
