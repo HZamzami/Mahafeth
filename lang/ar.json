@@ -502,5 +502,12 @@
     "Estimated average correlation during a market crisis, when assets tend to fall together.": "متوسط الارتباط المقدر أثناء أزمات السوق، حيث تميل الأصول إلى الانخفاض معًا.",
     "Correlation Matrix": "مصفوفة الارتباط",
     "Values near 1 mean two assets move together; near 0, independently; below 0, in opposite directions.": "القيم القريبة من 1 تعني أن الأصلين يتحركان معًا؛ والقريبة من 0 باستقلالية؛ وتحت 0 في اتجاهين متعاكسين.",
-    "Connect your accounts to see your portfolio performance.": "اربط حساباتك لعرض أداء محفظتك."
+    "Connect your accounts to see your portfolio performance.": "اربط حساباتك لعرض أداء محفظتك.",
+    "Trailing 12 months": "آخر 12 شهرًا",
+    "Refresh Analysis": "تحديث التحليل",
+    "Overall Health": "الصحة العامة",
+    "Complete your investor profile to unlock scoring": "أكمل ملفك الاستثماري لتفعيل التقييم",
+    "Effective Holdings": "عدد الأصول الفعّال",
+    "Sharpe Ratio": "نسبة شارب",
+    "Max Drawdown": "أقصى انخفاض"
 }

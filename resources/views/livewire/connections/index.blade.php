@@ -3,6 +3,7 @@
 use App\Actions\SyncConnection;
 use App\Enums\ConnectionStatus;
 use App\Models\Institution;
+use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
 
@@ -10,7 +11,7 @@ new class extends Component {
     /**
      * Authorize a new Open Banking connection and pull its data.
      */
-    public function connect(int $institutionId, SyncConnection $syncConnection): void
+    public function connect(int $institutionId, SyncConnection $syncConnection, PortfolioAnalyzer $analyzer): void
     {
         $institution = Institution::findOrFail($institutionId);
 
@@ -19,6 +20,7 @@ new class extends Component {
         ]);
 
         $syncConnection->handle($connection);
+        $analyzer->analyze(Auth::user());
 
         $this->modal('connect-'.$institution->id)->close();
     }
@@ -26,18 +28,21 @@ new class extends Component {
     /**
      * Re-sync an existing connection.
      */
-    public function sync(int $connectionId, SyncConnection $syncConnection): void
+    public function sync(int $connectionId, SyncConnection $syncConnection, PortfolioAnalyzer $analyzer): void
     {
         $connection = Auth::user()->connections()->findOrFail($connectionId);
 
         $syncConnection->handle($connection);
+        $analyzer->analyze(Auth::user());
     }
 
-    public function disconnect(int $connectionId): void
+    public function disconnect(int $connectionId, PortfolioAnalyzer $analyzer): void
     {
         Auth::user()->connections()->findOrFail($connectionId)->update([
             'status' => ConnectionStatus::Disconnected,
         ]);
+
+        $analyzer->analyze(Auth::user());
     }
 
     public function with(): array

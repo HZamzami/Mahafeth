@@ -6,6 +6,7 @@ use App\Actions\SyncConnection;
 use App\Models\Connection;
 use App\Models\Institution;
 use App\Models\User;
+use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
@@ -29,7 +30,41 @@ class DashboardTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_the_dashboard_shows_the_synced_portfolio(): void
+    public function test_the_dashboard_shows_the_analyzed_portfolio(): void
+    {
+        $user = $this->syncedAndAnalyzedUser();
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertSee('AAPL')
+            ->assertSee('Technology');
+    }
+
+    public function test_the_allocation_donut_shows_asset_class_weights(): void
+    {
+        $this->actingAs($this->syncedAndAnalyzedUser());
+
+        Volt::test('dashboard.asset-allocation')
+            ->assertSee(__('Equities'))
+            ->assertSee('100.0%');
+    }
+
+    public function test_the_health_card_shows_risk_metrics_and_can_refresh(): void
+    {
+        $user = $this->syncedAndAnalyzedUser();
+        $this->actingAs($user);
+
+        $user->portfolioSnapshots()->delete();
+
+        Volt::test('dashboard.health-score')
+            ->call('refresh')
+            ->assertSee(__('Sharpe Ratio'));
+
+        $this->assertSame(1, $user->portfolioSnapshots()->count());
+    }
+
+    private function syncedAndAnalyzedUser(): User
     {
         $user = User::factory()->create();
         $institution = Institution::factory()->create(['slug' => 'derayah']);
@@ -39,12 +74,9 @@ class DashboardTest extends TestCase
         ]);
 
         app(SyncConnection::class)->handle($connection);
+        app(PortfolioAnalyzer::class)->analyze($user);
 
-        $this->actingAs($user)
-            ->get('/dashboard')
-            ->assertOk()
-            ->assertSee('AAPL')
-            ->assertSee('Technology');
+        return $user;
     }
 
     public function test_the_performance_chart_plots_the_synced_portfolio(): void
