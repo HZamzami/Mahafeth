@@ -42,4 +42,24 @@ return [
         'concentration' => 0.10,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | AI Explanation Layer
+    |--------------------------------------------------------------------------
+    |
+    | The insight generator translates snapshot metrics into plain-language
+    | summaries and recommendations via the Claude API. With `fake` enabled
+    | (or no API key configured) a deterministic local generator is used —
+    | handy for tests and as a demo fallback that cannot fail on network.
+    |
+    */
+
+    'ai' => [
+        'fake' => env('MAHAFETH_AI_FAKE', false),
+        'api_key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('MAHAFETH_AI_MODEL', 'claude-opus-4-8'),
+        'max_tokens' => 8192,
+        'timeout' => 120,
+    ],
+
 ];
