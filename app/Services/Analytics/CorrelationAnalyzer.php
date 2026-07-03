@@ -88,4 +88,72 @@ class CorrelationAnalyzer
 
         return $matrix;
     }
+
+    /**
+     * PCA hidden-factor check: the share of total variance explained by the
+     * first principal component of Σ (dominant eigenvalue / trace, via power
+     * iteration). A share near 1 means the whole portfolio is driven by one
+     * common factor — hidden concentration that pairwise numbers can miss.
+     *
+     * @param  array<string, array<string, float>>  $covarianceMatrix
+     */
+    public function firstFactorShare(array $covarianceMatrix): float
+    {
+        $symbols = array_keys($covarianceMatrix);
+        $count = count($symbols);
+
+        if ($count === 0) {
+            return 0.0;
+        }
+
+        $trace = 0.0;
+        foreach ($symbols as $symbol) {
+            $trace += $covarianceMatrix[$symbol][$symbol];
+        }
+
+        if ($trace <= 0) {
+            return 0.0;
+        }
+
+        if ($count === 1) {
+            return 1.0;
+        }
+
+        // Power iteration for the dominant eigenvalue.
+        $vector = array_fill_keys($symbols, 1 / sqrt($count));
+        $eigenvalue = 0.0;
+
+        for ($iteration = 0; $iteration < 100; $iteration++) {
+            $product = [];
+            $norm = 0.0;
+
+            foreach ($symbols as $a) {
+                $sum = 0.0;
+                foreach ($symbols as $b) {
+                    $sum += $covarianceMatrix[$a][$b] * $vector[$b];
+                }
+                $product[$a] = $sum;
+                $norm += $sum ** 2;
+            }
+
+            $norm = sqrt($norm);
+
+            if ($norm <= 0) {
+                return 0.0;
+            }
+
+            $previous = $eigenvalue;
+            $eigenvalue = $norm;
+
+            foreach ($symbols as $symbol) {
+                $vector[$symbol] = $product[$symbol] / $norm;
+            }
+
+            if (abs($eigenvalue - $previous) < 1e-12) {
+                break;
+            }
+        }
+
+        return min(1.0, $eigenvalue / $trace);
+    }
 }

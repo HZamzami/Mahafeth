@@ -24,7 +24,10 @@ class HealthScoreCalculator
                 (float) $metrics['effective_holdings'],
                 (float) $metrics['diversification_ratio'],
             ),
-            'correlation' => $this->correlationScore((float) $metrics['average_correlation']),
+            'correlation' => $this->correlationScore(
+                (float) $metrics['average_correlation'],
+                isset($metrics['pca_first_factor_share']) ? (float) $metrics['pca_first_factor_share'] : null,
+            ),
             'risk_alignment' => $this->riskAlignmentScorer->score((float) $metrics['volatility'], $targetVolatility),
             'performance' => $this->performanceScore((float) $metrics['sharpe']),
             'drawdown' => $this->drawdownScore((float) $metrics['max_drawdown']),
@@ -57,11 +60,22 @@ class HealthScoreCalculator
     }
 
     /**
-     * Average pairwise correlation: 0 → 100, 0.7+ → 0.
+     * 70% average pairwise correlation (0 → 100, 0.7+ → 0) and 30% PCA
+     * hidden-factor share (40% or less of variance in one factor → 100,
+     * 90%+ → 0). Older snapshots without the PCA metric fall back to the
+     * average alone.
      */
-    private function correlationScore(float $averageCorrelation): float
+    private function correlationScore(float $averageCorrelation, ?float $firstFactorShare): float
     {
-        return 100 - $this->linear($averageCorrelation, 0.0, 0.7);
+        $averageScore = 100 - $this->linear($averageCorrelation, 0.0, 0.7);
+
+        if ($firstFactorShare === null) {
+            return $averageScore;
+        }
+
+        $pcaScore = 100 - $this->linear($firstFactorShare, 0.40, 0.90);
+
+        return 0.7 * $averageScore + 0.3 * $pcaScore;
     }
 
     /**

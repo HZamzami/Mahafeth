@@ -6,6 +6,7 @@ use App\Models\AiInsight;
 use App\Models\User;
 use Database\Seeders\DemoPortfolioSeeder;
 use Database\Seeders\InstitutionSeeder;
+use Database\Seeders\NewsSeeder;
 use Illuminate\Console\Command;
 
 class DemoReset extends Command
@@ -30,12 +31,16 @@ class DemoReset extends Command
     public function handle(): int
     {
         if ($this->option('fresh')) {
-            $deleted = User::where('email', 'demo@mahafeth.test')->delete();
-            $this->components->info($deleted ? 'Existing demo user removed.' : 'No existing demo user found.');
+            $deleted = User::whereIn('email', ['demo@mahafeth.test', 'sara@mahafeth.test'])->delete();
+            $this->components->info($deleted ? 'Existing demo users removed.' : 'No existing demo users found.');
         }
 
         $this->components->task('Seeding institutions', function (): void {
             (new InstitutionSeeder)->run();
+        });
+
+        $this->components->task('Seeding market news', function (): void {
+            (new NewsSeeder)->run();
         });
 
         $this->components->task('Building demo portfolio (connections, sync, analysis, history)', function (): void {
@@ -45,11 +50,11 @@ class DemoReset extends Command
         $this->components->task('Clearing stale AI insights', function (): void {
             AiInsight::whereHas(
                 'portfolioSnapshot.user',
-                fn ($query) => $query->where('email', 'demo@mahafeth.test'),
+                fn ($query) => $query->whereIn('email', ['demo@mahafeth.test', 'sara@mahafeth.test']),
             )->delete();
         });
 
-        $this->components->info('Demo ready: demo@mahafeth.test / password');
+        $this->components->info('Demo ready: demo@mahafeth.test (tech-heavy) and sara@mahafeth.test (conservative) / password');
 
         return self::SUCCESS;
     }

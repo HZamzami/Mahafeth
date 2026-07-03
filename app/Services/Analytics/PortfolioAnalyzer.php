@@ -98,6 +98,7 @@ class PortfolioAnalyzer
             ],
             'average_correlation' => $averageCorrelation,
             'stress_correlation' => $this->correlationAnalyzer->stressCorrelation($averageCorrelation),
+            'pca_first_factor_share' => $this->correlationAnalyzer->firstFactorShare($covariance),
             'weights' => $weights,
             'allocations' => [
                 'asset_class' => $this->diversificationAnalyzer->groupWeights($weights, array_map(fn (array $asset) => $asset['asset_class'], $data['assets'])),

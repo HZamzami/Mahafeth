@@ -11,6 +11,7 @@ use App\Services\Analytics\PortfolioAnalyzer;
 use App\Services\Analytics\PortfolioDataAssembler;
 use App\Services\Analytics\ReturnCalculator;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 
 class DemoPortfolioSeeder extends Seeder
 {
@@ -21,10 +22,39 @@ class DemoPortfolioSeeder extends Seeder
      */
     public function run(): void
     {
+        // Persona 1: tech-heavy risk-taker with a Balanced profile — every
+        // analyzer has findings, and the health score suffers for it.
+        $demo = $this->persona('demo@mahafeth.test', 'Demo Investor', RiskTolerance::Balanced, Institution::all());
+
+        $this->backfillSnapshotHistory($demo);
+        app(PortfolioAnalyzer::class)->analyze($demo->fresh());
+        $this->backfillHealthHistory($demo);
+
+        // Persona 2: a calmer investor holding only local Saudi equities,
+        // whose portfolio volatility actually matches her Balanced profile —
+        // the healthy contrast to the demo investor.
+        $sara = $this->persona(
+            'sara@mahafeth.test',
+            'Sara Almutairi',
+            RiskTolerance::Balanced,
+            Institution::where('slug', 'alrajhi-capital')->get(),
+        );
+
+        app(PortfolioAnalyzer::class)->analyze($sara->fresh());
+    }
+
+    /**
+     * Create a demo user connected and synced to the given institutions,
+     * with a risk profile for the given tolerance band.
+     *
+     * @param  Collection<int, Institution>  $institutions
+     */
+    private function persona(string $email, string $name, RiskTolerance $tolerance, $institutions): User
+    {
         $user = User::firstOrCreate(
-            ['email' => 'demo@mahafeth.test'],
+            ['email' => $email],
             [
-                'name' => 'Demo Investor',
+                'name' => $name,
                 'password' => 'password',
                 'email_verified_at' => now(),
             ],
@@ -32,7 +62,7 @@ class DemoPortfolioSeeder extends Seeder
 
         $syncConnection = app(SyncConnection::class);
 
-        Institution::all()->each(function (Institution $institution) use ($user, $syncConnection): void {
+        $institutions->each(function (Institution $institution) use ($user, $syncConnection): void {
             $connection = $user->connections()->firstOrCreate(['institution_id' => $institution->id]);
 
             $syncConnection->handle($connection);
@@ -40,18 +70,14 @@ class DemoPortfolioSeeder extends Seeder
 
         $user->riskProfile()->updateOrCreate([], [
             'answers' => ['horizon' => 3, 'goal' => 3, 'drop_reaction' => 3, 'liquidity' => 3, 'target_return' => 2],
-            'risk_tolerance' => RiskTolerance::Balanced,
+            'risk_tolerance' => $tolerance,
             'time_horizon' => TimeHorizon::Long,
-            'target_return' => RiskTolerance::Balanced->targetReturn(),
-            'target_volatility' => RiskTolerance::Balanced->targetVolatility(),
+            'target_return' => $tolerance->targetReturn(),
+            'target_volatility' => $tolerance->targetVolatility(),
             'liquidity_needs' => 'moderate',
         ]);
 
-        $this->backfillSnapshotHistory($user);
-
-        app(PortfolioAnalyzer::class)->analyze($user->fresh());
-
-        $this->backfillHealthHistory($user);
+        return $user;
     }
 
     /**

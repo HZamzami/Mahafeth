@@ -54,6 +54,7 @@ new class extends Component {
             'correlation' => $correlation,
             'averageCorrelation' => $averageCorrelation,
             'stressAverage' => $analyzer->stressCorrelation($averageCorrelation),
+            'firstFactorShare' => $analyzer->firstFactorShare($covariance),
             'frontier' => $frontier,
             'frontierPlot' => $this->frontierPlot($frontier),
             'weights' => $weights,
@@ -273,7 +274,7 @@ new class extends Component {
         </div>
 
         {{-- Correlation stats --}}
-        <div class="grid gap-4 md:grid-cols-2">
+        <div class="grid gap-4 md:grid-cols-3">
             <div class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
                 <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Average Correlation') }}
                 </flux:text>
@@ -287,6 +288,14 @@ new class extends Component {
                 <flux:heading size="xl" dir="ltr">{{ number_format($stressAverage, 2) }}</flux:heading>
                 <flux:text class="mt-2 text-xs">
                     {{ __('Estimated average correlation during a market crisis, when assets tend to fall together.') }}
+                </flux:text>
+            </div>
+            <div class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+                <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Hidden Factor (PCA)') }}
+                </flux:text>
+                <flux:heading size="xl" dir="ltr">{{ number_format($firstFactorShare * 100, 0) }}%</flux:heading>
+                <flux:text class="mt-2 text-xs">
+                    {{ __('Share of total variance driven by a single common factor. High values mean the portfolio is one big bet.') }}
                 </flux:text>
             </div>
         </div>

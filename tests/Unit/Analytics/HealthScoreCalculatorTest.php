@@ -26,6 +26,7 @@ class HealthScoreCalculatorTest extends TestCase
             'effective_holdings' => 8.0,
             'diversification_ratio' => 1.5,
             'average_correlation' => 0.0,
+            'pca_first_factor_share' => 0.30,
             'volatility' => 0.15,
             'sharpe' => 1.5,
             'max_drawdown' => 0.05,
@@ -50,6 +51,7 @@ class HealthScoreCalculatorTest extends TestCase
             'effective_holdings' => 1.0,
             'diversification_ratio' => 1.0,
             'average_correlation' => 0.9,
+            'pca_first_factor_share' => 1.0,
             'volatility' => 0.60,
             'sharpe' => -1.0,
             'max_drawdown' => 0.50,
@@ -74,12 +76,14 @@ class HealthScoreCalculatorTest extends TestCase
     public function test_component_curves_interpolate_linearly(): void
     {
         // ENB 4.5 → (4.5−1)/7 = 50; DR 1.25 → 50 → diversification = 50.
-        // Correlation 0.35 → 50. Sharpe 0.5 → 50. MDD 0.225 → 50. Largest 0.225 → 50.
+        // Correlation: avg 0.35 → 50 and PCA 0.65 → 50, blended → 50.
+        // Sharpe 0.5 → 50. MDD 0.225 → 50. Largest 0.225 → 50.
         // Volatility 0.225 vs target 0.15 → alignment 50. All components 50 → overall 50.
         $result = $this->calculator->calculate($this->metrics([
             'effective_holdings' => 4.5,
             'diversification_ratio' => 1.25,
             'average_correlation' => 0.35,
+            'pca_first_factor_share' => 0.65,
             'volatility' => 0.225,
             'sharpe' => 0.5,
             'max_drawdown' => 0.225,
@@ -87,5 +91,15 @@ class HealthScoreCalculatorTest extends TestCase
         ]), targetVolatility: 0.15);
 
         $this->assertSame(50, $result['overall']);
+    }
+
+    public function test_snapshots_without_the_pca_metric_fall_back_to_the_average_correlation(): void
+    {
+        $metrics = $this->metrics(['average_correlation' => 0.35]);
+        unset($metrics['pca_first_factor_share']);
+
+        $result = $this->calculator->calculate($metrics, targetVolatility: 0.15);
+
+        $this->assertSame(50, $result['components']['correlation']);
     }
 }

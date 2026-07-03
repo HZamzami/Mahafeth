@@ -89,5 +89,12 @@ class DemoJourneyTest extends TestCase
         $this->assertNotNull($demo->riskProfile);
         $this->assertNotNull($demo->latestSnapshot()?->health_score);
         $this->assertGreaterThan(20, $demo->portfolioSnapshots()->whereNotNull('health_score')->count());
+
+        // The contrasting conservative persona is scored too.
+        $sara = User::where('email', 'sara@mahafeth.test')->firstOrFail();
+
+        $this->assertSame(1, $sara->connections()->count());
+        $this->assertNotNull($sara->latestSnapshot()?->health_score);
+        $this->assertGreaterThan($demo->latestSnapshot()->health_score, $sara->latestSnapshot()->health_score);
     }
 }

@@ -66,4 +66,41 @@ class CorrelationAnalyzerTest extends TestCase
         $this->assertSame(1.0, $stressed['A']['A']);
         $this->assertEqualsWithDelta(0.65, $stressed['A']['B'], self::DELTA);
     }
+
+    public function test_first_factor_share_matches_the_analytical_eigenvalues(): void
+    {
+        // Σ = [[2, 1], [1, 2]] has eigenvalues 3 and 1 → first factor = 3/4.
+        $share = $this->analyzer->firstFactorShare([
+            'A' => ['A' => 2.0, 'B' => 1.0],
+            'B' => ['A' => 1.0, 'B' => 2.0],
+        ]);
+
+        $this->assertEqualsWithDelta(0.75, $share, 1e-6);
+    }
+
+    public function test_uncorrelated_equal_assets_split_the_variance_evenly(): void
+    {
+        // Identity-like Σ: the first factor explains exactly 1/n of variance.
+        $share = $this->analyzer->firstFactorShare([
+            'A' => ['A' => 0.04, 'B' => 0.0],
+            'B' => ['A' => 0.0, 'B' => 0.04],
+        ]);
+
+        $this->assertEqualsWithDelta(0.5, $share, 1e-6);
+    }
+
+    public function test_perfectly_correlated_assets_are_driven_by_one_factor(): void
+    {
+        $share = $this->analyzer->firstFactorShare([
+            'A' => ['A' => 0.04, 'B' => 0.04],
+            'B' => ['A' => 0.04, 'B' => 0.04],
+        ]);
+
+        $this->assertEqualsWithDelta(1.0, $share, 1e-6);
+    }
+
+    public function test_first_factor_share_of_a_single_asset_is_one(): void
+    {
+        $this->assertSame(1.0, $this->analyzer->firstFactorShare(['A' => ['A' => 0.04]]));
+    }
 }
