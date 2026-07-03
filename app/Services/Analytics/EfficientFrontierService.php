@@ -15,8 +15,6 @@ class EfficientFrontierService
 {
     private const SEED = 424242;
 
-    private const FRONTIER_BINS = 30;
-
     /**
      * @param  array<string, float>  $expectedReturns  symbol => annualized expected return
      * @param  array<string, array<string, float>>  $covarianceMatrix  annualized Σ
@@ -46,7 +44,13 @@ class EfficientFrontierService
         $tangency = ['weights' => $currentWeights] + $current;
 
         for ($i = 0; $i < $samples; $i++) {
-            $weights = $this->randomWeights($symbols, $state);
+            // Mix uniform portfolios with increasingly concentrated ones:
+            // uniform sampling almost never visits the near-optimal edge of
+            // the allocation space, which leaves an empty band between the
+            // cloud and the true frontier. Concentrated samples fill it.
+            $concentration = [1, 1, 2, 4][$i % 4];
+
+            $weights = $this->randomWeights($symbols, $state, $concentration);
             $point = $this->evaluate($weights, $expectedReturns, $covarianceMatrix, $riskFreeRate);
 
             $cloud[] = ['risk' => $point['risk'], 'return' => $point['return']];
@@ -94,13 +98,15 @@ class EfficientFrontierService
     }
 
     /**
-     * Uniform random point on the simplex (Dirichlet(1)) via normalized
-     * exponential draws from a deterministic xorshift PRNG.
+     * Random point on the simplex via normalized exponential draws from a
+     * deterministic xorshift PRNG. A concentration exponent above 1 skews
+     * the sample toward the edges and corners of the allocation space
+     * (fewer dominant assets), which is where efficient portfolios live.
      *
      * @param  list<string>  $symbols
      * @return array<string, float>
      */
-    private function randomWeights(array $symbols, int &$state): array
+    private function randomWeights(array $symbols, int &$state, int $concentration = 1): array
     {
         $draws = [];
         $sum = 0.0;
@@ -110,7 +116,8 @@ class EfficientFrontierService
             $state ^= $state >> 17;
             $state ^= ($state << 5) & 0x7FFFFFFF;
 
-            $draws[$symbol] = -log(($state % 1_000_000 + 1) / 1_000_001);
+            $draw = -log(($state % 1_000_000 + 1) / 1_000_001);
+            $draws[$symbol] = $draw ** $concentration;
             $sum += $draws[$symbol];
         }
 
@@ -118,48 +125,53 @@ class EfficientFrontierService
     }
 
     /**
-     * Approximate frontier: bin the cloud by risk, keep each bin's best
-     * return, and drop points dominated by a lower-risk bin.
+     * The efficient frontier as the rising segment of the cloud's upper
+     * convex hull (Andrew's monotone chain): a clean concave arc from the
+     * minimum-variance tip up to the maximum-return portfolio. The hull
+     * beyond the peak is inefficient by definition and is not drawn.
      *
      * @param  list<array{risk: float, return: float}>  $cloud
      * @return list<array{risk: float, return: float}>
      */
     private function upperEnvelope(array $cloud): array
     {
-        if ($cloud === []) {
-            return [];
+        if (count($cloud) < 3) {
+            return $cloud;
         }
 
-        $risks = array_column($cloud, 'risk');
-        $min = min($risks);
-        $max = max($risks);
+        $points = $cloud;
 
-        if ($max <= $min) {
-            return [];
+        usort($points, fn (array $a, array $b): int => [$a['risk'], $a['return']] <=> [$b['risk'], $b['return']]);
+
+        $hull = [];
+
+        foreach ($points as $point) {
+            while (count($hull) >= 2 && $this->cross($hull[count($hull) - 2], $hull[count($hull) - 1], $point) >= 0) {
+                array_pop($hull);
+            }
+
+            $hull[] = $point;
         }
 
-        $best = [];
-
-        foreach ($cloud as $point) {
-            $bin = (int) floor(($point['risk'] - $min) / ($max - $min) * (self::FRONTIER_BINS - 1));
-
-            if (! isset($best[$bin]) || $point['return'] > $best[$bin]['return']) {
-                $best[$bin] = $point;
+        // Truncate at the maximum-return vertex — the frontier ends there.
+        $peakIndex = 0;
+        foreach ($hull as $index => $point) {
+            if ($point['return'] > $hull[$peakIndex]['return']) {
+                $peakIndex = $index;
             }
         }
 
-        ksort($best);
+        return array_slice($hull, 0, $peakIndex + 1);
+    }
 
-        $frontier = [];
-        $peak = -INF;
-
-        foreach ($best as $point) {
-            if ($point['return'] > $peak) {
-                $frontier[] = $point;
-                $peak = $point['return'];
-            }
-        }
-
-        return $frontier;
+    /**
+     * Cross product of (b − a) × (c − a) in (risk, return) space. Zero or
+     * positive means the turn at b is not clockwise, so b is not part of
+     * the upper hull.
+     */
+    private function cross(array $a, array $b, array $c): float
+    {
+        return ($b['risk'] - $a['risk']) * ($c['return'] - $a['return'])
+            - ($b['return'] - $a['return']) * ($c['risk'] - $a['risk']);
     }
 }

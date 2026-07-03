@@ -555,6 +555,7 @@
     "Efficient Frontier": "الحد الكفء",
     "Each dot is a possible allocation of your current assets. The green line is the efficient frontier; the gap between your portfolio and it is recoverable performance.": "كل نقطة تمثل توزيعًا ممكنًا لأصولك الحالية. الخط الأخضر هو الحد الكفء، والفجوة بين محفظتك وبينه أداء يمكن استعادته.",
     "Risk (volatility)": "المخاطر (التقلب)",
+    "Expected return": "العائد المتوقع",
     "Your portfolio": "محفظتك",
     "Optimal (max Sharpe)": "المثلى (أعلى شارب)",
     "Efficiency Gap": "فجوة الكفاءة",

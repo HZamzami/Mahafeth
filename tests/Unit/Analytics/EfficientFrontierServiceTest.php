@@ -76,7 +76,7 @@ class EfficientFrontierServiceTest extends TestCase
         $this->assertGreaterThanOrEqual(0.0, $result['efficiency_gap']);
     }
 
-    public function test_the_frontier_is_sorted_by_risk_with_strictly_increasing_returns(): void
+    public function test_the_frontier_traces_the_upper_boundary_of_the_cloud(): void
     {
         $result = $this->service->analyze(
             expectedReturns: ['A' => 0.06, 'B' => 0.12, 'C' => 0.18],
@@ -92,10 +92,60 @@ class EfficientFrontierServiceTest extends TestCase
         $frontier = $result['frontier'];
         $this->assertNotEmpty($frontier);
 
+        // Runs from the minimum-variance tip up to the maximum-return portfolio.
+        $cloudRisks = array_column($result['cloud'], 'risk');
+        $this->assertEqualsWithDelta(min($cloudRisks), $frontier[0]['risk'], 1e-9);
+        $this->assertEqualsWithDelta(
+            max(array_column($result['cloud'], 'return')),
+            end($frontier)['return'],
+            1e-9,
+        );
+
         for ($i = 1; $i < count($frontier); $i++) {
             $this->assertGreaterThanOrEqual($frontier[$i - 1]['risk'], $frontier[$i]['risk']);
-            $this->assertGreaterThan($frontier[$i - 1]['return'], $frontier[$i]['return']);
         }
+
+        // The boundary's best return equals the cloud's best return.
+        $this->assertEqualsWithDelta(
+            max(array_column($result['cloud'], 'return')),
+            max(array_column($frontier, 'return')),
+            1e-9,
+        );
+
+        // A frontier is concave: slopes between consecutive points never increase.
+        for ($i = 2; $i < count($frontier); $i++) {
+            $previousSlope = ($frontier[$i - 1]['return'] - $frontier[$i - 2]['return'])
+                / max(1e-12, $frontier[$i - 1]['risk'] - $frontier[$i - 2]['risk']);
+            $slope = ($frontier[$i]['return'] - $frontier[$i - 1]['return'])
+                / max(1e-12, $frontier[$i]['risk'] - $frontier[$i - 1]['risk']);
+
+            $this->assertLessThanOrEqual($previousSlope + 1e-9, $slope);
+        }
+
+        // Every cloud point sits on or below the hull, never above it.
+        foreach ($result['cloud'] as $point) {
+            $boundary = $this->boundaryReturnAt($frontier, $point['risk']);
+            $this->assertLessThanOrEqual($boundary + 1e-9, $point['return']);
+        }
+    }
+
+    /**
+     * Linear interpolation of the hull's return at a given risk.
+     *
+     * @param  list<array{risk: float, return: float}>  $frontier
+     */
+    private function boundaryReturnAt(array $frontier, float $risk): float
+    {
+        for ($i = 1; $i < count($frontier); $i++) {
+            if ($risk <= $frontier[$i]['risk']) {
+                $span = max(1e-12, $frontier[$i]['risk'] - $frontier[$i - 1]['risk']);
+                $t = ($risk - $frontier[$i - 1]['risk']) / $span;
+
+                return $frontier[$i - 1]['return'] + $t * ($frontier[$i]['return'] - $frontier[$i - 1]['return']);
+            }
+        }
+
+        return end($frontier)['return'];
     }
 
     public function test_the_simulation_is_deterministic(): void

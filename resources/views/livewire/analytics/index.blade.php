@@ -64,51 +64,93 @@ new class extends Component {
     }
 
     /**
-     * Project the cloud, frontier, and markers into SVG plot coordinates.
+     * Project the cloud, frontier, and markers into SVG plot coordinates,
+     * with nice rounded axis ticks so the chart reads like a real chart.
      *
      * @param  array{cloud: list<array{risk: float, return: float}>, frontier: list<array{risk: float, return: float}>, tangency: array, current: array}  $frontier
-     * @return array{cloud: list<array{x: float, y: float}>, path: string, current: array{x: float, y: float}, tangency: array{x: float, y: float}, axis: array}
+     * @return array{cloud: list<array{x: float, y: float}>, path: string, current: array{x: float, y: float}, tangency: array{x: float, y: float}, plot: array, xTicks: array, yTicks: array}
      */
     private function frontierPlot(array $frontier): array
     {
         $points = [...$frontier['cloud'], ['risk' => $frontier['current']['risk'], 'return' => $frontier['current']['return']]];
 
-        $risks = array_column($points, 'risk');
-        $returns = array_column($points, 'return');
+        $xAxis = $this->niceAxis(array_column($points, 'risk'));
+        $yAxis = $this->niceAxis(array_column($points, 'return'));
 
-        [$minX, $maxX] = [min($risks), max($risks)];
-        [$minY, $maxY] = [min($returns), max($returns)];
+        $plot = ['left' => 52, 'top' => 14, 'width' => 334, 'height' => 196];
 
-        $plot = ['left' => 46, 'top' => 12, 'width' => 340, 'height' => 200];
+        $projectX = fn (float $risk): float => round($plot['left'] + ($risk - $xAxis['min']) / ($xAxis['max'] - $xAxis['min']) * $plot['width'], 1);
+        $projectY = fn (float $return): float => round($plot['top'] + (1 - ($return - $yAxis['min']) / ($yAxis['max'] - $yAxis['min'])) * $plot['height'], 1);
+        $project = fn (array $point): array => ['x' => $projectX($point['risk']), 'y' => $projectY($point['return'])];
 
-        $project = fn (array $point): array => [
-            'x' => round($plot['left'] + ($maxX > $minX ? ($point['risk'] - $minX) / ($maxX - $minX) : 0.5) * $plot['width'], 1),
-            'y' => round($plot['top'] + (1 - ($maxY > $minY ? ($point['return'] - $minY) / ($maxY - $minY) : 0.5)) * $plot['height'], 1),
-        ];
-
-        $cloud = [];
-        foreach ($frontier['cloud'] as $index => $point) {
-            if ($index % 10 === 0) {
-                $cloud[] = $project($point);
-            }
-        }
-
-        $path = '';
-        foreach ($frontier['frontier'] as $index => $point) {
-            $projected = $project($point);
-            $path .= ($index === 0 ? 'M' : ' L').$projected['x'].','.$projected['y'];
-        }
+        // Render every sample: the boundary line runs through actual cloud
+        // points, so all of its support must be visible.
+        $cloud = array_map($project, $frontier['cloud']);
 
         return [
             'cloud' => $cloud,
-            'path' => $path,
+            'path' => $this->smoothPath(array_map($project, $frontier['frontier'])),
             'current' => $project(['risk' => $frontier['current']['risk'], 'return' => $frontier['current']['return']]),
             'tangency' => $project(['risk' => $frontier['tangency']['risk'], 'return' => $frontier['tangency']['return']]),
-            'axis' => [
-                'minX' => $minX, 'maxX' => $maxX,
-                'minY' => $minY, 'maxY' => $maxY,
-            ],
+            'plot' => $plot,
+            'xTicks' => array_map(fn (float $tick): array => ['x' => $projectX($tick), 'label' => round($tick * 100).'%'], $xAxis['ticks']),
+            'yTicks' => array_map(fn (float $tick): array => ['y' => $projectY($tick), 'label' => round($tick * 100).'%', 'zero' => abs($tick) < 1e-9], $yAxis['ticks']),
         ];
+    }
+
+    /**
+     * Round an axis outward to a 1/2/5-step grid with ~5 ticks.
+     *
+     * @param  list<float>  $values
+     * @return array{min: float, max: float, ticks: list<float>}
+     */
+    private function niceAxis(array $values): array
+    {
+        $min = min($values);
+        $max = max($values);
+        $range = max(1e-9, $max - $min);
+
+        $rawStep = $range / 4;
+        $magnitude = 10 ** floor(log10($rawStep));
+        $step = collect([1, 2, 5, 10])
+            ->map(fn (int $factor): float => $factor * $magnitude)
+            ->first(fn (float $candidate): bool => $candidate >= $rawStep);
+
+        $niceMin = floor($min / $step) * $step;
+        $niceMax = ceil($max / $step) * $step;
+
+        $ticks = [];
+        for ($tick = $niceMin; $tick <= $niceMax + $step / 2; $tick += $step) {
+            $ticks[] = $tick;
+        }
+
+        return ['min' => $niceMin, 'max' => $niceMax, 'ticks' => $ticks];
+    }
+
+    /**
+     * Midpoint-quadratic smoothing: a gentle curve through the points
+     * instead of jagged line segments.
+     *
+     * @param  list<array{x: float, y: float}>  $points
+     */
+    private function smoothPath(array $points): string
+    {
+        if (count($points) < 2) {
+            return '';
+        }
+
+        $path = 'M'.$points[0]['x'].','.$points[0]['y'];
+
+        for ($i = 1; $i < count($points) - 1; $i++) {
+            $midX = round(($points[$i]['x'] + $points[$i + 1]['x']) / 2, 1);
+            $midY = round(($points[$i]['y'] + $points[$i + 1]['y']) / 2, 1);
+
+            $path .= ' Q'.$points[$i]['x'].','.$points[$i]['y'].' '.$midX.','.$midY;
+        }
+
+        $last = end($points);
+
+        return $path.' L'.$last['x'].','.$last['y'];
     }
 }; ?>
 
@@ -135,10 +177,43 @@ new class extends Component {
                     {{ __('Each dot is a possible allocation of your current assets. The green line is the efficient frontier; the gap between your portfolio and it is recoverable performance.') }}
                 </flux:text>
 
-                <svg class="w-full" viewBox="0 0 400 260" dir="ltr">
+                @php($plot = $frontierPlot['plot'])
+                <svg class="w-full" viewBox="0 0 400 262" dir="ltr">
+                    {{-- Gridlines + tick labels --}}
+                    @foreach ($frontierPlot['yTicks'] as $tick)
+                        <line x1="{{ $plot['left'] }}" y1="{{ $tick['y'] }}"
+                            x2="{{ $plot['left'] + $plot['width'] }}" y2="{{ $tick['y'] }}"
+                            class="{{ $tick['zero'] ? 'stroke-neutral-300 dark:stroke-zinc-600' : 'stroke-neutral-100 dark:stroke-zinc-800' }}"
+                            stroke-width="1" />
+                        <text x="{{ $plot['left'] - 6 }}" y="{{ $tick['y'] + 3 }}" text-anchor="end"
+                            class="fill-neutral-400 text-[9px]">{{ $tick['label'] }}</text>
+                    @endforeach
+                    @foreach ($frontierPlot['xTicks'] as $tick)
+                        <line x1="{{ $tick['x'] }}" y1="{{ $plot['top'] }}" x2="{{ $tick['x'] }}"
+                            y2="{{ $plot['top'] + $plot['height'] }}" class="stroke-neutral-100 dark:stroke-zinc-800"
+                            stroke-width="1" />
+                        <text x="{{ $tick['x'] }}" y="{{ $plot['top'] + $plot['height'] + 14 }}" text-anchor="middle"
+                            class="fill-neutral-400 text-[9px]">{{ $tick['label'] }}</text>
+                    @endforeach
+
+                    {{-- Axis lines --}}
+                    <line x1="{{ $plot['left'] }}" y1="{{ $plot['top'] }}" x2="{{ $plot['left'] }}"
+                        y2="{{ $plot['top'] + $plot['height'] }}" class="stroke-neutral-300 dark:stroke-zinc-600"
+                        stroke-width="1" />
+                    <line x1="{{ $plot['left'] }}" y1="{{ $plot['top'] + $plot['height'] }}"
+                        x2="{{ $plot['left'] + $plot['width'] }}" y2="{{ $plot['top'] + $plot['height'] }}"
+                        class="stroke-neutral-300 dark:stroke-zinc-600" stroke-width="1" />
+
+                    {{-- Axis titles --}}
+                    <text x="{{ $plot['left'] + $plot['width'] / 2 }}" y="258" text-anchor="middle"
+                        class="fill-neutral-400 text-[9px]">{{ __('Risk (volatility)') }}</text>
+                    <text x="12" y="{{ $plot['top'] + $plot['height'] / 2 }}" text-anchor="middle"
+                        transform="rotate(-90, 12, {{ $plot['top'] + $plot['height'] / 2 }})"
+                        class="fill-neutral-400 text-[9px]">{{ __('Expected return') }}</text>
+
                     {{-- Cloud --}}
                     @foreach ($frontierPlot['cloud'] as $dot)
-                        <circle cx="{{ $dot['x'] }}" cy="{{ $dot['y'] }}" r="1.6"
+                        <circle cx="{{ $dot['x'] }}" cy="{{ $dot['y'] }}" r="1.3"
                             class="fill-blue-400/25 dark:fill-blue-300/20" />
                     @endforeach
 
@@ -153,13 +228,6 @@ new class extends Component {
                     {{-- Tangency portfolio --}}
                     <circle cx="{{ $frontierPlot['tangency']['x'] }}" cy="{{ $frontierPlot['tangency']['y'] }}"
                         r="5.5" class="fill-emerald-500 stroke-white dark:stroke-zinc-900" stroke-width="2" />
-
-                    {{-- Axes --}}
-                    <text x="46" y="252" class="fill-neutral-400 text-[9px]">{{ round($frontierPlot['axis']['minX'] * 100) }}%</text>
-                    <text x="376" y="252" text-anchor="end" class="fill-neutral-400 text-[9px]">{{ round($frontierPlot['axis']['maxX'] * 100) }}%</text>
-                    <text x="200" y="252" text-anchor="middle" class="fill-neutral-400 text-[9px]">{{ __('Risk (volatility)') }}</text>
-                    <text x="40" y="216" text-anchor="end" class="fill-neutral-400 text-[9px]">{{ round($frontierPlot['axis']['minY'] * 100) }}%</text>
-                    <text x="40" y="18" text-anchor="end" class="fill-neutral-400 text-[9px]">{{ round($frontierPlot['axis']['maxY'] * 100) }}%</text>
                 </svg>
 
                 <div class="mt-2 flex items-center justify-center gap-6">
@@ -200,20 +268,17 @@ new class extends Component {
                 </div>
                 <div
                     class="grow rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
-                    <flux:text class="mb-2 text-xs font-medium uppercase tracking-widest">
+                    <flux:text class="mb-3 text-xs font-medium uppercase tracking-widest">
                         {{ __('Suggested Allocation') }}</flux:text>
-                    <div class="space-y-1.5">
+                    <div class="grid grid-cols-[1fr_auto_auto] items-center gap-x-4 gap-y-2.5">
                         @foreach (collect($frontier['tangency']['weights'])->sortDesc()->take(5) as $symbol => $weight)
                             @php($delta = $weight - ($weights[$symbol] ?? 0))
-                            <div class="flex items-center justify-between gap-2">
-                                <flux:text class="text-sm">{{ $symbol }}</flux:text>
-                                <span class="flex items-center gap-2" dir="ltr">
-                                    <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">
-                                        {{ number_format($weight * 100, 1) }}%</flux:text>
-                                    <flux:badge size="sm" :color="$delta >= 0 ? 'emerald' : 'red'" inset="top bottom">
-                                        {{ ($delta >= 0 ? '+' : '').number_format($delta * 100, 1) }}</flux:badge>
-                                </span>
-                            </div>
+                            <flux:text class="text-sm">{{ $symbol }}</flux:text>
+                            <flux:text class="text-end text-sm font-medium tabular-nums !text-zinc-800 dark:!text-white"
+                                dir="ltr">{{ number_format($weight * 100, 1) }}%</flux:text>
+                            <flux:badge class="w-16 justify-center tabular-nums" size="sm"
+                                :color="$delta >= 0 ? 'emerald' : 'red'" inset="top bottom" dir="ltr">
+                                {{ ($delta >= 0 ? '+' : '−').number_format(abs($delta) * 100, 1) }}%</flux:badge>
                         @endforeach
                     </div>
                 </div>
