@@ -206,3 +206,8 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - To filter on a particular test name: `php artisan test --compact --filter=testName` (recommended after making a change to a related file).
 
 </laravel-boost-guidelines>
+
+# Project Context
+
+- Project vision, problem/solution, and architecture: @.claude/docs/project-concept.md
+- Analytics engine formulas and computation pipeline: @.claude/docs/analytics-engine.md
