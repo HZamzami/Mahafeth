@@ -25,6 +25,10 @@ Volt::route('connections', 'connections.index')
     ->middleware(['auth', 'verified'])
     ->name('connections');
 
+Volt::route('analytics', 'analytics.index')
+    ->middleware(['auth', 'verified'])
+    ->name('analytics');
+
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 

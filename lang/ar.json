@@ -491,5 +491,16 @@
     "Mahafeth will securely access your accounts, holdings, and transactions at :institution through Open Banking. Your credentials are never shared with us.": "ستصل محافظ بأمان إلى حساباتك وأصولك وعملياتك لدى :institution عبر المصرفية المفتوحة. لن تتم مشاركة بيانات دخولك معنا أبدًا.",
     "Read-only access. You can disconnect at any time.": "وصول للقراءة فقط. يمكنك فصل الاتصال في أي وقت.",
     "Authorize": "تفويض",
-    "Linking…": "جارٍ الربط…"
+    "Linking…": "جارٍ الربط…",
+    "Analytics": "التحليلات",
+    "Portfolio Analytics": "تحليلات المحفظة",
+    "How your assets move together across all connected accounts.": "كيف تتحرك أصولك معًا عبر جميع الحسابات المتصلة.",
+    "Connect at least two holdings to see correlation analytics.": "اربط أصلين على الأقل لعرض تحليلات الارتباط.",
+    "Average Correlation": "متوسط الارتباط",
+    "Lower values generally indicate better diversification.": "القيم المنخفضة تشير عادةً إلى تنويع أفضل.",
+    "Stress Correlation": "الارتباط وقت الضغط",
+    "Estimated average correlation during a market crisis, when assets tend to fall together.": "متوسط الارتباط المقدر أثناء أزمات السوق، حيث تميل الأصول إلى الانخفاض معًا.",
+    "Correlation Matrix": "مصفوفة الارتباط",
+    "Values near 1 mean two assets move together; near 0, independently; below 0, in opposite directions.": "القيم القريبة من 1 تعني أن الأصلين يتحركان معًا؛ والقريبة من 0 باستقلالية؛ وتحت 0 في اتجاهين متعاكسين.",
+    "Connect your accounts to see your portfolio performance.": "اربط حساباتك لعرض أداء محفظتك."
 }

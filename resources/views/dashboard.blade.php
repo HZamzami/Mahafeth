@@ -111,36 +111,7 @@
                 </div>
 
                 {{-- Total Return --}}
-                <div
-                    class="relative shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
-                    <flux:heading class="mb-4" size="lg">{{ __('Total Return') }}</flux:heading>
-                    <flux:chart class="aspect-3/1 relative" dir="ltr"
-                        :value="[
-                            ['date' => 'Sep 01', 'return' => 1.2],
-                            ['date' => 'Sep 05', 'return' => 3.8],
-                            ['date' => 'Sep 10', 'return' => 6.4],
-                            ['date' => 'Sep 15', 'return' => 5.9],
-                            ['date' => 'Sep 20', 'return' => 7.5],
-                            ['date' => 'Sep 25', 'return' => 10.8],
-                            ['date' => 'Sep 30', 'return' => 9.6],
-                            ['date' => 'Oct 07', 'return' => 11.4],
-                            ['date' => 'Oct 14', 'return' => 13.2],
-                        ]">
-                        <flux:chart.svg>
-                            <flux:chart.line class="text-blue-500 dark:text-blue-400" curve="smooth"
-                                field="return" />
-                            <flux:chart.area class="text-blue-500/10 dark:text-blue-400/10" curve="smooth"
-                                field="return" />
-                            <flux:chart.axis axis="x" field="date">
-                                <flux:chart.axis.tick />
-                            </flux:chart.axis>
-                            <flux:chart.axis axis="y">
-                                <flux:chart.axis.grid />
-                                <flux:chart.axis.tick />
-                            </flux:chart.axis>
-                        </flux:chart.svg>
-                    </flux:chart>
-                </div>
+                <livewire:dashboard.performance-chart />
             </div>
 
             {{-- Right rail --}}
