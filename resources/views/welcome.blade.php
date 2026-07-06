@@ -29,12 +29,12 @@
             </div>
         </div>
 
-        <div class="grid w-full gap-4 text-start sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid w-full gap-4 text-start sm:grid-cols-2 lg:grid-cols-3">
             <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
                 <flux:icon.building-library class="mb-3 size-6 text-blue-600 dark:text-blue-400" />
                 <flux:heading size="sm">{{ __('One unified portfolio') }}</flux:heading>
                 <flux:text class="mt-1 text-sm">
-                    {{ __('Brokerages, banks, and crypto — aggregated securely via Open Banking.') }}</flux:text>
+                    {{ __('Alinma, local brokerages, and crypto, aggregated securely via Saudi Open Banking.') }}</flux:text>
             </div>
             <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
                 <flux:icon.heart class="mb-3 size-6 text-emerald-600 dark:text-emerald-400" />
@@ -53,6 +53,18 @@
                 <flux:heading size="sm">{{ __('AI that speaks your language') }}</flux:heading>
                 <flux:text class="mt-1 text-sm">
                     {{ __('Plain-language reports and a personalized action plan — in Arabic or English.') }}</flux:text>
+            </div>
+            <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
+                <flux:icon.check-badge class="mb-3 size-6 text-emerald-600 dark:text-emerald-400" />
+                <flux:heading size="sm">{{ __('Shariah screening built in') }}</flux:heading>
+                <flux:text class="mt-1 text-sm">
+                    {{ __('Every holding is screened for compliance, and your score reflects your values.') }}</flux:text>
+            </div>
+            <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
+                <flux:icon.rocket-launch class="mb-3 size-6 text-cyan-600 dark:text-cyan-400" />
+                <flux:heading size="sm">{{ __('Ready for what is next') }}</flux:heading>
+                <flux:text class="mt-1 text-sm">
+                    {{ __('Built on the SAMA Open Banking framework today, ready for investment-account APIs the day they launch.') }}</flux:text>
             </div>
         </div>
 

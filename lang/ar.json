@@ -589,7 +589,6 @@
     "From scattered portfolios to one investment vision": "من محافظ متفرقة إلى رؤية استثمارية واحدة",
     "Mahafeth securely connects your investment accounts through Open Banking, unifies them into a single portfolio, and uses institutional-grade analytics with AI to uncover hidden risks and tell you exactly what to do about them.": "تربط محافظ حساباتك الاستثمارية بأمان عبر المصرفية المفتوحة، وتوحّدها في محفظة واحدة، وتستخدم تحليلات مؤسسية مدعومة بالذكاء الاصطناعي لكشف المخاطر الخفية وإخبارك بما يجب فعله حيالها بالضبط.",
     "One unified portfolio": "محفظة واحدة موحدة",
-    "Brokerages, banks, and crypto — aggregated securely via Open Banking.": "شركات وساطة وبنوك وعملات مشفرة — مجمّعة بأمان عبر المصرفية المفتوحة.",
     "One number, built from diversification, risk, performance, and your own goals.": "رقم واحد، مبني على التنويع والمخاطر والأداء وأهدافك الخاصة.",
     "Hidden risks, revealed": "مخاطر خفية، مكشوفة",
     "Concentration, correlation, and stress behavior that single apps never show you.": "التركّز والارتباط وسلوك المحفظة وقت الضغط — ما لا تُظهره التطبيقات المنفردة أبدًا.",
@@ -682,5 +681,13 @@
     "Line :line is malformed and was skipped.": "السطر :line غير صالح وتم تخطيه.",
     "Line :line: unknown symbol :symbol was skipped.": "السطر :line: الرمز :symbol غير معروف وتم تخطيه.",
     ":institution Portfolio (imported)": "محفظة :institution (مستوردة)",
-    "Alinma Account": "حساب الإنماء"
+    "Alinma Account": "حساب الإنماء",
+    "Alinma, local brokerages, and crypto, aggregated securely via Saudi Open Banking.": "الإنماء وشركات الوساطة المحلية والعملات الرقمية، مجمعة بأمان عبر الخدمات المصرفية المفتوحة السعودية.",
+    "Shariah screening built in": "فحص شرعي مدمج",
+    "Every holding is screened for compliance, and your score reflects your values.": "يُفحص كل أصل للتحقق من توافقه مع الشريعة، ودرجتك تعكس قيمك.",
+    "Ready for what is next": "جاهز لما هو قادم",
+    "Built on the SAMA Open Banking framework today, ready for investment-account APIs the day they launch.": "مبني على إطار البنك المركزي السعودي للخدمات المصرفية المفتوحة اليوم، وجاهز لواجهات الحسابات الاستثمارية يوم إطلاقها.",
+    "Data Sources & Roadmap": "مصادر البيانات وخارطة الطريق",
+    "Cash accounts connect live through the SAMA Open Banking framework (Account Information Services).": "تتصل الحسابات النقدية مباشرة عبر إطار البنك المركزي السعودي للخدمات المصرفية المفتوحة (خدمات معلومات الحسابات).",
+    "Brokerage holdings are imported from statements until investment-account APIs join the framework, expected around 2027. Mahafeth is built to switch to them the day they launch.": "تُستورد أصول الوساطة من كشوف الحسابات إلى أن تنضم واجهات الحسابات الاستثمارية إلى الإطار، وهو متوقع حوالي عام 2027. وقد بُني محافظ للتحول إليها يوم إطلاقها."
 }
