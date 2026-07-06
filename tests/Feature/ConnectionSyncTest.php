@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Actions\SyncConnection;
 use App\Enums\ConnectionStatus;
+use App\Enums\ShariahStatus;
 use App\Models\Asset;
 use App\Models\Connection;
 use App\Models\Institution;
@@ -39,12 +40,13 @@ class ConnectionSyncTest extends TestCase
         $this->assertCount(1, $connection->accounts);
 
         $account = $connection->accounts->first();
-        $this->assertCount(4, $account->holdings);
-        $this->assertCount(8, $account->transactions);
+        $this->assertCount(5, $account->holdings);
+        $this->assertCount(10, $account->transactions);
 
         $apple = Asset::where('symbol', 'AAPL')->first();
         $this->assertNotNull($apple);
         $this->assertSame('Technology', $apple->sector);
+        $this->assertInstanceOf(ShariahStatus::class, $apple->shariah_status);
         $this->assertGreaterThan(700, $apple->priceHistories()->count());
 
         $this->assertTrue(Asset::where('symbol', 'SPY')->where('is_benchmark', true)->exists());

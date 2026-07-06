@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Contracts\OpenBankingProvider;
 use App\Enums\ConnectionStatus;
+use App\Enums\ShariahStatus;
 use App\Models\Account;
 use App\Models\Asset;
 use App\Models\Connection;
@@ -129,7 +130,7 @@ class SyncConnection
     }
 
     /**
-     * @param  array{symbol: string, name: string, name_ar: ?string, asset_class: string, sector: ?string, country: ?string, currency: string}  $metadata
+     * @param  array{symbol: string, name: string, name_ar: ?string, asset_class: string, sector: ?string, country: ?string, currency: string, shariah_status?: string}  $metadata
      */
     private function upsertAsset(array $metadata, bool $isBenchmark = false): Asset
     {
@@ -142,6 +143,7 @@ class SyncConnection
                 'sector' => $metadata['sector'],
                 'country' => $metadata['country'],
                 'currency' => $metadata['currency'],
+                'shariah_status' => $metadata['shariah_status'] ?? ShariahStatus::Unknown,
                 'is_benchmark' => $isBenchmark,
             ],
         );

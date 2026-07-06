@@ -9,6 +9,7 @@ enum AccountType: string
     case Crypto = 'crypto';
     case Fund = 'fund';
     case Savings = 'savings';
+    case Cash = 'cash';
 
     public function label(): string
     {
@@ -18,6 +19,7 @@ enum AccountType: string
             self::Crypto => __('Crypto Wallet'),
             self::Fund => __('Fund Account'),
             self::Savings => __('Savings Account'),
+            self::Cash => __('Current Account'),
         };
     }
 }

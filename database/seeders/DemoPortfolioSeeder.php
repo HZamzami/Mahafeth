@@ -23,8 +23,15 @@ class DemoPortfolioSeeder extends Seeder
     public function run(): void
     {
         // Persona 1: tech-heavy risk-taker with a Balanced profile — every
-        // analyzer has findings, and the health score suffers for it.
-        $demo = $this->persona('demo@mahafeth.test', 'Demo Investor', RiskTolerance::Balanced, Institution::all());
+        // analyzer has findings (including a non-compliant JPM position for
+        // the Shariah screen), and the health score suffers for it. His
+        // Alinma Capital equities arrive via the statement import flow.
+        $demo = $this->persona(
+            'demo@mahafeth.test',
+            'Faisal Alqahtani',
+            RiskTolerance::Balanced,
+            Institution::whereIn('slug', ['alinma-bank', 'derayah', 'rain'])->get(),
+        );
 
         $this->backfillSnapshotHistory($demo);
         app(PortfolioAnalyzer::class)->analyze($demo->fresh());

@@ -23,6 +23,7 @@ class Institution extends Model
         'name',
         'name_ar',
         'type',
+        'provider',
         'color',
     ];
 

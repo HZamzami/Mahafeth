@@ -51,7 +51,7 @@ class DemoJourneyTest extends TestCase
         }
 
         $user = $user->fresh();
-        $this->assertSame(3, $user->connections()->count());
+        $this->assertSame(5, $user->connections()->count());
 
         // 5. The analysis produced a scored snapshot.
         $snapshot = $user->latestSnapshot();

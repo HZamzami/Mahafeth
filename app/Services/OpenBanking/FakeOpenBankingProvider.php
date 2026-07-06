@@ -18,25 +18,6 @@ use Illuminate\Support\Carbon;
 class FakeOpenBankingProvider implements OpenBankingProvider
 {
     /**
-     * Asset metadata and price-simulation parameters, keyed by symbol.
-     *
-     * @var array<string, array{name: string, name_ar: ?string, asset_class: string, sector: ?string, country: ?string, currency: string, start: float, drift: float, vol: float, loading: float}>
-     */
-    private const ASSETS = [
-        'AAPL' => ['name' => 'Apple Inc.', 'name_ar' => 'آبل', 'asset_class' => 'equity', 'sector' => 'Technology', 'country' => 'US', 'currency' => 'USD', 'start' => 130.0, 'drift' => 0.18, 'vol' => 0.28, 'loading' => 0.80],
-        'MSFT' => ['name' => 'Microsoft Corporation', 'name_ar' => 'مايكروسوفت', 'asset_class' => 'equity', 'sector' => 'Technology', 'country' => 'US', 'currency' => 'USD', 'start' => 250.0, 'drift' => 0.16, 'vol' => 0.26, 'loading' => 0.80],
-        'NVDA' => ['name' => 'NVIDIA Corporation', 'name_ar' => 'إنفيديا', 'asset_class' => 'equity', 'sector' => 'Technology', 'country' => 'US', 'currency' => 'USD', 'start' => 180.0, 'drift' => 0.35, 'vol' => 0.45, 'loading' => 0.75],
-        'GOOGL' => ['name' => 'Alphabet Inc.', 'name_ar' => 'ألفابت', 'asset_class' => 'equity', 'sector' => 'Technology', 'country' => 'US', 'currency' => 'USD', 'start' => 100.0, 'drift' => 0.14, 'vol' => 0.30, 'loading' => 0.78],
-        '2222.SR' => ['name' => 'Saudi Aramco', 'name_ar' => 'أرامكو السعودية', 'asset_class' => 'equity', 'sector' => 'Energy', 'country' => 'SA', 'currency' => 'SAR', 'start' => 8.2, 'drift' => 0.08, 'vol' => 0.18, 'loading' => 0.35],
-        '1120.SR' => ['name' => 'Al Rajhi Bank', 'name_ar' => 'مصرف الراجحي', 'asset_class' => 'equity', 'sector' => 'Financials', 'country' => 'SA', 'currency' => 'SAR', 'start' => 20.0, 'drift' => 0.10, 'vol' => 0.22, 'loading' => 0.40],
-        '7010.SR' => ['name' => 'stc Group', 'name_ar' => 'مجموعة stc', 'asset_class' => 'equity', 'sector' => 'Telecom', 'country' => 'SA', 'currency' => 'SAR', 'start' => 10.5, 'drift' => 0.07, 'vol' => 0.20, 'loading' => 0.35],
-        'BTC' => ['name' => 'Bitcoin', 'name_ar' => 'بيتكوين', 'asset_class' => 'crypto', 'sector' => null, 'country' => null, 'currency' => 'USD', 'start' => 28000.0, 'drift' => 0.40, 'vol' => 0.65, 'loading' => 0.35],
-        'ETH' => ['name' => 'Ethereum', 'name_ar' => 'إيثيريوم', 'asset_class' => 'crypto', 'sector' => null, 'country' => null, 'currency' => 'USD', 'start' => 1800.0, 'drift' => 0.35, 'vol' => 0.75, 'loading' => 0.40],
-        'SPY' => ['name' => 'S&P 500 Index', 'name_ar' => 'مؤشر ستاندرد آند بورز 500', 'asset_class' => 'fund', 'sector' => null, 'country' => 'US', 'currency' => 'USD', 'start' => 380.0, 'drift' => 0.10, 'vol' => 0.16, 'loading' => 1.00],
-        'TASI' => ['name' => 'Tadawul All Share Index', 'name_ar' => 'مؤشر تداول العام', 'asset_class' => 'fund', 'sector' => null, 'country' => 'SA', 'currency' => 'SAR', 'start' => 11000.0, 'drift' => 0.08, 'vol' => 0.14, 'loading' => 0.50],
-    ];
-
-    /**
      * Accounts and holdings per institution slug.
      *
      * @var array<string, array{accounts: list<array{external_id: string, name: string, type: string, currency: string}>, holdings: array<string, list<array{symbol: string, quantity: float, avg_cost: float}>>}>
@@ -52,6 +33,7 @@ class FakeOpenBankingProvider implements OpenBankingProvider
                     ['symbol' => 'MSFT', 'quantity' => 260.0, 'avg_cost' => 262.10],
                     ['symbol' => 'NVDA', 'quantity' => 180.0, 'avg_cost' => 205.75],
                     ['symbol' => 'GOOGL', 'quantity' => 300.0, 'avg_cost' => 104.60],
+                    ['symbol' => 'JPM', 'quantity' => 220.0, 'avg_cost' => 128.40],
                 ],
             ],
         ],
@@ -78,9 +60,22 @@ class FakeOpenBankingProvider implements OpenBankingProvider
                 ],
             ],
         ],
+        'alinma-bank' => [
+            'accounts' => [
+                ['external_id' => 'INMA-001', 'name' => 'Alinma Current Account', 'type' => 'cash', 'currency' => 'SAR'],
+            ],
+            'holdings' => [
+                'INMA-001' => [
+                    ['symbol' => 'CASH-SAR', 'quantity' => 185000.0, 'avg_cost' => 1.0],
+                ],
+            ],
+        ],
     ];
 
-    public function __construct(private PriceSeriesGenerator $priceSeriesGenerator) {}
+    public function __construct(
+        private PriceSeriesGenerator $priceSeriesGenerator,
+        private AssetCatalog $assetCatalog,
+    ) {}
 
     public function fetchAccounts(Institution $institution): array
     {
@@ -92,7 +87,7 @@ class FakeOpenBankingProvider implements OpenBankingProvider
         $holdings = self::INSTITUTIONS[$institution->slug]['holdings'][$accountExternalId] ?? [];
 
         return array_map(fn (array $holding): array => [
-            'asset' => $this->assetMetadata($holding['symbol']),
+            'asset' => $this->assetCatalog->metadata($holding['symbol']),
             'quantity' => $holding['quantity'],
             'avg_cost' => $holding['avg_cost'],
         ], $holdings);
@@ -110,7 +105,7 @@ class FakeOpenBankingProvider implements OpenBankingProvider
 
                 $transactions[] = [
                     'symbol' => $holding['symbol'],
-                    'type' => 'buy',
+                    'type' => $holding['symbol'] === 'CASH-SAR' ? 'deposit' : 'buy',
                     'quantity' => $quantity,
                     'price' => $price,
                     'amount' => round($quantity * $price, 4),
@@ -127,7 +122,7 @@ class FakeOpenBankingProvider implements OpenBankingProvider
         $series = [];
 
         foreach ($symbols as $symbol) {
-            $params = self::ASSETS[$symbol] ?? null;
+            $params = $this->assetCatalog->simulationParams($symbol);
 
             if ($params === null) {
                 continue;
@@ -150,26 +145,8 @@ class FakeOpenBankingProvider implements OpenBankingProvider
     public function benchmarks(): array
     {
         return [
-            $this->assetMetadata('SPY'),
-            $this->assetMetadata('TASI'),
-        ];
-    }
-
-    /**
-     * @return array{symbol: string, name: string, name_ar: ?string, asset_class: string, sector: ?string, country: ?string, currency: string}
-     */
-    private function assetMetadata(string $symbol): array
-    {
-        $params = self::ASSETS[$symbol];
-
-        return [
-            'symbol' => $symbol,
-            'name' => $params['name'],
-            'name_ar' => $params['name_ar'],
-            'asset_class' => $params['asset_class'],
-            'sector' => $params['sector'],
-            'country' => $params['country'],
-            'currency' => $params['currency'],
+            $this->assetCatalog->metadata('TASI'),
+            $this->assetCatalog->metadata('SPY'),
         ];
     }
 }

@@ -18,7 +18,7 @@ interface OpenBankingProvider
      * Fetch the holdings of an account, including full asset metadata.
      *
      * @return list<array{
-     *     asset: array{symbol: string, name: string, name_ar: ?string, asset_class: string, sector: ?string, country: ?string, currency: string},
+     *     asset: array{symbol: string, name: string, name_ar: ?string, asset_class: string, sector: ?string, country: ?string, currency: string, shariah_status?: string},
      *     quantity: float,
      *     avg_cost: float
      * }>
@@ -43,7 +43,7 @@ interface OpenBankingProvider
     /**
      * Benchmark index assets available for comparison.
      *
-     * @return list<array{symbol: string, name: string, name_ar: ?string, asset_class: string, sector: ?string, country: ?string, currency: string}>
+     * @return list<array{symbol: string, name: string, name_ar: ?string, asset_class: string, sector: ?string, country: ?string, currency: string, shariah_status?: string}>
      */
     public function benchmarks(): array;
 }

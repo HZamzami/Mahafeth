@@ -23,6 +23,9 @@ class Connection extends Model
         'user_id',
         'institution_id',
         'status',
+        'source',
+        'access_token',
+        'refresh_token',
         'last_synced_at',
     ];
 
@@ -35,6 +38,8 @@ class Connection extends Model
     {
         return [
             'status' => ConnectionStatus::class,
+            'access_token' => 'encrypted',
+            'refresh_token' => 'encrypted',
             'last_synced_at' => 'datetime',
         ];
     }

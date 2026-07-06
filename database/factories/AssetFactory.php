@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\AssetClass;
+use App\Enums\ShariahStatus;
 use App\Models\Asset;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -26,6 +27,7 @@ class AssetFactory extends Factory
             'sector' => fake()->randomElement(['Technology', 'Financials', 'Healthcare', 'Energy', 'Consumer']),
             'country' => fake()->randomElement(['US', 'SA', 'GB', 'JP']),
             'currency' => 'USD',
+            'shariah_status' => ShariahStatus::Unknown,
             'is_benchmark' => false,
         ];
     }
@@ -35,6 +37,20 @@ class AssetFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'asset_class' => AssetClass::Fund,
             'is_benchmark' => true,
+        ]);
+    }
+
+    public function compliant(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'shariah_status' => ShariahStatus::Compliant,
+        ]);
+    }
+
+    public function nonCompliant(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'shariah_status' => ShariahStatus::NonCompliant,
         ]);
     }
 }

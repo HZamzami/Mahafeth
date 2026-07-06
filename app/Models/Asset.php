@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AssetClass;
+use App\Enums\ShariahStatus;
 use Database\Factories\AssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +27,7 @@ class Asset extends Model
         'sector',
         'country',
         'currency',
+        'shariah_status',
         'is_benchmark',
     ];
 
@@ -38,6 +40,7 @@ class Asset extends Model
     {
         return [
             'asset_class' => AssetClass::class,
+            'shariah_status' => ShariahStatus::class,
             'is_benchmark' => 'boolean',
         ];
     }
