@@ -9,26 +9,28 @@ use App\Models\Account;
 use App\Models\Asset;
 use App\Models\Connection;
 use App\Models\Institution;
+use App\Services\OpenBanking\OpenBankingProviderManager;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Pulls accounts, holdings, transactions, and price history for a connection
- * from the Open Banking provider into the local database.
+ * from the institution's Open Banking provider into the local database.
  */
 class SyncConnection
 {
     public function __construct(
-        private OpenBankingProvider $provider,
+        private OpenBankingProviderManager $providers,
         private SyncPrices $syncPrices,
     ) {}
 
     public function handle(Connection $connection): void
     {
         $institution = $connection->institution;
+        $provider = $this->providers->forInstitution($institution);
         $symbols = [];
 
-        DB::transaction(function () use ($connection, $institution, &$symbols): void {
-            foreach ($this->provider->fetchAccounts($institution) as $accountData) {
+        DB::transaction(function () use ($connection, $institution, $provider, &$symbols): void {
+            foreach ($provider->fetchAccounts($institution) as $accountData) {
                 $account = $connection->accounts()->updateOrCreate(
                     ['external_id' => $accountData['external_id']],
                     [
@@ -38,11 +40,11 @@ class SyncConnection
                     ],
                 );
 
-                $symbols = array_merge($symbols, $this->syncHoldings($institution, $account));
-                $this->syncTransactions($institution, $account);
+                $symbols = array_merge($symbols, $this->syncHoldings($provider, $institution, $account));
+                $this->syncTransactions($provider, $institution, $account);
             }
 
-            foreach ($this->provider->benchmarks() as $benchmark) {
+            foreach ($provider->benchmarks() as $benchmark) {
                 $this->upsertAsset($benchmark, isBenchmark: true);
                 $symbols[] = $benchmark['symbol'];
             }
@@ -59,11 +61,11 @@ class SyncConnection
     /**
      * @return list<string> the symbols synced into the account
      */
-    private function syncHoldings(Institution $institution, Account $account): array
+    private function syncHoldings(OpenBankingProvider $provider, Institution $institution, Account $account): array
     {
         $symbols = [];
 
-        foreach ($this->provider->fetchHoldings($institution, $account->external_id) as $holdingData) {
+        foreach ($provider->fetchHoldings($institution, $account->external_id) as $holdingData) {
             $asset = $this->upsertAsset($holdingData['asset']);
 
             $account->holdings()->updateOrCreate(
@@ -80,13 +82,13 @@ class SyncConnection
         return $symbols;
     }
 
-    private function syncTransactions(Institution $institution, Account $account): void
+    private function syncTransactions(OpenBankingProvider $provider, Institution $institution, Account $account): void
     {
         if ($account->transactions()->exists()) {
             return;
         }
 
-        foreach ($this->provider->fetchTransactions($institution, $account->external_id) as $transactionData) {
+        foreach ($provider->fetchTransactions($institution, $account->external_id) as $transactionData) {
             $account->transactions()->create([
                 'asset_id' => $transactionData['symbol'] !== null
                     ? Asset::where('symbol', $transactionData['symbol'])->value('id')

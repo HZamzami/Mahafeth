@@ -681,5 +681,6 @@
     "Missing required column: :column": "عمود مطلوب مفقود: :column",
     "Line :line is malformed and was skipped.": "السطر :line غير صالح وتم تخطيه.",
     "Line :line: unknown symbol :symbol was skipped.": "السطر :line: الرمز :symbol غير معروف وتم تخطيه.",
-    ":institution Portfolio (imported)": "محفظة :institution (مستوردة)"
+    ":institution Portfolio (imported)": "محفظة :institution (مستوردة)",
+    "Alinma Account": "حساب الإنماء"
 }

@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'alinma' => [
+        'base_url' => env('ALINMA_OB_BASE_URL'),
+        'client_id' => env('ALINMA_OB_CLIENT_ID'),
+        'client_secret' => env('ALINMA_OB_CLIENT_SECRET'),
+        'cert_path' => env('ALINMA_OB_CERT_PATH'),
+        'key_path' => env('ALINMA_OB_KEY_PATH'),
+    ],
+
 ];
