@@ -3,9 +3,12 @@
 namespace App\Providers;
 
 use App\Contracts\InsightGenerator;
+use App\Contracts\NewsProvider;
 use App\Contracts\OpenBankingProvider;
 use App\Services\Insights\ClaudeInsightGenerator;
 use App\Services\Insights\FakeInsightGenerator;
+use App\Services\News\CuratedNewsProvider;
+use App\Services\News\MarketauxNewsProvider;
 use App\Services\OpenBanking\FakeOpenBankingProvider;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Number;
@@ -19,6 +22,12 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(OpenBankingProvider::class, FakeOpenBankingProvider::class);
+
+        $this->app->bind(NewsProvider::class, function (Application $app) {
+            return empty($app->make('config')->get('services.marketaux.token'))
+                ? $app->make(CuratedNewsProvider::class)
+                : $app->make(MarketauxNewsProvider::class);
+        });
 
         $this->app->bind(InsightGenerator::class, function (Application $app) {
             $config = $app->make('config')->get('mahafeth.ai');

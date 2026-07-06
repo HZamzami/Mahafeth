@@ -40,6 +40,11 @@ return [
         'base_url' => env('FX_API_BASE_URL', 'https://open.er-api.com'),
     ],
 
+    'marketaux' => [
+        'base_url' => env('MARKETAUX_BASE_URL', 'https://api.marketaux.com'),
+        'token' => env('MARKETAUX_TOKEN'),
+    ],
+
     'alinma' => [
         'base_url' => env('ALINMA_OB_BASE_URL'),
         'client_id' => env('ALINMA_OB_CLIENT_ID'),
