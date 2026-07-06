@@ -35,6 +35,11 @@ return [
         ],
     ],
 
+    'fx' => [
+        // exchangerate-api.com open endpoint: keyless, daily refresh.
+        'base_url' => env('FX_API_BASE_URL', 'https://open.er-api.com'),
+    ],
+
     'alinma' => [
         'base_url' => env('ALINMA_OB_BASE_URL'),
         'client_id' => env('ALINMA_OB_CLIENT_ID'),

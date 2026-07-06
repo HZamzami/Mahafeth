@@ -6,6 +6,7 @@ use App\Enums\ShariahStatus;
 use App\Models\AiInsight;
 use App\Models\Holding;
 use App\Services\Analytics\PortfolioDataAssembler;
+use App\Services\Fx\FxRateService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Number;
 use Livewire\Volt\Component;
@@ -43,7 +44,7 @@ new class extends Component {
             ?? (int) config('mahafeth.analysis_window_years');
 
         $data = app(PortfolioDataAssembler::class)->forUser($user, now()->subYears($windowYears));
-        $fxRates = config('mahafeth.fx_rates');
+        $fxRates = app(FxRateService::class)->all();
 
         $costs = [];
         $names = [];

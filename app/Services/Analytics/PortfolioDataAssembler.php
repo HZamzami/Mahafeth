@@ -7,6 +7,7 @@ use App\Models\Asset;
 use App\Models\Holding;
 use App\Models\PriceHistory;
 use App\Models\User;
+use App\Services\Fx\FxRateService;
 use Carbon\CarbonInterface;
 
 /**
@@ -20,6 +21,8 @@ use Carbon\CarbonInterface;
  */
 class PortfolioDataAssembler
 {
+    public function __construct(private FxRateService $fxRateService) {}
+
     /**
      * @return array{
      *     quantities: array<string, float>,
@@ -97,7 +100,7 @@ class PortfolioDataAssembler
      */
     private function fxRate(string $currency): float
     {
-        return (float) (config('mahafeth.fx_rates')[$currency] ?? 1.0);
+        return $this->fxRateService->rate($currency);
     }
 
     /**
