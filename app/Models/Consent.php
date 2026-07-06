@@ -2,17 +2,15 @@
 
 namespace App\Models;
 
-use App\Enums\ConnectionStatus;
-use Database\Factories\ConnectionFactory;
+use App\Enums\ConsentStatus;
+use Database\Factories\ConsentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class Connection extends Model
+class Consent extends Model
 {
-    /** @use HasFactory<ConnectionFactory> */
+    /** @use HasFactory<ConsentFactory> */
     use HasFactory;
 
     /**
@@ -23,11 +21,12 @@ class Connection extends Model
     protected $fillable = [
         'user_id',
         'institution_id',
+        'connection_id',
+        'scopes',
         'status',
-        'source',
-        'access_token',
-        'refresh_token',
-        'last_synced_at',
+        'granted_at',
+        'expires_at',
+        'revoked_at',
     ];
 
     /**
@@ -38,10 +37,11 @@ class Connection extends Model
     protected function casts(): array
     {
         return [
-            'status' => ConnectionStatus::class,
-            'access_token' => 'encrypted',
-            'refresh_token' => 'encrypted',
-            'last_synced_at' => 'datetime',
+            'scopes' => 'array',
+            'status' => ConsentStatus::class,
+            'granted_at' => 'datetime',
+            'expires_at' => 'datetime',
+            'revoked_at' => 'datetime',
         ];
     }
 
@@ -55,13 +55,18 @@ class Connection extends Model
         return $this->belongsTo(Institution::class);
     }
 
-    public function accounts(): HasMany
+    public function connection(): BelongsTo
     {
-        return $this->hasMany(Account::class);
+        return $this->belongsTo(Connection::class);
     }
 
-    public function latestConsent(): HasOne
+    public function isActive(): bool
     {
-        return $this->hasOne(Consent::class)->latestOfMany('granted_at');
+        return $this->status === ConsentStatus::Active && $this->expires_at->isFuture();
+    }
+
+    public function daysUntilExpiry(): int
+    {
+        return max(0, (int) now()->diffInDays($this->expires_at, false));
     }
 }

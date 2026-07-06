@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Actions\ImportHoldings;
 use App\Actions\SyncConnection;
+use App\Enums\ConsentStatus;
 use App\Enums\RiskTolerance;
 use App\Enums\TimeHorizon;
 use App\Models\Institution;
@@ -93,6 +94,18 @@ class DemoPortfolioSeeder extends Seeder
 
         $institutions->each(function (Institution $institution) use ($user, $syncConnection): void {
             $connection = $user->connections()->firstOrCreate(['institution_id' => $institution->id]);
+
+            // Mirror the consent journey so revocation and expiry behave
+            // exactly as they would for a real connection.
+            $user->consents()->updateOrCreate(
+                ['institution_id' => $institution->id, 'connection_id' => $connection->id],
+                [
+                    'scopes' => config('mahafeth.consent_scopes'),
+                    'status' => ConsentStatus::Active,
+                    'granted_at' => now(),
+                    'expires_at' => now()->addDays((int) config('mahafeth.consent_ttl_days')),
+                ],
+            );
 
             $syncConnection->handle($connection);
         });

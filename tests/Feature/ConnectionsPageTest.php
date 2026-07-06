@@ -32,14 +32,14 @@ class ConnectionsPageTest extends TestCase
             ->assertSee('Derayah Financial');
     }
 
-    public function test_connecting_an_institution_creates_and_syncs_the_connection(): void
+    public function test_approving_consent_creates_and_syncs_the_connection(): void
     {
         $user = User::factory()->create();
         $institution = Institution::factory()->create(['slug' => 'rain']);
 
         $this->actingAs($user);
 
-        Volt::test('connections.index')->call('connect', $institution->id);
+        Volt::test('connections.consent', ['institution' => $institution])->call('approve');
 
         $connection = $user->connections()->first();
         $this->assertNotNull($connection);

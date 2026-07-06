@@ -3,6 +3,7 @@
 use App\Actions\ImportHoldings;
 use App\Actions\SyncConnection;
 use App\Enums\ConnectionStatus;
+use App\Enums\ConsentStatus;
 use App\Models\Institution;
 use App\Services\Analytics\PortfolioAnalyzer;
 use App\Services\Imports\AlinmaCapitalStatementParser;
@@ -20,28 +21,18 @@ new class extends Component {
     public array $importNotices = [];
 
     /**
-     * Authorize a new Open Banking connection and pull its data.
-     */
-    public function connect(int $institutionId, SyncConnection $syncConnection, PortfolioAnalyzer $analyzer): void
-    {
-        $institution = Institution::findOrFail($institutionId);
-
-        $connection = Auth::user()->connections()->firstOrCreate([
-            'institution_id' => $institution->id,
-        ]);
-
-        $syncConnection->handle($connection);
-        $analyzer->analyze(Auth::user());
-
-        $this->modal('connect-'.$institution->id)->close();
-    }
-
-    /**
-     * Re-sync an existing connection.
+     * Re-sync an existing connection. API connections require an active
+     * Open Banking consent.
      */
     public function sync(int $connectionId, SyncConnection $syncConnection, PortfolioAnalyzer $analyzer): void
     {
-        $connection = Auth::user()->connections()->findOrFail($connectionId);
+        $connection = Auth::user()->connections()->with('latestConsent')->findOrFail($connectionId);
+
+        if ($connection->source === 'api' && ! ($connection->latestConsent?->isActive() ?? false)) {
+            session()->flash('error', __('The consent for this connection has expired. Please reauthorize access.'));
+
+            return;
+        }
 
         $syncConnection->handle($connection);
         $analyzer->analyze(Auth::user());
@@ -84,11 +75,20 @@ new class extends Component {
         $this->modal('import-'.$institution->id)->close();
     }
 
+    /**
+     * Revoke access: the consent is marked revoked and the connection
+     * disconnected, exactly as an Open Banking revocation would behave.
+     */
     public function disconnect(int $connectionId, PortfolioAnalyzer $analyzer): void
     {
-        Auth::user()->connections()->findOrFail($connectionId)->update([
-            'status' => ConnectionStatus::Disconnected,
-        ]);
+        $connection = Auth::user()->connections()->findOrFail($connectionId);
+
+        $connection->update(['status' => ConnectionStatus::Disconnected]);
+
+        Auth::user()->consents()
+            ->where('connection_id', $connection->id)
+            ->where('status', ConsentStatus::Active)
+            ->update(['status' => ConsentStatus::Revoked, 'revoked_at' => now()]);
 
         $analyzer->analyze(Auth::user());
     }
@@ -97,7 +97,7 @@ new class extends Component {
     {
         return [
             'institutions' => Institution::orderBy('name')->get(),
-            'connections' => Auth::user()->connections()->with('accounts')->get()->keyBy('institution_id'),
+            'connections' => Auth::user()->connections()->with(['accounts', 'latestConsent'])->get()->keyBy('institution_id'),
         ];
     }
 }; ?>
@@ -109,6 +109,18 @@ new class extends Component {
             {{ __('Securely link your investment accounts via Open Banking to build your unified portfolio.') }}
         </flux:text>
     </div>
+
+    @if (session('status'))
+        <flux:callout color="emerald" icon="check-circle">
+            <flux:callout.text>{{ session('status') }}</flux:callout.text>
+        </flux:callout>
+    @endif
+
+    @if (session('error'))
+        <flux:callout color="red" icon="exclamation-triangle">
+            <flux:callout.text>{{ session('error') }}</flux:callout.text>
+        </flux:callout>
+    @endif
 
     @if ($importNotices !== [])
         <flux:callout color="amber" icon="exclamation-triangle">
@@ -147,6 +159,12 @@ new class extends Component {
                         @if ($isConnected && $connection->last_synced_at !== null)
                             &bull; {{ __('Last sync: :time', ['time' => $connection->last_synced_at->diffForHumans()]) }}
                         @endif
+                        @if ($isConnected && $connection->latestConsent?->isActive())
+                            &bull;
+                            <span class="{{ $connection->latestConsent->daysUntilExpiry() < 14 ? 'text-amber-600 dark:text-amber-400' : '' }}">
+                                {{ __('Consent expires in :days days', ['days' => $connection->latestConsent->daysUntilExpiry()]) }}
+                            </span>
+                        @endif
                     </flux:text>
                 </div>
 
@@ -163,16 +181,16 @@ new class extends Component {
                     @endif
                     <flux:button size="sm" variant="subtle" wire:click="disconnect({{ $connection->id }})"
                         wire:loading.attr="disabled">
-                        {{ __('Disconnect') }}
+                        {{ $institution->provider === 'import' ? __('Disconnect') : __('Revoke access') }}
                     </flux:button>
                 @elseif ($institution->provider === 'import')
                     <flux:modal.trigger name="import-{{ $institution->id }}">
                         <flux:button size="sm" variant="primary">{{ __('Import statement') }}</flux:button>
                     </flux:modal.trigger>
                 @else
-                    <flux:modal.trigger name="connect-{{ $institution->id }}">
-                        <flux:button size="sm" variant="primary">{{ __('Connect') }}</flux:button>
-                    </flux:modal.trigger>
+                    <flux:button size="sm" variant="primary"
+                        :href="route('connections.consent', $institution)" wire:navigate>
+                        {{ __('Connect') }}</flux:button>
                 @endif
             </div>
 
@@ -213,34 +231,6 @@ new class extends Component {
                 </flux:modal>
             @endif
 
-            <flux:modal name="connect-{{ $institution->id }}" class="md:w-96">
-                <div class="space-y-6">
-                    <div>
-                        <flux:heading size="lg">{{ __('Connect :institution', ['institution' => $institution->localizedName()]) }}
-                        </flux:heading>
-                        <flux:text class="mt-2">
-                            {{ __('Mahafeth will securely access your accounts, holdings, and transactions at :institution through Open Banking. Your credentials are never shared with us.', ['institution' => $institution->localizedName()]) }}
-                        </flux:text>
-                    </div>
-
-                    <div class="flex items-center gap-3 rounded-lg bg-neutral-50 p-3 dark:bg-zinc-800">
-                        <flux:icon.lock-closed class="size-5 text-emerald-600 dark:text-emerald-400" />
-                        <flux:text class="text-xs">{{ __('Read-only access. You can disconnect at any time.') }}</flux:text>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <flux:spacer />
-                        <flux:modal.close>
-                            <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
-                        </flux:modal.close>
-                        <flux:button variant="primary" wire:click="connect({{ $institution->id }})"
-                            wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="connect">{{ __('Authorize') }}</span>
-                            <span wire:loading wire:target="connect">{{ __('Linking…') }}</span>
-                        </flux:button>
-                    </div>
-                </div>
-            </flux:modal>
         @endforeach
     </div>
 </div>

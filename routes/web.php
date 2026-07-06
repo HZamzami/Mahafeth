@@ -25,6 +25,10 @@ Volt::route('connections', 'connections.index')
     ->middleware(['auth', 'verified'])
     ->name('connections');
 
+Volt::route('connections/consent/{institution:slug}', 'connections.consent')
+    ->middleware(['auth', 'verified'])
+    ->name('connections.consent');
+
 Volt::route('analytics', 'analytics.index')
     ->middleware(['auth', 'verified'])
     ->name('analytics');

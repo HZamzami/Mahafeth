@@ -45,13 +45,14 @@ class DemoJourneyTest extends TestCase
 
         $this->assertNotNull($user->fresh()->riskProfile);
 
-        // 4. Connect every institution through the fake Open Banking flow.
-        foreach (Institution::all() as $institution) {
-            Volt::test('connections.index')->call('connect', $institution->id);
+        // 4. Connect every API institution through the consent journey.
+        foreach (Institution::where('provider', '!=', 'import')->get() as $institution) {
+            Volt::test('connections.consent', ['institution' => $institution])->call('approve');
         }
 
         $user = $user->fresh();
-        $this->assertSame(5, $user->connections()->count());
+        $this->assertSame(4, $user->connections()->count());
+        $this->assertSame(4, $user->consents()->count());
 
         // 5. The analysis produced a scored snapshot.
         $snapshot = $user->latestSnapshot();

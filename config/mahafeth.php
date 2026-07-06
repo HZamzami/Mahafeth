@@ -30,6 +30,11 @@ return [
         'USD' => 3.75,
     ],
 
+    // Open Banking consent lifetime (KSA framework convention: 90 days)
+    // and the account-information scopes requested at authorization.
+    'consent_ttl_days' => env('MAHAFETH_CONSENT_TTL_DAYS', 90),
+    'consent_scopes' => ['accounts', 'balances', 'transactions'],
+
     // One-tailed z-score for the VaR confidence level (1.645 ≈ 95%).
     'var_confidence' => 0.95,
     'var_z_score' => 1.645,
