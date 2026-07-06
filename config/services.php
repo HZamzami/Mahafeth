@@ -40,6 +40,11 @@ return [
         'base_url' => env('FX_API_BASE_URL', 'https://open.er-api.com'),
     ],
 
+    'twelvedata' => [
+        'base_url' => env('TWELVEDATA_BASE_URL', 'https://api.twelvedata.com'),
+        'key' => env('TWELVEDATA_KEY'),
+    ],
+
     'marketaux' => [
         'base_url' => env('MARKETAUX_BASE_URL', 'https://api.marketaux.com'),
         'token' => env('MARKETAUX_TOKEN'),

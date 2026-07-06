@@ -4,6 +4,7 @@ namespace App\Services\OpenBanking;
 
 use App\Contracts\OpenBankingProvider;
 use App\Models\Institution;
+use App\Services\Prices\SimulatedPriceProvider;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Carbon;
@@ -25,7 +26,7 @@ class AlinmaOpenBankingProvider implements OpenBankingProvider
     public function __construct(
         private FakeOpenBankingProvider $fallback,
         private AssetCatalog $assetCatalog,
-        private PriceSeriesGenerator $priceSeriesGenerator,
+        private SimulatedPriceProvider $priceProvider,
     ) {}
 
     public function fetchAccounts(Institution $institution): array
@@ -96,27 +97,7 @@ class AlinmaOpenBankingProvider implements OpenBankingProvider
     {
         // The sandbox exposes no market data; cash is flat at 1.0 and any
         // other symbol comes from the shared simulated series.
-        $series = [];
-
-        foreach ($symbols as $symbol) {
-            $params = $this->assetCatalog->simulationParams($symbol);
-
-            if ($params === null) {
-                continue;
-            }
-
-            $series[$symbol] = $this->priceSeriesGenerator->generate(
-                symbol: $symbol,
-                from: $from,
-                to: $to,
-                startPrice: $params['start'],
-                drift: $params['drift'],
-                volatility: $params['vol'],
-                factorLoading: $params['loading'],
-            );
-        }
-
-        return $series;
+        return $this->priceProvider->fetchDailyCloses($symbols, $from, $to);
     }
 
     public function benchmarks(): array

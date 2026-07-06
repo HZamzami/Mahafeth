@@ -5,11 +5,14 @@ namespace App\Providers;
 use App\Contracts\InsightGenerator;
 use App\Contracts\NewsProvider;
 use App\Contracts\OpenBankingProvider;
+use App\Contracts\PriceProvider;
 use App\Services\Insights\ClaudeInsightGenerator;
 use App\Services\Insights\FakeInsightGenerator;
 use App\Services\News\CuratedNewsProvider;
 use App\Services\News\MarketauxNewsProvider;
 use App\Services\OpenBanking\FakeOpenBankingProvider;
+use App\Services\Prices\SimulatedPriceProvider;
+use App\Services\Prices\TwelveDataPriceProvider;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
@@ -22,6 +25,12 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(OpenBankingProvider::class, FakeOpenBankingProvider::class);
+
+        $this->app->bind(PriceProvider::class, function (Application $app) {
+            return empty($app->make('config')->get('services.twelvedata.key'))
+                ? $app->make(SimulatedPriceProvider::class)
+                : $app->make(TwelveDataPriceProvider::class);
+        });
 
         $this->app->bind(NewsProvider::class, function (Application $app) {
             return empty($app->make('config')->get('services.marketaux.token'))

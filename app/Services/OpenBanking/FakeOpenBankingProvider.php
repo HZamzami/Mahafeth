@@ -4,6 +4,7 @@ namespace App\Services\OpenBanking;
 
 use App\Contracts\OpenBankingProvider;
 use App\Models\Institution;
+use App\Services\Prices\SimulatedPriceProvider;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 
@@ -73,7 +74,7 @@ class FakeOpenBankingProvider implements OpenBankingProvider
     ];
 
     public function __construct(
-        private PriceSeriesGenerator $priceSeriesGenerator,
+        private SimulatedPriceProvider $priceProvider,
         private AssetCatalog $assetCatalog,
     ) {}
 
@@ -119,27 +120,7 @@ class FakeOpenBankingProvider implements OpenBankingProvider
 
     public function fetchPrices(array $symbols, CarbonInterface $from, CarbonInterface $to): array
     {
-        $series = [];
-
-        foreach ($symbols as $symbol) {
-            $params = $this->assetCatalog->simulationParams($symbol);
-
-            if ($params === null) {
-                continue;
-            }
-
-            $series[$symbol] = $this->priceSeriesGenerator->generate(
-                symbol: $symbol,
-                from: $from,
-                to: $to,
-                startPrice: $params['start'],
-                drift: $params['drift'],
-                volatility: $params['vol'],
-                factorLoading: $params['loading'],
-            );
-        }
-
-        return $series;
+        return $this->priceProvider->fetchDailyCloses($symbols, $from, $to);
     }
 
     public function benchmarks(): array

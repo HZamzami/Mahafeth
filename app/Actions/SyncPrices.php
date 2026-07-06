@@ -2,21 +2,21 @@
 
 namespace App\Actions;
 
-use App\Contracts\OpenBankingProvider;
+use App\Contracts\PriceProvider;
 use App\Models\Asset;
 use App\Models\PriceHistory;
 use Illuminate\Support\Carbon;
 
 /**
- * Pulls daily close series for the given symbols from the Open Banking
- * provider into the local price history. Shared by connection syncs and
- * the statement import path.
+ * Pulls daily close series for the given symbols from the price provider
+ * into the local price history. Shared by connection syncs and the
+ * statement import path.
  */
 class SyncPrices
 {
     public const PRICE_HISTORY_YEARS = 3;
 
-    public function __construct(private OpenBankingProvider $provider) {}
+    public function __construct(private PriceProvider $provider) {}
 
     /**
      * @param  list<string>  $symbols
@@ -27,7 +27,7 @@ class SyncPrices
         $to = Carbon::now()->startOfDay();
 
         $assetIds = Asset::whereIn('symbol', $symbols)->pluck('id', 'symbol');
-        $series = $this->provider->fetchPrices($symbols, $from, $to);
+        $series = $this->provider->fetchDailyCloses($symbols, $from, $to);
 
         foreach ($series as $symbol => $prices) {
             $rows = [];
