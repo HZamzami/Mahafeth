@@ -7,6 +7,7 @@ use App\Models\AiInsight;
 use App\Models\Holding;
 use App\Services\Analytics\GoalForecaster;
 use App\Services\Analytics\PortfolioDataAssembler;
+use App\Services\Analytics\RebalancePlanner;
 use App\Services\Fx\FxRateService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Number;
@@ -21,6 +22,7 @@ new class extends Component {
         return [
             'snapshot' => $snapshot,
             'goalForecasts' => $this->goalForecasts($snapshot),
+            'rebalanceOrders' => $this->rebalanceOrders($snapshot),
             'metrics' => $snapshot?->metrics ?? [],
             'components' => $snapshot?->component_scores,
             'profile' => $user->riskProfile,
@@ -30,6 +32,35 @@ new class extends Component {
                 ->where('locale', app()->getLocale())
                 ->first(),
         ];
+    }
+
+    /**
+     * Orders that would move the portfolio to the optimal allocation.
+     *
+     * @return list<array{symbol: string, name: string, side: string, quantity: float, value: float, current_weight: float, target_weight: float}>
+     */
+    private function rebalanceOrders($snapshot): array
+    {
+        $metrics = $snapshot?->metrics ?? [];
+        $targetWeights = $metrics['frontier']['tangency']['weights'] ?? [];
+
+        if ($snapshot === null || $targetWeights === [] || ! isset($metrics['weights'])) {
+            return [];
+        }
+
+        $user = Auth::user();
+        $windowYears = $user->riskProfile?->time_horizon->analysisWindowYears()
+            ?? (int) config('mahafeth.analysis_window_years');
+        $data = app(PortfolioDataAssembler::class)->forUser($user, now()->subYears($windowYears));
+
+        return app(RebalancePlanner::class)->plan(
+            currentWeights: $metrics['weights'],
+            targetWeights: $targetWeights,
+            totalValue: (float) $snapshot->total_value,
+            quantities: $data['quantities'],
+            assets: $data['assets'],
+            shariahRequired: (bool) ($user->riskProfile?->constraints['shariah_required'] ?? false),
+        );
     }
 
     /**
@@ -350,6 +381,33 @@ new class extends Component {
                                         dir="ltr">
                                         {{ $row['pl'] >= 0 ? '+' : '−' }}{{ number_format(abs($row['pl']), 0) }}
                                         ({{ number_format($row['plPct'] * 100, 1) }}%)</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+
+            {{-- Rebalancing plan --}}
+            @if ($rebalanceOrders !== [])
+                <div class="border-b border-neutral-200 py-6 dark:border-neutral-700">
+                    <flux:heading size="lg">{{ __('Rebalancing Plan') }}</flux:heading>
+                    <table class="mt-4 w-full text-sm">
+                        <thead>
+                            <tr class="text-xs uppercase tracking-wide text-neutral-400">
+                                <th class="pb-2 text-start font-medium">{{ __('Asset') }}</th>
+                                <th class="pb-2 text-center font-medium">{{ __('Action') }}</th>
+                                <th class="pb-2 text-end font-medium">{{ __('Units') }}</th>
+                                <th class="pb-2 text-end font-medium">{{ __('Est. Value') }} ({{ __('SAR') }})</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($rebalanceOrders as $order)
+                                <tr class="border-t border-neutral-100 dark:border-zinc-800">
+                                    <td class="py-1.5 font-medium text-zinc-800 dark:text-white">{{ $order['symbol'] }}</td>
+                                    <td class="py-1.5 text-center">{{ $order['side'] === 'buy' ? __('Buy') : __('Sell') }}</td>
+                                    <td class="py-1.5 text-end tabular-nums" dir="ltr">{{ number_format($order['quantity'], 2) }}</td>
+                                    <td class="py-1.5 text-end tabular-nums" dir="ltr">{{ number_format($order['value'], 0) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

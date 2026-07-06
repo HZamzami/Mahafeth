@@ -734,5 +734,19 @@
     "Revoke access": "إلغاء الوصول",
     "Active": "نشطة",
     "Revoked": "ملغاة",
-    "Expired": "منتهية"
+    "Expired": "منتهية",
+    "Mahafeth: your portfolio needs attention": "محافظ: محفظتك بحاجة إلى انتباهك",
+    "Hello :name,": "مرحبًا :name،",
+    "The latest analysis of your unified portfolio surfaced the following:": "أظهر أحدث تحليل لمحفظتك الموحدة ما يلي:",
+    "Your Portfolio Health Score dropped by :points points.": "انخفضت درجة صحة محفظتك بمقدار :points نقطة.",
+    "You can turn these notifications off in your profile settings.": "يمكنك إيقاف هذه الإشعارات من إعدادات ملفك الشخصي.",
+    "Portfolio alert emails": "رسائل تنبيهات المحفظة",
+    "Get an email when new risk alerts appear or your health score drops.": "استلم بريدًا إلكترونيًا عند ظهور تنبيهات مخاطر جديدة أو انخفاض درجة صحة محفظتك.",
+    "Rebalancing Plan": "خطة إعادة التوازن",
+    "The concrete orders that would move your portfolio to the optimal allocation.": "الأوامر الملموسة التي تنقل محفظتك إلى التوزيع الأمثل.",
+    "Download CSV": "تنزيل CSV",
+    "Units": "الوحدات",
+    "Est. Value": "القيمة التقديرية",
+    "Weight Change": "تغيّر الوزن",
+    "Buys of non-compliant assets are excluded and their budget reallocated to compliant holdings.": "تُستبعد أوامر شراء الأصول غير المتوافقة ويُعاد توجيه مبالغها إلى الأصول المتوافقة."
 }

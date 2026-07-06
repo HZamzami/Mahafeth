@@ -4,10 +4,12 @@ use App\Services\Analytics\CorrelationAnalyzer;
 use App\Services\Analytics\CovarianceMatrixService;
 use App\Services\Analytics\EfficientFrontierService;
 use App\Services\Analytics\PortfolioDataAssembler;
+use App\Services\Analytics\RebalancePlanner;
 use App\Services\Analytics\ReturnCalculator;
 use App\Services\Analytics\RiskDecomposer;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 new class extends Component {
     /**
@@ -62,9 +64,51 @@ new class extends Component {
             'frontier' => $frontier,
             'frontierPlot' => $this->frontierPlot($frontier),
             'weights' => $weights,
+            'rebalanceOrders' => $this->rebalanceOrders($weights, $frontier['tangency']['weights'] ?? [], (float) $totalValue, $data),
             'sectorContributions' => app(RiskDecomposer::class)->contributions($weights, $covariance, $sectors),
             'decomposition' => Auth::user()->latestSnapshot()?->metrics['risk_decomposition'] ?? null,
         ];
+    }
+
+    /**
+     * Concrete buy/sell orders that would move the portfolio to the
+     * tangency allocation, honoring the investor's Shariah constraint.
+     *
+     * @return list<array{symbol: string, name: string, side: string, quantity: float, value: float, current_weight: float, target_weight: float}>
+     */
+    private function rebalanceOrders(array $weights, array $targetWeights, float $totalValue, array $data): array
+    {
+        if ($targetWeights === []) {
+            return [];
+        }
+
+        return app(RebalancePlanner::class)->plan(
+            currentWeights: $weights,
+            targetWeights: $targetWeights,
+            totalValue: $totalValue,
+            quantities: $data['quantities'],
+            assets: $data['assets'],
+            shariahRequired: (bool) (Auth::user()->riskProfile?->constraints['shariah_required'] ?? false),
+        );
+    }
+
+    /**
+     * Download the rebalancing plan as CSV.
+     */
+    public function downloadRebalanceCsv(): StreamedResponse
+    {
+        $orders = $this->with()['rebalanceOrders'] ?? [];
+
+        return response()->streamDownload(function () use ($orders): void {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['symbol', 'side', 'quantity', 'est_value_sar']);
+
+            foreach ($orders as $order) {
+                fputcsv($out, [$order['symbol'], $order['side'], $order['quantity'], $order['value']]);
+            }
+
+            fclose($out);
+        }, 'mahafeth-rebalance-plan.csv');
     }
 
     /**
@@ -331,6 +375,56 @@ new class extends Component {
                 </div>
             </div>
         </div>
+
+        {{-- Rebalancing Plan --}}
+        @if ($rebalanceOrders !== [])
+            <div class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <flux:heading size="lg">{{ __('Rebalancing Plan') }}</flux:heading>
+                        <flux:text class="mt-1 text-sm">
+                            {{ __('The concrete orders that would move your portfolio to the optimal allocation.') }}
+                        </flux:text>
+                    </div>
+                    <flux:button size="sm" variant="outline" icon="arrow-down-tray"
+                        wire:click="downloadRebalanceCsv">{{ __('Download CSV') }}</flux:button>
+                </div>
+                <table class="mt-4 w-full text-sm">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-wide text-neutral-400">
+                            <th class="pb-2 text-start font-medium">{{ __('Asset') }}</th>
+                            <th class="pb-2 text-center font-medium">{{ __('Action') }}</th>
+                            <th class="pb-2 text-end font-medium">{{ __('Units') }}</th>
+                            <th class="pb-2 text-end font-medium">{{ __('Est. Value') }} ({{ __('SAR') }})</th>
+                            <th class="pb-2 text-end font-medium">{{ __('Weight Change') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($rebalanceOrders as $order)
+                            <tr class="border-t border-neutral-100 dark:border-zinc-800">
+                                <td class="py-1.5">
+                                    <span class="font-medium text-zinc-800 dark:text-white">{{ $order['symbol'] }}</span>
+                                    <span class="text-neutral-400"> · {{ $order['name'] }}</span>
+                                </td>
+                                <td class="py-1.5 text-center">
+                                    <flux:badge size="sm" :color="$order['side'] === 'buy' ? 'emerald' : 'red'">
+                                        {{ $order['side'] === 'buy' ? __('Buy') : __('Sell') }}</flux:badge>
+                                </td>
+                                <td class="py-1.5 text-end tabular-nums" dir="ltr">{{ number_format($order['quantity'], 2) }}</td>
+                                <td class="py-1.5 text-end tabular-nums" dir="ltr">{{ number_format($order['value'], 0) }}</td>
+                                <td class="py-1.5 text-end tabular-nums" dir="ltr">
+                                    {{ number_format($order['current_weight'] * 100, 1) }}% → {{ number_format($order['target_weight'] * 100, 1) }}%</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                @if ((bool) (auth()->user()->riskProfile?->constraints['shariah_required'] ?? false))
+                    <flux:text class="mt-3 text-xs">
+                        {{ __('Buys of non-compliant assets are excluded and their budget reallocated to compliant holdings.') }}
+                    </flux:text>
+                @endif
+            </div>
+        @endif
 
         {{-- Risk Decomposition --}}
         <div class="grid gap-4 md:grid-cols-2">

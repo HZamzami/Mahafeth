@@ -9,6 +9,7 @@ use Livewire\Volt\Component;
 new class extends Component {
     public string $name = '';
     public string $email = '';
+    public bool $notifyAlerts = true;
 
     /**
      * Mount the component.
@@ -17,6 +18,15 @@ new class extends Component {
     {
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
+        $this->notifyAlerts = Auth::user()->notify_alerts ?? true;
+    }
+
+    /**
+     * Toggle portfolio alert emails.
+     */
+    public function updatedNotifyAlerts(bool $value): void
+    {
+        Auth::user()->update(['notify_alerts' => $value]);
     }
 
     /**
@@ -111,6 +121,11 @@ new class extends Component {
                 </x-action-message>
             </div>
         </form>
+
+        <div class="my-6 border-t border-neutral-200 pt-6 dark:border-neutral-700">
+            <flux:switch wire:model.live="notifyAlerts" :label="__('Portfolio alert emails')"
+                :description="__('Get an email when new risk alerts appear or your health score drops.')" />
+        </div>
 
         <livewire:settings.delete-user-form />
     </x-settings.layout>

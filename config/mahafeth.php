@@ -30,6 +30,12 @@ return [
         'USD' => 3.75,
     ],
 
+    // Health-score drop (in points, between consecutive analyses) that
+    // triggers an alert notification; the minimum order value emitted by
+    // the rebalancing planner.
+    'alert_score_drop_threshold' => env('MAHAFETH_ALERT_SCORE_DROP', 5),
+    'min_trade_value' => env('MAHAFETH_MIN_TRADE_VALUE', 500),
+
     // Open Banking consent lifetime (KSA framework convention: 90 days)
     // and the account-information scopes requested at authorization.
     'consent_ttl_days' => env('MAHAFETH_CONSENT_TTL_DAYS', 90),

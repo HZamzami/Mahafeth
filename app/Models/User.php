@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -11,7 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-class User extends Authenticatable // implements MustVerifyEmail
+class User extends Authenticatable implements HasLocalePreference // implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -25,6 +26,7 @@ class User extends Authenticatable // implements MustVerifyEmail
         'name',
         'email',
         'locale',
+        'notify_alerts',
         'password',
     ];
 
@@ -47,8 +49,17 @@ class User extends Authenticatable // implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'notify_alerts' => 'boolean',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Notification mails render in the user's preferred locale.
+     */
+    public function preferredLocale(): string
+    {
+        return $this->locale ?? config('app.locale');
     }
 
     public function connections(): HasMany

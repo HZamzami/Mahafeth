@@ -8,6 +8,7 @@ use App\Models\Institution;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Volt\Volt;
 use Tests\TestCase;
 
 class AnalyticsPageTest extends TestCase
@@ -67,5 +68,43 @@ class AnalyticsPageTest extends TestCase
             ->assertSee(__('Suggested Allocation'))
             ->assertSee(__('Risk Decomposition'))
             ->assertSee(__('Risk by Sector'));
+    }
+
+    public function test_the_rebalancing_plan_renders_with_orders(): void
+    {
+        $user = User::factory()->create();
+        $institution = Institution::factory()->create(['slug' => 'derayah']);
+        $connection = Connection::factory()->pending()->create([
+            'user_id' => $user->id,
+            'institution_id' => $institution->id,
+        ]);
+
+        app(SyncConnection::class)->handle($connection);
+        app(PortfolioAnalyzer::class)->analyze($user);
+
+        $this->actingAs($user)
+            ->get('/analytics')
+            ->assertOk()
+            ->assertSee(__('Rebalancing Plan'))
+            ->assertSee(__('Download CSV'));
+    }
+
+    public function test_the_rebalance_csv_download_contains_orders(): void
+    {
+        $user = User::factory()->create();
+        $institution = Institution::factory()->create(['slug' => 'derayah']);
+        $connection = Connection::factory()->pending()->create([
+            'user_id' => $user->id,
+            'institution_id' => $institution->id,
+        ]);
+
+        app(SyncConnection::class)->handle($connection);
+        app(PortfolioAnalyzer::class)->analyze($user);
+
+        $this->actingAs($user);
+
+        $response = Volt::test('analytics.index')->call('downloadRebalanceCsv');
+
+        $response->assertFileDownloaded('mahafeth-rebalance-plan.csv');
     }
 }
