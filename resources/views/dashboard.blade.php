@@ -15,7 +15,7 @@
             <flux:callout color="blue" icon="clipboard-document-check">
                 <flux:callout.heading>{{ __('Complete your investor profile') }}</flux:callout.heading>
                 <flux:callout.text>
-                    {{ __('Answer five quick questions so Mahafeth can score how well your portfolio fits your goals and risk tolerance.') }}
+                    {{ __('Answer six quick questions so Mahafeth can score how well your portfolio fits your goals and risk tolerance.') }}
                 </flux:callout.text>
                 <x-slot name="actions">
                     <flux:button :href="route('investor-profile')" wire:navigate variant="primary" size="sm">

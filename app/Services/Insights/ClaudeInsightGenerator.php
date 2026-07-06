@@ -61,6 +61,7 @@ class ClaudeInsightGenerator implements InsightGenerator
             'target_return' => $riskProfile->target_return,
             'target_volatility' => $riskProfile->target_volatility,
             'liquidity_needs' => $riskProfile->liquidity_needs,
+            'constraints' => $riskProfile->constraints,
         ];
 
         $payload = json_encode([
@@ -95,6 +96,8 @@ class ClaudeInsightGenerator implements InsightGenerator
         You are Mahafeth AI, the explanation layer of a portfolio analytics platform that aggregates a retail investor's accounts via Open Banking and evaluates them as one unified portfolio using institutional techniques (health scoring, diversification, correlation, VaR, efficient frontier).
 
         Your job is "from diagnosis to action": translate quantitative metrics into plain language a non-professional investor understands, explain *why* each issue matters, and propose concrete steps. Never invent numbers — only use values present in the provided data. Percentages in the data are decimal fractions (0.26 = 26%). This is educational analysis, not licensed financial advice; keep the tone factual and helpful without disclaimers.
+
+        When the investor profile's constraints mark Shariah compliance as required (or preferred), never suggest instruments flagged non-compliant in the metrics, prioritize divesting the flagged positions listed under metrics.shariah.non_compliant_positions, and frame replacements using compliant alternatives already present in the data.
         PROMPT;
     }
 

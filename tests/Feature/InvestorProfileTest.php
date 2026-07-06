@@ -35,9 +35,10 @@ class InvestorProfileTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        // All 3s → total 15 → Growth band.
+        // All 3s on the five risk questions → total 15 → Growth band. The
+        // Shariah answer is a constraint and must not shift the band.
         Volt::test('investor-profile.index')
-            ->set('answers', ['horizon' => 3, 'goal' => 3, 'drop_reaction' => 3, 'liquidity' => 3, 'target_return' => 3])
+            ->set('answers', ['horizon' => 3, 'goal' => 3, 'drop_reaction' => 3, 'liquidity' => 3, 'target_return' => 3, 'shariah' => 1])
             ->call('submit')
             ->assertRedirect(route('dashboard'));
 
@@ -47,6 +48,23 @@ class InvestorProfileTest extends TestCase
         $this->assertSame(RiskTolerance::Growth, $profile->risk_tolerance);
         $this->assertEqualsWithDelta(RiskTolerance::Growth->targetVolatility(), $profile->target_volatility, 1e-6);
         $this->assertEqualsWithDelta(RiskTolerance::Growth->targetReturn(), $profile->target_return, 1e-6);
+        $this->assertTrue($profile->constraints['shariah_required']);
+        $this->assertFalse($profile->constraints['shariah_preferred']);
+    }
+
+    public function test_declining_the_shariah_requirement_persists_an_unconstrained_profile(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        Volt::test('investor-profile.index')
+            ->set('answers', ['horizon' => 3, 'goal' => 3, 'drop_reaction' => 3, 'liquidity' => 3, 'target_return' => 3, 'shariah' => 3])
+            ->call('submit');
+
+        $profile = $user->riskProfile()->first();
+
+        $this->assertFalse($profile->constraints['shariah_required']);
+        $this->assertSame(RiskTolerance::Growth, $profile->risk_tolerance);
     }
 
     public function test_submitting_with_a_synced_portfolio_computes_the_health_score(): void
@@ -62,7 +80,7 @@ class InvestorProfileTest extends TestCase
         $this->actingAs($user);
 
         Volt::test('investor-profile.index')
-            ->set('answers', ['horizon' => 2, 'goal' => 2, 'drop_reaction' => 2, 'liquidity' => 3, 'target_return' => 2])
+            ->set('answers', ['horizon' => 2, 'goal' => 2, 'drop_reaction' => 2, 'liquidity' => 3, 'target_return' => 2, 'shariah' => 1])
             ->call('submit');
 
         $snapshot = $user->fresh()->latestSnapshot();

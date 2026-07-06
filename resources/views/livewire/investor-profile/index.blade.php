@@ -16,6 +16,7 @@ new class extends Component {
         'drop_reaction' => null,
         'liquidity' => null,
         'target_return' => null,
+        'shariah' => null,
     ];
 
     public function mount(): void
@@ -28,7 +29,9 @@ new class extends Component {
     }
 
     /**
-     * The IPS questionnaire: each answer scores 1 (most cautious) to 4.
+     * The IPS questionnaire: each risk answer scores 1 (most cautious) to 4.
+     * The Shariah question is a constraint, not a risk score, and is left
+     * out of the tolerance sum.
      *
      * @return array<string, array{question: string, options: list<string>}>
      */
@@ -80,6 +83,14 @@ new class extends Component {
                     __('15% or more — high growth'),
                 ],
             ],
+            'shariah' => [
+                'question' => __('Do you require your investments to be Shariah-compliant?'),
+                'options' => [
+                    __('Yes, my portfolio must be fully Shariah-compliant'),
+                    __('I prefer compliant investments but allow exceptions'),
+                    __('No requirement'),
+                ],
+            ],
         ];
     }
 
@@ -110,7 +121,8 @@ new class extends Component {
         }
         $this->validate($rules);
 
-        $tolerance = RiskTolerance::fromQuestionnaireScore((int) array_sum($this->answers));
+        $riskAnswers = array_diff_key($this->answers, ['shariah' => null]);
+        $tolerance = RiskTolerance::fromQuestionnaireScore((int) array_sum($riskAnswers));
 
         $horizons = [1 => TimeHorizon::Short, 2 => TimeHorizon::Medium, 3 => TimeHorizon::Long, 4 => TimeHorizon::VeryLong];
         $liquidity = [1 => 'high', 2 => 'elevated', 3 => 'moderate', 4 => 'minimal'];
@@ -122,6 +134,10 @@ new class extends Component {
             'target_return' => $tolerance->targetReturn(),
             'target_volatility' => $tolerance->targetVolatility(),
             'liquidity_needs' => $liquidity[$this->answers['liquidity']],
+            'constraints' => [
+                'shariah_required' => $this->answers['shariah'] === 1,
+                'shariah_preferred' => $this->answers['shariah'] === 2,
+            ],
         ]);
 
         $analyzer->analyze(Auth::user()->fresh());
@@ -146,7 +162,7 @@ new class extends Component {
     <div>
         <flux:heading size="xl">{{ __('Investor Profile') }}</flux:heading>
         <flux:text class="mt-1">
-            {{ __('Five quick questions build your Investment Policy Statement, so Mahafeth can judge whether your portfolio actually fits you.') }}
+            {{ __('Six quick questions build your Investment Policy Statement, so Mahafeth can judge whether your portfolio actually fits you.') }}
         </flux:text>
         @if (auth()->user()->riskProfile !== null)
             <flux:callout class="mt-4" color="zinc" icon="check-circle" inline>

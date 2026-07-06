@@ -32,7 +32,25 @@ class FakeInsightGenerator implements InsightGenerator
             ], $locale);
         }
 
-        $recommendations = [
+        $recommendations = [];
+
+        $shariah = $metrics['shariah'] ?? null;
+        $shariahRequired = (bool) ($riskProfile?->constraints['shariah_required'] ?? false);
+
+        if ($shariahRequired && $shariah !== null && $shariah['non_compliant_positions'] !== []) {
+            $flagged = $shariah['non_compliant_positions'][0];
+
+            $recommendations[] = [
+                'title' => __('Replace non-compliant holdings', [], $locale),
+                'body' => __(':name (:weight of your portfolio) is not Shariah-compliant, while your profile requires full compliance. Replacing it with a compliant alternative would restore the compliance component of your health score.', [
+                    'name' => $flagged['name'],
+                    'weight' => Number::percentage($flagged['weight'] * 100, 1),
+                ], $locale),
+                'priority' => 'high',
+            ];
+        }
+
+        $recommendations = [...$recommendations,
             [
                 'title' => __('Reduce your largest position', [], $locale),
                 'body' => __('Trimming :name toward the optimizer\'s suggested weight would meaningfully lower concentration risk.', [

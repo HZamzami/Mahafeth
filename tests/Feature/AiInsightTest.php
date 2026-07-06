@@ -89,6 +89,23 @@ class AiInsightTest extends TestCase
         $this->assertStringContainsString('درجة صحة محفظتك', $insight->summary);
     }
 
+    public function test_the_fake_generator_flags_non_compliant_holdings_for_shariah_investors(): void
+    {
+        $user = $this->analyzedUser();
+        $user->riskProfile->update(['constraints' => ['shariah_required' => true]]);
+
+        $insight = (new FakeInsightGenerator)->generate(
+            $user->latestSnapshot(),
+            $user->riskProfile->fresh(),
+            'en',
+        );
+
+        // Derayah's fixture holds JPM, the non-compliant contrast position.
+        $this->assertSame(__('Replace non-compliant holdings'), $insight['recommendations'][0]['title']);
+        $this->assertStringContainsString('JPMorgan', $insight['recommendations'][0]['body']);
+        $this->assertSame('high', $insight['recommendations'][0]['priority']);
+    }
+
     public function test_users_without_a_snapshot_see_the_empty_state(): void
     {
         $this->actingAs(User::factory()->create());
