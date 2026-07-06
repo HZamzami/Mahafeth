@@ -689,5 +689,6 @@
     "Built on the SAMA Open Banking framework today, ready for investment-account APIs the day they launch.": "مبني على إطار البنك المركزي السعودي للخدمات المصرفية المفتوحة اليوم، وجاهز لواجهات الحسابات الاستثمارية يوم إطلاقها.",
     "Data Sources & Roadmap": "مصادر البيانات وخارطة الطريق",
     "Cash accounts connect live through the SAMA Open Banking framework (Account Information Services).": "تتصل الحسابات النقدية مباشرة عبر إطار البنك المركزي السعودي للخدمات المصرفية المفتوحة (خدمات معلومات الحسابات).",
-    "Brokerage holdings are imported from statements until investment-account APIs join the framework, expected around 2027. Mahafeth is built to switch to them the day they launch.": "تُستورد أصول الوساطة من كشوف الحسابات إلى أن تنضم واجهات الحسابات الاستثمارية إلى الإطار، وهو متوقع حوالي عام 2027. وقد بُني محافظ للتحول إليها يوم إطلاقها."
+    "Brokerage holdings are imported from statements until investment-account APIs join the framework, expected around 2027. Mahafeth is built to switch to them the day they launch.": "تُستورد أصول الوساطة من كشوف الحسابات إلى أن تنضم واجهات الحسابات الاستثمارية إلى الإطار، وهو متوقع حوالي عام 2027. وقد بُني محافظ للتحول إليها يوم إطلاقها.",
+    "Too many imports. Please wait a minute and try again.": "محاولات استيراد كثيرة. انتظر دقيقة ثم حاول مجددًا."
 }

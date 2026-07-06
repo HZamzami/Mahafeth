@@ -7,6 +7,7 @@ use App\Models\Institution;
 use App\Services\Analytics\PortfolioAnalyzer;
 use App\Services\Imports\AlinmaCapitalStatementParser;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Volt\Component;
 use Livewire\WithFileUploads;
 
@@ -59,6 +60,12 @@ new class extends Component {
             ['statement' => ['required', 'file', 'mimes:csv,txt', 'max:1024']],
             ['statement.required' => __('Choose a statement file to import.')],
         );
+
+        if (! RateLimiter::attempt('import-holdings:'.Auth::id(), maxAttempts: 10, callback: fn () => true)) {
+            $this->addError('statement', __('Too many imports. Please wait a minute and try again.'));
+
+            return;
+        }
 
         $institution = Institution::findOrFail($institutionId);
         $result = $parser->parse($this->statement->get());

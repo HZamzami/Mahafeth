@@ -15,7 +15,7 @@ Route::get('locale/{locale}', function (string $locale) {
     request()->user()?->update(['locale' => $locale]);
 
     return back();
-})->name('locale.update');
+})->middleware('throttle:30,1')->name('locale.update');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
