@@ -14,7 +14,7 @@ class CurrencyConversionTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_sar_prices_are_converted_to_usd_in_the_assembled_series(): void
+    public function test_usd_prices_are_converted_to_sar_in_the_assembled_series(): void
     {
         $user = User::factory()->create();
         $account = Account::factory()->create();
@@ -31,9 +31,9 @@ class CurrencyConversionTest extends TestCase
 
         $data = app(PortfolioDataAssembler::class)->forUser($user, now()->subYear());
 
-        // 37.50 SAR at the 3.75 peg is exactly $10.
-        $this->assertEqualsWithDelta(10.0, $data['priceSeries']['2222.SR'][today()->toDateString()], 1e-9);
-        $this->assertEqualsWithDelta(150.0, $data['priceSeries']['AAPL'][today()->toDateString()], 1e-9);
+        // SAR is the base currency and passes through; $150 at the 3.75 peg is 562.50 SAR.
+        $this->assertEqualsWithDelta(37.50, $data['priceSeries']['2222.SR'][today()->toDateString()], 1e-9);
+        $this->assertEqualsWithDelta(562.50, $data['priceSeries']['AAPL'][today()->toDateString()], 1e-9);
     }
 
     public function test_benchmark_series_are_converted_too(): void
@@ -43,6 +43,6 @@ class CurrencyConversionTest extends TestCase
 
         $series = app(PortfolioDataAssembler::class)->benchmarkSeriesFor(['TASI'], now()->subYear());
 
-        $this->assertEqualsWithDelta(3000.0, $series['TASI'][today()->toDateString()], 1e-9);
+        $this->assertEqualsWithDelta(11250.0, $series['TASI'][today()->toDateString()], 1e-9);
     }
 }

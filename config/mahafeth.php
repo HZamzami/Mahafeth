@@ -13,20 +13,20 @@ return [
     |
     */
 
-    'risk_free_rate' => env('MAHAFETH_RISK_FREE_RATE', 0.045),
+    'risk_free_rate' => env('MAHAFETH_RISK_FREE_RATE', 0.055),
 
-    'benchmark_symbol' => env('MAHAFETH_BENCHMARK', 'SPY'),
+    'benchmark_symbol' => env('MAHAFETH_BENCHMARK', 'TASI'),
 
     // Indices overlaid on the performance chart for comparison.
-    'comparison_benchmarks' => ['SPY', 'TASI'],
+    'comparison_benchmarks' => ['TASI', 'SPY'],
 
     // All valuation happens in the base currency; native-currency prices are
     // converted at read time. SAR is pegged to the dollar at 3.75.
-    'base_currency' => 'USD',
+    'base_currency' => 'SAR',
 
     'fx_rates' => [
-        'USD' => 1.0,
-        'SAR' => 1 / 3.75,
+        'SAR' => 1.0,
+        'USD' => 3.75,
     ],
 
     // One-tailed z-score for the VaR confidence level (1.645 ≈ 95%).
@@ -52,6 +52,18 @@ return [
         'performance' => 0.15,
         'drawdown' => 0.15,
         'concentration' => 0.10,
+    ],
+
+    // Weight set used when the investor's IPS requires Shariah-compliant
+    // investing: a seventh component enters and the rest are renormalized.
+    'health_weights_shariah' => [
+        'diversification' => 0.20,
+        'risk_alignment' => 0.17,
+        'correlation' => 0.13,
+        'performance' => 0.13,
+        'drawdown' => 0.13,
+        'concentration' => 0.09,
+        'shariah' => 0.15,
     ],
 
     /*

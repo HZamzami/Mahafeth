@@ -65,7 +65,7 @@ class ClaudeInsightGenerator implements InsightGenerator
 
         $payload = json_encode([
             'as_of' => $snapshot->as_of->toDateString(),
-            'total_value_usd' => $snapshot->total_value,
+            'total_value_sar' => $snapshot->total_value,
             'health_score' => $snapshot->health_score,
             'component_scores' => $snapshot->component_scores,
             'metrics' => $metrics,

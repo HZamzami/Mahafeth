@@ -127,12 +127,12 @@ new class extends Component {
                 <div class="text-end">
                     <flux:text class="text-xs uppercase tracking-widest">{{ __('Total Portfolio Value') }}</flux:text>
                     <flux:heading size="xl" dir="ltr">
-                        ${{ Number::abbreviate($snapshot->total_value, 1) }}</flux:heading>
+                        {{ Number::abbreviate($snapshot->total_value, 1) }} {{ __('SAR') }}</flux:heading>
                     @if ($holdings['totalCost'] > 0)
                         <flux:text
                             class="text-xs {{ $totalPl >= 0 ? '!text-emerald-600 dark:!text-emerald-400' : '!text-red-600 dark:!text-red-400' }}"
                             dir="ltr">
-                            {{ __('Unrealized P/L') }}: {{ $totalPl >= 0 ? '+' : '−' }}${{ Number::abbreviate(abs($totalPl), 1) }}
+                            {{ __('Unrealized P/L') }}: {{ $totalPl >= 0 ? '+' : '−' }}{{ Number::abbreviate(abs($totalPl), 1) }} {{ __('SAR') }}
                         </flux:text>
                     @endif
                 </div>
@@ -209,8 +209,8 @@ new class extends Component {
                             <tr class="text-start text-xs uppercase tracking-wide text-neutral-400">
                                 <th class="pb-2 text-start font-medium">{{ __('Asset') }}</th>
                                 <th class="pb-2 text-end font-medium">{{ __('Quantity') }}</th>
-                                <th class="pb-2 text-end font-medium">{{ __('Value') }}</th>
-                                <th class="pb-2 text-end font-medium">{{ __('Cost Basis') }}</th>
+                                <th class="pb-2 text-end font-medium">{{ __('Value') }} ({{ __('SAR') }})</th>
+                                <th class="pb-2 text-end font-medium">{{ __('Cost Basis') }} ({{ __('SAR') }})</th>
                                 <th class="pb-2 text-end font-medium">{{ __('Unrealized P/L') }}</th>
                             </tr>
                         </thead>
@@ -224,12 +224,12 @@ new class extends Component {
                                     <td class="py-1.5 text-end tabular-nums" dir="ltr">
                                         {{ number_format($row['quantity'], 2) }}</td>
                                     <td class="py-1.5 text-end tabular-nums" dir="ltr">
-                                        ${{ number_format($row['value'], 0) }}</td>
+                                        {{ number_format($row['value'], 0) }}</td>
                                     <td class="py-1.5 text-end tabular-nums" dir="ltr">
-                                        ${{ number_format($row['cost'], 0) }}</td>
+                                        {{ number_format($row['cost'], 0) }}</td>
                                     <td class="py-1.5 text-end tabular-nums {{ $row['pl'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}"
                                         dir="ltr">
-                                        {{ $row['pl'] >= 0 ? '+' : '−' }}${{ number_format(abs($row['pl']), 0) }}
+                                        {{ $row['pl'] >= 0 ? '+' : '−' }}{{ number_format(abs($row['pl']), 0) }}
                                         ({{ number_format($row['plPct'] * 100, 1) }}%)</td>
                                 </tr>
                             @endforeach

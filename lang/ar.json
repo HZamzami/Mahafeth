@@ -651,5 +651,6 @@
     "Risk-adjusted return (Sharpe, Sortino) and progress toward your target return.": "العائد المعدّل بالمخاطر (شارب وسورتينو) والتقدم نحو عائدك المستهدف.",
     "The worst historical peak-to-trough loss.": "أسوأ خسارة تاريخية من قمة إلى قاع.",
     "How large your single biggest position is.": "حجم أكبر مركز منفرد لديك.",
-    "Your return per unit of risk (Sharpe ratio) would improve from :from to :to at the optimal mix.": "عائدك لكل وحدة مخاطرة (نسبة شارب) سيتحسن من :from إلى :to عند التوزيع الأمثل."
+    "Your return per unit of risk (Sharpe ratio) would improve from :from to :to at the optimal mix.": "عائدك لكل وحدة مخاطرة (نسبة شارب) سيتحسن من :from إلى :to عند التوزيع الأمثل.",
+    "SAR": "ر.س"
 }
