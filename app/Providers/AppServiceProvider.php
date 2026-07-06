@@ -14,6 +14,9 @@ use App\Services\OpenBanking\FakeOpenBankingProvider;
 use App\Services\Prices\SimulatedPriceProvider;
 use App\Services\Prices\TwelveDataPriceProvider;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 
@@ -56,5 +59,15 @@ class AppServiceProvider extends ServiceProvider
         // (as Saudi financial apps conventionally do) — this also avoids
         // mixed-direction glitches around +/− signs in RTL layouts.
         Number::useLocale('en');
+
+        // Surface background failures (analysis, insights, scheduled syncs)
+        // at critical level so hosting alerts pick them up.
+        Queue::failing(function (JobFailed $event): void {
+            Log::critical('Queued job failed.', [
+                'job' => $event->job->resolveName(),
+                'connection' => $event->connectionName,
+                'error' => $event->exception->getMessage(),
+            ]);
+        });
     }
 }
