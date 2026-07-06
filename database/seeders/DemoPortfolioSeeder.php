@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Actions\ImportHoldings;
 use App\Actions\SyncConnection;
 use App\Enums\RiskTolerance;
 use App\Enums\TimeHorizon;
@@ -31,6 +32,18 @@ class DemoPortfolioSeeder extends Seeder
             'Faisal Alqahtani',
             RiskTolerance::Balanced,
             Institution::whereIn('slug', ['alinma-bank', 'derayah', 'rain'])->get(),
+        );
+
+        // His Alinma Capital equities arrive through the statement import
+        // path, exactly as they would in the live demo.
+        app(ImportHoldings::class)->handle(
+            $demo,
+            Institution::where('slug', 'alinma-capital')->firstOrFail(),
+            [
+                ['symbol' => '2222.SR', 'quantity' => 800.0, 'avg_cost' => 8.10],
+                ['symbol' => '7010.SR', 'quantity' => 500.0, 'avg_cost' => 10.40],
+                ['symbol' => '1010.SR', 'quantity' => 600.0, 'avg_cost' => 24.00],
+            ],
         );
 
         $this->backfillSnapshotHistory($demo);

@@ -26,7 +26,16 @@ class InstitutionFactory extends Factory
             'name' => $name,
             'name_ar' => $name,
             'type' => fake()->randomElement(InstitutionType::cases()),
+            'provider' => 'fake',
             'color' => fake()->hexColor(),
         ];
+    }
+
+    public function import(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => InstitutionType::Brokerage,
+            'provider' => 'import',
+        ]);
     }
 }

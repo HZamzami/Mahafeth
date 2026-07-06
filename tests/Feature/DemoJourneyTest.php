@@ -85,7 +85,9 @@ class DemoJourneyTest extends TestCase
 
         $demo = User::where('email', 'demo@mahafeth.test')->firstOrFail();
 
-        $this->assertSame(3, $demo->connections()->count());
+        // Alinma Bank, Derayah, and Rain via API sync plus Alinma Capital via import.
+        $this->assertSame(4, $demo->connections()->count());
+        $this->assertSame('import', $demo->connections()->whereRelation('institution', 'slug', 'alinma-capital')->firstOrFail()->source);
         $this->assertNotNull($demo->riskProfile);
         $this->assertNotNull($demo->latestSnapshot()?->health_score);
         $this->assertGreaterThan(20, $demo->portfolioSnapshots()->whereNotNull('health_score')->count());

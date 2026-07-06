@@ -9,8 +9,6 @@ use App\Models\Account;
 use App\Models\Asset;
 use App\Models\Connection;
 use App\Models\Institution;
-use App\Models\PriceHistory;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -19,9 +17,10 @@ use Illuminate\Support\Facades\DB;
  */
 class SyncConnection
 {
-    private const PRICE_HISTORY_YEARS = 3;
-
-    public function __construct(private OpenBankingProvider $provider) {}
+    public function __construct(
+        private OpenBankingProvider $provider,
+        private SyncPrices $syncPrices,
+    ) {}
 
     public function handle(Connection $connection): void
     {
@@ -54,7 +53,7 @@ class SyncConnection
             ]);
         });
 
-        $this->syncPrices(array_values(array_unique($symbols)));
+        $this->syncPrices->handle(array_values(array_unique($symbols)));
     }
 
     /**
@@ -98,34 +97,6 @@ class SyncConnection
                 'amount' => $transactionData['amount'],
                 'executed_at' => $transactionData['executed_at'],
             ]);
-        }
-    }
-
-    /**
-     * @param  list<string>  $symbols
-     */
-    private function syncPrices(array $symbols): void
-    {
-        $from = Carbon::now()->subYears(self::PRICE_HISTORY_YEARS)->startOfDay();
-        $to = Carbon::now()->startOfDay();
-
-        $assetIds = Asset::whereIn('symbol', $symbols)->pluck('id', 'symbol');
-        $series = $this->provider->fetchPrices($symbols, $from, $to);
-
-        foreach ($series as $symbol => $prices) {
-            $rows = [];
-
-            foreach ($prices as $date => $close) {
-                $rows[] = [
-                    'asset_id' => $assetIds[$symbol],
-                    'date' => $date,
-                    'close' => $close,
-                ];
-            }
-
-            foreach (array_chunk($rows, 500) as $chunk) {
-                PriceHistory::upsert($chunk, ['asset_id', 'date'], ['close']);
-            }
         }
     }
 
