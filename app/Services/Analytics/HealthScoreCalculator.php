@@ -5,7 +5,9 @@ namespace App\Services\Analytics;
 /**
  * Composite Portfolio Health Score (0–100): a weighted average of six
  * component scores, each normalized to 0–100 with a documented linear curve.
- * Component weights live in config('mahafeth.health_weights').
+ * Component weights live in config('mahafeth.health_weights'). Investors
+ * whose IPS requires Shariah compliance get a seventh component weighted
+ * per config('mahafeth.health_weights_shariah').
  */
 class HealthScoreCalculator
 {
@@ -17,7 +19,7 @@ class HealthScoreCalculator
      * @param  array<string, mixed>  $metrics  a portfolio snapshot's metrics payload
      * @return array{components: array<string, int>, overall: int}
      */
-    public function calculate(array $metrics, float $targetVolatility, ?float $targetReturn = null): array
+    public function calculate(array $metrics, float $targetVolatility, ?float $targetReturn = null, bool $shariahRequired = false): array
     {
         $components = [
             'diversification' => $this->diversificationScore(
@@ -39,7 +41,13 @@ class HealthScoreCalculator
             'concentration' => $this->concentrationScore((float) $metrics['largest_position']['weight']),
         ];
 
-        $weights = config('mahafeth.health_weights');
+        if ($shariahRequired && isset($metrics['shariah'])) {
+            $components['shariah'] = $this->shariahScore((float) $metrics['shariah']['compliant_weight']);
+        }
+
+        $weights = isset($components['shariah'])
+            ? config('mahafeth.health_weights_shariah')
+            : config('mahafeth.health_weights');
         $overall = 0.0;
 
         foreach ($components as $name => $score) {
@@ -110,6 +118,14 @@ class HealthScoreCalculator
     private function drawdownScore(float $maxDrawdown): float
     {
         return 100 - $this->linear($maxDrawdown, 0.05, 0.40);
+    }
+
+    /**
+     * Compliant share of portfolio value: 60% or less → 0, 100% → 100.
+     */
+    private function shariahScore(float $compliantWeight): float
+    {
+        return $this->linear($compliantWeight, 0.60, 1.0);
     }
 
     /**

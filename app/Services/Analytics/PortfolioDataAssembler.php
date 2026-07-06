@@ -24,7 +24,7 @@ class PortfolioDataAssembler
      * @return array{
      *     quantities: array<string, float>,
      *     priceSeries: array<string, array<string, float>>,
-     *     assets: array<string, array{name: string, asset_class: string, sector: ?string, country: ?string, currency: string}>
+     *     assets: array<string, array{name: string, asset_class: string, sector: ?string, country: ?string, currency: string, shariah_status: string}>
      * }
      */
     public function forUser(User $user, CarbonInterface $from): array
@@ -50,6 +50,7 @@ class PortfolioDataAssembler
                 'sector' => $holding->asset->sector,
                 'country' => $holding->asset->country,
                 'currency' => $holding->asset->currency,
+                'shariah_status' => $holding->asset->shariah_status->value,
             ];
         }
 

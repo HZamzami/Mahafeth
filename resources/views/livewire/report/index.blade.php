@@ -2,6 +2,7 @@
 
 use App\Enums\AssetClass;
 use App\Enums\ConnectionStatus;
+use App\Enums\ShariahStatus;
 use App\Models\AiInsight;
 use App\Models\Holding;
 use App\Services\Analytics\PortfolioDataAssembler;
@@ -46,6 +47,7 @@ new class extends Component {
 
         $costs = [];
         $names = [];
+        $statuses = [];
 
         $dbHoldings = Holding::with('asset')
             ->whereHas('account.connection', fn ($query) => $query
@@ -58,6 +60,7 @@ new class extends Component {
             $rate = $fxRates[$holding->asset->currency] ?? 1.0;
             $costs[$symbol] = ($costs[$symbol] ?? 0.0) + $holding->quantity * $holding->avg_cost * $rate;
             $names[$symbol] = $holding->asset->localizedName();
+            $statuses[$symbol] = $holding->asset->shariah_status;
         }
 
         $rows = [];
@@ -80,6 +83,7 @@ new class extends Component {
                 'cost' => $cost,
                 'pl' => $value - $cost,
                 'plPct' => $cost > 0 ? ($value - $cost) / $cost : 0.0,
+                'shariah' => $statuses[$symbol] ?? ShariahStatus::Unknown,
             ];
         }
 
@@ -160,7 +164,9 @@ new class extends Component {
                             'performance' => __('Performance'),
                             'drawdown' => __('Drawdown'),
                             'concentration' => __('Concentration'),
+                            'shariah' => __('Shariah Compliance'),
                         ] as $key => $label)
+                            @continue($key === 'shariah' && ! isset($components[$key]))
                             <div class="flex items-center justify-between gap-2">
                                 <flux:text class="text-sm">{{ $label }}</flux:text>
                                 <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white" dir="ltr">
@@ -200,6 +206,32 @@ new class extends Component {
                 </flux:text>
             </div>
 
+            {{-- Shariah screening --}}
+            @if (isset($metrics['shariah']))
+                <div class="border-b border-neutral-200 py-6 dark:border-neutral-700">
+                    <flux:heading size="lg">{{ __('Shariah Compliance') }}</flux:heading>
+                    <div class="mt-4 grid grid-cols-3 gap-x-8">
+                        @foreach ([
+                            [__('Shariah Compliant'), $metrics['shariah']['compliant_weight'], '!text-emerald-600 dark:!text-emerald-400'],
+                            [__('Compliance Unknown'), $metrics['shariah']['unknown_weight'], '!text-amber-600 dark:!text-amber-400'],
+                            [__('Not Shariah Compliant'), $metrics['shariah']['non_compliant_weight'], '!text-red-600 dark:!text-red-400'],
+                        ] as [$label, $weight, $color])
+                            <div>
+                                <flux:text class="text-sm">{{ $label }}</flux:text>
+                                <flux:heading class="{{ $color }}" size="lg" dir="ltr">
+                                    {{ Number::percentage($weight * 100, 1) }}</flux:heading>
+                            </div>
+                        @endforeach
+                    </div>
+                    @if ($metrics['shariah']['non_compliant_positions'] !== [])
+                        <flux:text class="mt-3 text-xs">
+                            {{ __('Flagged Positions') }}:
+                            {{ collect($metrics['shariah']['non_compliant_positions'])->map(fn (array $position) => $position['name'].' ('.Number::percentage($position['weight'] * 100, 1).')')->join(', ') }}
+                        </flux:text>
+                    @endif
+                </div>
+            @endif
+
             {{-- Holdings & P/L --}}
             @if ($holdings['rows'] !== [])
                 <div class="border-b border-neutral-200 py-6 dark:border-neutral-700">
@@ -220,6 +252,9 @@ new class extends Component {
                                     <td class="py-1.5">
                                         <span class="font-medium text-zinc-800 dark:text-white">{{ $row['symbol'] }}</span>
                                         <span class="text-neutral-400"> · {{ $row['name'] }}</span>
+                                        @if ($row['shariah'] === ShariahStatus::NonCompliant)
+                                            <flux:badge color="red" size="sm">{{ $row['shariah']->label() }}</flux:badge>
+                                        @endif
                                     </td>
                                     <td class="py-1.5 text-end tabular-nums" dir="ltr">
                                         {{ number_format($row['quantity'], 2) }}</td>

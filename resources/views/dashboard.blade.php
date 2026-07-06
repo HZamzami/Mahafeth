@@ -39,6 +39,9 @@
 
                 {{-- Asset Allocation --}}
                 <livewire:dashboard.asset-allocation />
+
+                {{-- Shariah Compliance --}}
+                <livewire:dashboard.shariah-compliance />
             </div>
 
             {{-- Center column --}}

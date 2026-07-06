@@ -41,6 +41,19 @@ class DashboardTest extends TestCase
             ->assertSee('Technology');
     }
 
+    public function test_the_dashboard_shows_the_shariah_screening_card(): void
+    {
+        $user = $this->syncedAndAnalyzedUser();
+
+        // Derayah's fixture includes JPM, the non-compliant contrast position.
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertSee(__('Shariah Compliance'))
+            ->assertSee(__('Flagged Positions'))
+            ->assertSee('JPM');
+    }
+
     public function test_the_allocation_donut_shows_asset_class_weights(): void
     {
         $this->actingAs($this->syncedAndAnalyzedUser());

@@ -26,6 +26,7 @@ class PortfolioAnalyzer
         private HealthScoreCalculator $healthScoreCalculator,
         private EfficientFrontierService $efficientFrontierService,
         private RiskDecomposer $riskDecomposer,
+        private ShariahComplianceAnalyzer $shariahComplianceAnalyzer,
     ) {}
 
     /**
@@ -106,6 +107,7 @@ class PortfolioAnalyzer
             'stress_correlation' => $this->correlationAnalyzer->stressCorrelation($averageCorrelation),
             'pca_first_factor_share' => $this->correlationAnalyzer->firstFactorShare($covariance),
             'weights' => $weights,
+            'shariah' => $this->shariahComplianceAnalyzer->analyze($weights, $data['assets']),
             'allocations' => [
                 'asset_class' => $this->diversificationAnalyzer->groupWeights($weights, array_map(fn (array $asset) => $asset['asset_class'], $data['assets'])),
                 'sector' => $this->diversificationAnalyzer->groupWeights($weights, $sectors),
@@ -137,6 +139,7 @@ class PortfolioAnalyzer
                 $metrics,
                 $riskProfile->target_volatility,
                 $riskProfile->target_return,
+                (bool) ($riskProfile->constraints['shariah_required'] ?? false),
             );
 
             $attributes['component_scores'] = $health['components'];

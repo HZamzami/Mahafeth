@@ -120,4 +120,32 @@ class HealthScoreCalculatorTest extends TestCase
 
         $this->assertSame(50, $result['components']['performance']);
     }
+
+    public function test_shariah_component_only_enters_when_the_investor_requires_it(): void
+    {
+        $metrics = $this->metrics(['shariah' => ['compliant_weight' => 0.80]]);
+
+        $withoutRequirement = $this->calculator->calculate($metrics, targetVolatility: 0.15, targetReturn: 0.08);
+        $withRequirement = $this->calculator->calculate($metrics, targetVolatility: 0.15, targetReturn: 0.08, shariahRequired: true);
+
+        $this->assertArrayNotHasKey('shariah', $withoutRequirement['components']);
+        $this->assertSame(100, $withoutRequirement['overall']);
+
+        // 80% compliant → (0.80−0.60)/0.40 = 50; everything else 100 → 100 − 0.15×50.
+        $this->assertSame(50, $withRequirement['components']['shariah']);
+        $this->assertSame(93, $withRequirement['overall']);
+    }
+
+    public function test_a_fully_compliant_portfolio_scores_one_hundred_on_shariah(): void
+    {
+        $result = $this->calculator->calculate(
+            $this->metrics(['shariah' => ['compliant_weight' => 1.0]]),
+            targetVolatility: 0.15,
+            targetReturn: 0.08,
+            shariahRequired: true,
+        );
+
+        $this->assertSame(100, $result['components']['shariah']);
+        $this->assertSame(100, $result['overall']);
+    }
 }
