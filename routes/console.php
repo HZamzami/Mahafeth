@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote')->hourly();
+// FX rates refresh once a day (the source publishes daily); the portfolio
+// refresh runs after Tadawul and US markets have both closed (UTC).
+Schedule::command('mahafeth:fetch-fx-rates')->dailyAt('03:30');
+Schedule::command('mahafeth:refresh-portfolios')->dailyAt('04:00');
+Schedule::command('queue:prune-failed --hours=168')->weekly();
