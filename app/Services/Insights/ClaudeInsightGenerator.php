@@ -18,7 +18,7 @@ class ClaudeInsightGenerator implements InsightGenerator
 
     private const API_VERSION = '2023-06-01';
 
-    public function generate(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale): array
+    public function generate(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $goals = []): array
     {
         $response = Http::withHeaders([
             'x-api-key' => (string) config('mahafeth.ai.api_key'),
@@ -33,7 +33,7 @@ class ClaudeInsightGenerator implements InsightGenerator
                 'thinking' => ['type' => 'adaptive'],
                 'system' => $this->systemPrompt(),
                 'messages' => [
-                    ['role' => 'user', 'content' => $this->buildPrompt($snapshot, $riskProfile, $locale)],
+                    ['role' => 'user', 'content' => $this->buildPrompt($snapshot, $riskProfile, $locale, $goals)],
                 ],
                 'output_config' => [
                     'format' => [
@@ -51,7 +51,7 @@ class ClaudeInsightGenerator implements InsightGenerator
      * The user prompt: snapshot metrics, investor profile, and locale
      * instruction. Public so tests can assert its contents.
      */
-    public function buildPrompt(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale): string
+    public function buildPrompt(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $goals = []): string
     {
         $metrics = $snapshot->metrics ?? [];
 
@@ -71,6 +71,7 @@ class ClaudeInsightGenerator implements InsightGenerator
             'component_scores' => $snapshot->component_scores,
             'metrics' => $metrics,
             'investor_profile' => $profile,
+            'goals' => $goals,
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
         $language = $locale === 'ar'
@@ -98,6 +99,8 @@ class ClaudeInsightGenerator implements InsightGenerator
         Your job is "from diagnosis to action": translate quantitative metrics into plain language a non-professional investor understands, explain *why* each issue matters, and propose concrete steps. Never invent numbers — only use values present in the provided data. Percentages in the data are decimal fractions (0.26 = 26%). This is educational analysis, not licensed financial advice; keep the tone factual and helpful without disclaimers.
 
         When the investor profile's constraints mark Shariah compliance as required (or preferred), never suggest instruments flagged non-compliant in the metrics, prioritize divesting the flagged positions listed under metrics.shariah.non_compliant_positions, and frame replacements using compliant alternatives already present in the data.
+
+        When goals are present, tie recommendations to them: if a goal's probability of success is low at the current allocation but higher at the optimal mix, say so explicitly and quantify the improvement.
         PROMPT;
     }
 

@@ -173,6 +173,10 @@ new class extends Component {
         @endif
     </div>
 
+    @if (auth()->user()->riskProfile !== null)
+        <livewire:investor-profile.goals />
+    @endif
+
     <div class="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-zinc-900">
         <div class="mb-6 flex items-center justify-between">
             <flux:text class="text-xs font-medium uppercase tracking-widest">

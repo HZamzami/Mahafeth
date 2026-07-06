@@ -87,6 +87,19 @@ class ClaudeInsightGeneratorTest extends TestCase
         $this->assertStringContainsString('English', $prompt);
     }
 
+    public function test_the_prompt_carries_goal_forecasts(): void
+    {
+        [$snapshot, $profile] = $this->snapshotAndProfile();
+
+        $prompt = (new ClaudeInsightGenerator)->buildPrompt($snapshot, $profile, 'en', [
+            ['name' => 'Retirement', 'target_amount' => 2_000_000.0, 'months' => 120, 'monthly_contribution' => 3000.0, 'probability' => 0.42, 'probability_optimal' => 0.61],
+        ]);
+
+        $this->assertStringContainsString('Retirement', $prompt);
+        $this->assertStringContainsString('0.42', $prompt);
+        $this->assertStringContainsString('probability_optimal', $prompt);
+    }
+
     public function test_the_prompt_carries_the_shariah_constraint(): void
     {
         [$snapshot, $profile] = $this->snapshotAndProfile();

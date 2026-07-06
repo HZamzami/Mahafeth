@@ -46,6 +46,15 @@ class DemoPortfolioSeeder extends Seeder
             ],
         );
 
+        $demo->goals()->updateOrCreate(
+            ['name' => 'Retirement'],
+            [
+                'target_amount' => 5_000_000,
+                'target_date' => now()->addYears(15)->toDateString(),
+                'monthly_contribution' => 8_000,
+            ],
+        );
+
         $this->backfillSnapshotHistory($demo);
         app(PortfolioAnalyzer::class)->analyze($demo->fresh());
         $this->backfillHealthHistory($demo);

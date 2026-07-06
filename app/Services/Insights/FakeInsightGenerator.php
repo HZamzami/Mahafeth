@@ -14,7 +14,7 @@ use Illuminate\Support\Number;
  */
 class FakeInsightGenerator implements InsightGenerator
 {
-    public function generate(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale): array
+    public function generate(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $goals = []): array
     {
         $metrics = $snapshot->metrics ?? [];
         $largest = $metrics['largest_position'] ?? null;
@@ -29,6 +29,13 @@ class FakeInsightGenerator implements InsightGenerator
         if ($riskProfile !== null) {
             $summary .= ' '.__('Your investor profile targets :target volatility, so risk alignment is a priority.', [
                 'target' => Number::percentage($riskProfile->target_volatility * 100, 1),
+            ], $locale);
+        }
+
+        if ($goals !== []) {
+            $summary .= ' '.__('Your goal ":name" has a :probability chance of success at the current allocation.', [
+                'name' => $goals[0]['name'],
+                'probability' => Number::percentage($goals[0]['probability'] * 100, 0),
             ], $locale);
         }
 

@@ -5,6 +5,7 @@ use App\Enums\ConnectionStatus;
 use App\Enums\ShariahStatus;
 use App\Models\AiInsight;
 use App\Models\Holding;
+use App\Services\Analytics\GoalForecaster;
 use App\Services\Analytics\PortfolioDataAssembler;
 use App\Services\Fx\FxRateService;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,7 @@ new class extends Component {
 
         return [
             'snapshot' => $snapshot,
+            'goalForecasts' => $this->goalForecasts($snapshot),
             'metrics' => $snapshot?->metrics ?? [],
             'components' => $snapshot?->component_scores,
             'profile' => $user->riskProfile,
@@ -28,6 +30,57 @@ new class extends Component {
                 ->where('locale', app()->getLocale())
                 ->first(),
         ];
+    }
+
+    /**
+     * Monte Carlo success odds per goal at the current and optimal mixes.
+     *
+     * @return list<array{name: string, target: float, months: int, probability: float, probabilityOptimal: ?float, median: float}>
+     */
+    private function goalForecasts($snapshot): array
+    {
+        $metrics = $snapshot?->metrics ?? [];
+
+        if ($snapshot === null || ! isset($metrics['expected_return'], $metrics['volatility'])) {
+            return [];
+        }
+
+        $forecaster = app(GoalForecaster::class);
+        $tangency = $metrics['frontier']['tangency'] ?? null;
+        $rows = [];
+
+        foreach (Auth::user()->goals()->orderBy('target_date')->get() as $goal) {
+            $months = $goal->monthsRemaining();
+
+            $current = $forecaster->forecast(
+                currentValue: (float) $snapshot->total_value,
+                annualReturn: (float) $metrics['expected_return'],
+                annualVolatility: (float) $metrics['volatility'],
+                targetAmount: $goal->target_amount,
+                months: $months,
+                monthlyContribution: $goal->monthly_contribution ?? 0.0,
+            );
+
+            $optimal = $tangency === null ? null : $forecaster->forecast(
+                currentValue: (float) $snapshot->total_value,
+                annualReturn: (float) $tangency['return'],
+                annualVolatility: (float) $tangency['risk'],
+                targetAmount: $goal->target_amount,
+                months: $months,
+                monthlyContribution: $goal->monthly_contribution ?? 0.0,
+            );
+
+            $rows[] = [
+                'name' => $goal->name,
+                'target' => $goal->target_amount,
+                'months' => $months,
+                'probability' => $current['probability'],
+                'probabilityOptimal' => $optimal['probability'] ?? null,
+                'median' => $current['final']['p50'],
+            ];
+        }
+
+        return $rows;
     }
 
     /**
@@ -206,6 +259,36 @@ new class extends Component {
                     {{ __('Returns are trailing and annualized. VaR and CVaR are the worst expected annual loss at 95% confidence.') }}
                 </flux:text>
             </div>
+
+            {{-- Goals --}}
+            @if ($goalForecasts !== [])
+                <div class="border-b border-neutral-200 py-6 dark:border-neutral-700">
+                    <flux:heading size="lg">{{ __('Financial Goals') }}</flux:heading>
+                    <table class="mt-4 w-full text-sm">
+                        <thead>
+                            <tr class="text-xs uppercase tracking-wide text-neutral-400">
+                                <th class="pb-2 text-start font-medium">{{ __('Goal') }}</th>
+                                <th class="pb-2 text-end font-medium">{{ __('Target') }} ({{ __('SAR') }})</th>
+                                <th class="pb-2 text-end font-medium">{{ __('Horizon') }}</th>
+                                <th class="pb-2 text-end font-medium">{{ __('Success odds') }}</th>
+                                <th class="pb-2 text-end font-medium">{{ __('At optimal mix') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($goalForecasts as $row)
+                                <tr class="border-t border-neutral-100 dark:border-zinc-800">
+                                    <td class="py-1.5 font-medium text-zinc-800 dark:text-white">{{ $row['name'] }}</td>
+                                    <td class="py-1.5 text-end tabular-nums" dir="ltr">{{ number_format($row['target'], 0) }}</td>
+                                    <td class="py-1.5 text-end tabular-nums" dir="ltr">{{ __(':months mo', ['months' => $row['months']]) }}</td>
+                                    <td class="py-1.5 text-end tabular-nums" dir="ltr">{{ Number::percentage($row['probability'] * 100, 0) }}</td>
+                                    <td class="py-1.5 text-end tabular-nums" dir="ltr">
+                                        {{ $row['probabilityOptimal'] !== null ? Number::percentage($row['probabilityOptimal'] * 100, 0) : '—' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
 
             {{-- Shariah screening --}}
             @if (isset($metrics['shariah']))

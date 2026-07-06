@@ -42,6 +42,9 @@
 
                 {{-- Shariah Compliance --}}
                 <livewire:dashboard.shariah-compliance />
+
+                {{-- Goal Forecast --}}
+                <livewire:dashboard.goal-progress />
             </div>
 
             {{-- Center column --}}
