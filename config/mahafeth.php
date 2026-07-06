@@ -13,7 +13,8 @@ return [
     |
     */
 
-    'risk_free_rate' => env('MAHAFETH_RISK_FREE_RATE', 0.055),
+    // Tracks the SAMA repo rate (4.25% since December 2025).
+    'risk_free_rate' => env('MAHAFETH_RISK_FREE_RATE', 0.0425),
 
     'benchmark_symbol' => env('MAHAFETH_BENCHMARK', 'TASI'),
 
