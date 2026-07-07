@@ -344,6 +344,11 @@ new class extends Component {
                             {{ collect($metrics['shariah']['non_compliant_positions'])->map(fn (array $position) => $position['name'].' ('.Number::percentage($position['weight'] * 100, 1).')')->join(', ') }}
                         </flux:text>
                     @endif
+                    @if (($metrics['shariah']['purification_amount'] ?? 0) > 0)
+                        <flux:text class="mt-1 text-xs">
+                            {{ __('Purification due: :amount SAR in dividends from non-compliant holdings over the past year.', ['amount' => Number::format($metrics['shariah']['purification_amount'], 2)]) }}
+                        </flux:text>
+                    @endif
                 </div>
             @endif
 

@@ -113,6 +113,21 @@ class FakeOpenBankingProvider implements OpenBankingProvider
                     'executed_at' => Carbon::now()->subDays($daysAgo)->startOfDay(),
                 ];
             }
+
+            // Semiannual dividends on equities (a ~3% annual yield on cost),
+            // so purification analysis has real income to work from.
+            if ($this->assetCatalog->metadata($holding['symbol'])['asset_class'] === 'equity') {
+                foreach ([90, 270] as $daysAgo) {
+                    $transactions[] = [
+                        'symbol' => $holding['symbol'],
+                        'type' => 'dividend',
+                        'quantity' => null,
+                        'price' => null,
+                        'amount' => round($holding['quantity'] * $holding['avg_cost'] * 0.015, 4),
+                        'executed_at' => Carbon::now()->subDays($daysAgo)->startOfDay(),
+                    ];
+                }
+            }
         }
 
         return $transactions;

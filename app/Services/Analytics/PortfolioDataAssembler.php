@@ -3,9 +3,11 @@
 namespace App\Services\Analytics;
 
 use App\Enums\ConnectionStatus;
+use App\Enums\TransactionType;
 use App\Models\Asset;
 use App\Models\Holding;
 use App\Models\PriceHistory;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Services\Fx\FxRateService;
 use Carbon\CarbonInterface;
@@ -27,7 +29,8 @@ class PortfolioDataAssembler
      * @return array{
      *     quantities: array<string, float>,
      *     priceSeries: array<string, array<string, float>>,
-     *     assets: array<string, array{name: string, asset_class: string, sector: ?string, country: ?string, currency: string, shariah_status: string}>
+     *     assets: array<string, array{name: string, asset_class: string, sector: ?string, country: ?string, currency: string, shariah_status: string}>,
+     *     dividends: array<string, float>
      * }
      */
     public function forUser(User $user, CarbonInterface $from): array
@@ -61,7 +64,38 @@ class PortfolioDataAssembler
             'quantities' => $quantities,
             'priceSeries' => $this->priceSeries($sources, $from),
             'assets' => $assets,
+            'dividends' => $this->trailingDividends($user),
         ];
+    }
+
+    /**
+     * Dividends received per symbol over the trailing year, in base currency.
+     *
+     * @return array<string, float>
+     */
+    private function trailingDividends(User $user): array
+    {
+        $dividends = Transaction::with('asset')
+            ->where('type', TransactionType::Dividend)
+            ->where('executed_at', '>=', now()->subYear())
+            ->whereHas('account.connection', fn ($query) => $query
+                ->whereBelongsTo($user)
+                ->where('status', ConnectionStatus::Connected))
+            ->get();
+
+        $sums = [];
+
+        foreach ($dividends as $transaction) {
+            if ($transaction->asset === null) {
+                continue;
+            }
+
+            $symbol = $transaction->asset->symbol;
+            $sums[$symbol] = ($sums[$symbol] ?? 0.0)
+                + $transaction->amount * $this->fxRate($transaction->asset->currency);
+        }
+
+        return $sums;
     }
 
     /**

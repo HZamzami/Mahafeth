@@ -84,5 +84,19 @@ new class extends Component {
                 </div>
             </div>
         @endif
+
+        @if (($shariah['purification_amount'] ?? 0) > 0)
+            <div class="mt-4 rounded-lg bg-neutral-50 p-3 dark:bg-zinc-800/50">
+                <div class="flex items-center justify-between">
+                    <flux:text class="text-xs font-medium uppercase tracking-widest">
+                        {{ __('Purification Due') }}</flux:text>
+                    <flux:text class="text-sm font-semibold !text-red-600 dark:!text-red-400" dir="ltr">
+                        {{ Number::format($shariah['purification_amount'], 2) }} {{ __('SAR') }}</flux:text>
+                </div>
+                <flux:text class="mt-1 text-xs">
+                    {{ __('Dividends received from non-compliant holdings over the past year, to be donated to charity.') }}
+                </flux:text>
+            </div>
+        @endif
     @endif
 </div>

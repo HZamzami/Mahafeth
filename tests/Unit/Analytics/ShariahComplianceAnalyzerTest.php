@@ -57,6 +57,34 @@ class ShariahComplianceAnalyzerTest extends TestCase
         $this->assertSame([], $result['non_compliant_positions']);
     }
 
+    public function test_purification_sums_dividends_of_non_compliant_holdings_only(): void
+    {
+        $result = $this->analyzer->analyze(
+            ['2222.SR' => 0.4, 'JPM' => 0.3, '1010.SR' => 0.3],
+            [
+                '2222.SR' => ['name' => 'Saudi Aramco', 'shariah_status' => 'compliant'],
+                'JPM' => ['name' => 'JPMorgan Chase & Co.', 'shariah_status' => 'non_compliant'],
+                '1010.SR' => ['name' => 'Riyad Bank', 'shariah_status' => 'non_compliant'],
+            ],
+            ['2222.SR' => 500.0, 'JPM' => 120.505, '1010.SR' => 80.0],
+        );
+
+        $this->assertSame(200.51, $result['purification_amount']);
+        $this->assertSame(120.51, $result['non_compliant_positions'][0]['purification']);
+        $this->assertSame(80.0, $result['non_compliant_positions'][1]['purification']);
+    }
+
+    public function test_purification_is_zero_without_dividends(): void
+    {
+        $result = $this->analyzer->analyze(
+            ['JPM' => 1.0],
+            ['JPM' => ['name' => 'JPMorgan Chase & Co.', 'shariah_status' => 'non_compliant']],
+        );
+
+        $this->assertSame(0.0, $result['purification_amount']);
+        $this->assertSame(0.0, $result['non_compliant_positions'][0]['purification']);
+    }
+
     public function test_a_fully_compliant_portfolio_has_no_findings(): void
     {
         $result = $this->analyzer->analyze(

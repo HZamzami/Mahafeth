@@ -41,7 +41,9 @@ class ConnectionSyncTest extends TestCase
 
         $account = $connection->accounts->first();
         $this->assertCount(5, $account->holdings);
-        $this->assertCount(10, $account->transactions);
+
+        // Each of the 5 equities gets two buy lots and two dividends.
+        $this->assertCount(20, $account->transactions);
 
         $apple = Asset::where('symbol', 'AAPL')->first();
         $this->assertNotNull($apple);

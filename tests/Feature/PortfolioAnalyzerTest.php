@@ -8,6 +8,7 @@ use App\Models\Connection;
 use App\Models\Institution;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
+use App\Services\Fx\FxRateService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -65,6 +66,25 @@ class PortfolioAnalyzerTest extends TestCase
 
         // Derayah is all-equity, so the class allocation has a single bucket.
         $this->assertSame(['equity'], array_keys($metrics['allocations']['asset_class']));
+    }
+
+    public function test_the_snapshot_carries_a_purification_amount_for_non_compliant_dividends(): void
+    {
+        $user = $this->syncedUser();
+
+        $shariah = app(PortfolioAnalyzer::class)->analyze($user)->metrics['shariah'];
+
+        // Derayah's fixture holds JPM (non-compliant), which pays two
+        // dividends in the trailing year, converted from USD to SAR.
+        $this->assertGreaterThan(0, $shariah['purification_amount']);
+
+        $flagged = collect($shariah['non_compliant_positions'])->firstWhere('symbol', 'JPM');
+        $this->assertSame($shariah['purification_amount'], $flagged['purification']);
+
+        // Compliant holdings also received dividends, but those need no
+        // purification, so the total only reflects the flagged position.
+        $expectedJpmDividends = round(2 * (220.0 * 128.40 * 0.015) * app(FxRateService::class)->rate('USD'), 2);
+        $this->assertEqualsWithDelta($expectedJpmDividends, $shariah['purification_amount'], 0.01);
     }
 
     public function test_reanalyzing_the_same_day_updates_the_existing_snapshot(): void

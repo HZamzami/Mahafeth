@@ -52,6 +52,7 @@ class DashboardTest extends TestCase
             ->assertOk()
             ->assertSee(__('Shariah Compliance'))
             ->assertSee(__('Flagged Positions'))
+            ->assertSee(__('Purification Due'))
             ->assertSee('JPM');
     }
 
