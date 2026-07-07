@@ -22,6 +22,7 @@ class NewsSeeder extends Seeder
                 [
                     'headline_ar' => $item['headline_ar'],
                     'source' => $item['source'],
+                    'url' => $item['url'],
                     'minutes' => $item['minutes'],
                     'symbols' => $item['symbols'],
                     'sectors' => $item['sectors'],

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Actions\SyncConnection;
 use App\Models\Connection;
 use App\Models\Institution;
+use App\Models\PortfolioSnapshot;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -75,6 +76,32 @@ class DashboardTest extends TestCase
             ->assertSee(__('Diversification'));
 
         $this->assertSame(1, $user->portfolioSnapshots()->count());
+    }
+
+    public function test_the_health_trend_collapses_without_enough_history(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        PortfolioSnapshot::factory()->for($user)->create();
+
+        // One snapshot cannot plot a trend; the card must not reserve
+        // layout space (an empty flex child would double the column gap).
+        Volt::test('dashboard.health-trend')
+            ->assertDontSee(__('Health Trend'))
+            ->assertSeeHtml('class="hidden"');
+    }
+
+    public function test_the_health_trend_plots_with_enough_history(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        PortfolioSnapshot::factory()->for($user)->count(2)->create();
+
+        Volt::test('dashboard.health-trend')
+            ->assertSee(__('Health Trend'))
+            ->assertDontSeeHtml('class="hidden"');
     }
 
     private function syncedAndAnalyzedUser(): User

@@ -55,6 +55,7 @@ class NewsRefreshTest extends TestCase
                     'title' => 'Apple ships new device',
                     'description' => str_repeat('word ', 400),
                     'source' => 'newswire',
+                    'url' => 'https://newswire.example/apple-ships-new-device',
                     'published_at' => '2026-07-05T10:00:00Z',
                     'entities' => [['symbol' => 'AAPL', 'industry' => 'Technology']],
                 ]],
@@ -68,6 +69,7 @@ class NewsRefreshTest extends TestCase
         $this->assertSame(['AAPL'], $item->symbols);
         $this->assertSame(['Technology'], $item->sectors);
         $this->assertSame('newswire', $item->source);
+        $this->assertSame('https://newswire.example/apple-ships-new-device', $item->url);
     }
 
     public function test_marketaux_failures_fall_back_to_curated_headlines(): void

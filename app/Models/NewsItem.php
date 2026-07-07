@@ -20,6 +20,7 @@ class NewsItem extends Model
         'headline',
         'headline_ar',
         'source',
+        'url',
         'minutes',
         'symbols',
         'sectors',

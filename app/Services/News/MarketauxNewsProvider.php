@@ -41,6 +41,7 @@ class MarketauxNewsProvider implements NewsProvider
                 'headline' => $article['title'],
                 'headline_ar' => $article['title'],
                 'source' => $article['source'] ?? 'marketaux',
+                'url' => $article['url'] ?? null,
                 'minutes' => max(1, (int) ceil(str_word_count($article['description'] ?? '') / 200) + 2),
                 'symbols' => array_values(array_unique(array_column($article['entities'] ?? [], 'symbol'))) ?: null,
                 'sectors' => array_values(array_filter(array_unique(array_column($article['entities'] ?? [], 'industry')))) ?: null,

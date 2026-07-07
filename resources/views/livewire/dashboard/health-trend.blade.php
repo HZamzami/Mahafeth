@@ -25,7 +25,9 @@ new class extends Component {
     }
 }; ?>
 
-<div>
+{{-- The root must always render for Livewire, but an empty div would still
+     eat a flex gap in the dashboard column, so collapse it when hidden. --}}
+<div @class(['hidden' => count($points) < 2])>
     @if (count($points) >= 2)
         <div
             class="relative shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">

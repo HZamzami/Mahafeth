@@ -27,6 +27,8 @@
         <env name="DB_DATABASE" value="testing"/>
         <env name="MAHAFETH_AI_FAKE" value="true"/>
         <env name="ANTHROPIC_API_KEY" value=""/>
+        <env name="MARKETAUX_TOKEN" value=""/>
+        <env name="TWELVEDATA_KEY" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

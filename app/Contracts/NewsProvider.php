@@ -15,6 +15,7 @@ interface NewsProvider
      *     headline: string,
      *     headline_ar: string,
      *     source: string,
+     *     url: ?string,
      *     minutes: int,
      *     symbols: ?list<string>,
      *     sectors: ?list<string>,

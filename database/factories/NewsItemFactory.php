@@ -23,6 +23,7 @@ class NewsItemFactory extends Factory
             'headline' => $headline,
             'headline_ar' => $headline,
             'source' => fake()->company(),
+            'url' => fake()->url(),
             'minutes' => fake()->numberBetween(2, 10),
             'symbols' => [fake()->lexify('????')],
             'sectors' => null,

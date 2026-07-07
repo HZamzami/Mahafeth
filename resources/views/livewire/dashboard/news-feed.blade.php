@@ -80,7 +80,14 @@ new class extends Component {
                 <flux:icon.newspaper class="size-5 text-neutral-400 dark:text-zinc-500" />
             </div>
             <div class="min-w-0">
-                <flux:heading class="leading-snug" size="sm">{{ $entry['item']->localizedHeadline() }}</flux:heading>
+                <flux:heading class="leading-snug" size="sm">
+                    @if ($entry['item']->url)
+                        <a class="hover:underline" href="{{ $entry['item']->url }}" target="_blank"
+                            rel="noopener noreferrer">{{ $entry['item']->localizedHeadline() }}</a>
+                    @else
+                        {{ $entry['item']->localizedHeadline() }}
+                    @endif
+                </flux:heading>
                 <flux:text class="mt-1 text-xs">
                     {{ $entry['item']->source }} &bull; {{ $entry['item']->published_at->diffForHumans() }}
                 </flux:text>

@@ -75,6 +75,7 @@ class CuratedNewsProvider implements NewsProvider
             'headline' => $item['headline'],
             'headline_ar' => $item['headline_ar'],
             'source' => $item['source'],
+            'url' => null,
             'minutes' => $item['minutes'],
             'symbols' => $item['symbols'],
             'sectors' => $item['sectors'],
