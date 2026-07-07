@@ -94,9 +94,9 @@ new class extends Component {
                     <div>
                         <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">{{ $goal->name }}</flux:text>
                         <flux:text class="text-xs">
-                            {{ __(':amount ⃁ by :date', ['amount' => Number::format($goal->target_amount, 0), 'date' => $goal->target_date->isoFormat('MMM YYYY')]) }}
+                            {{ __('⃁ :amount by :date', ['amount' => Number::format($goal->target_amount, 0), 'date' => $goal->target_date->isoFormat('MMM YYYY')]) }}
                             @if ($goal->monthly_contribution !== null)
-                                &bull; {{ __(':amount ⃁ monthly', ['amount' => Number::format($goal->monthly_contribution, 0)]) }}
+                                &bull; {{ __('⃁ :amount monthly', ['amount' => Number::format($goal->monthly_contribution, 0)]) }}
                             @endif
                         </flux:text>
                     </div>

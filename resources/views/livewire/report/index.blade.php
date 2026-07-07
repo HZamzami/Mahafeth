@@ -216,12 +216,12 @@ new class extends Component {
                 <div class="text-end">
                     <flux:text class="text-xs uppercase tracking-widest">{{ __('Total Portfolio Value') }}</flux:text>
                     <flux:heading size="xl" dir="ltr">
-                        {{ Number::abbreviate($snapshot->total_value, 1) }} ⃁</flux:heading>
+                        ⃁ {{ Number::abbreviate($snapshot->total_value, 1) }}</flux:heading>
                     @if ($holdings['totalCost'] > 0)
                         <flux:text
                             class="text-xs {{ $totalPl >= 0 ? '!text-emerald-600 dark:!text-emerald-400' : '!text-red-600 dark:!text-red-400' }}"
                             dir="ltr">
-                            {{ __('Unrealized P/L') }}: {{ $totalPl >= 0 ? '+' : '−' }}{{ Number::abbreviate(abs($totalPl), 1) }} ⃁
+                            {{ __('Unrealized P/L') }}: ⃁ {{ $totalPl >= 0 ? '+' : '−' }}{{ Number::abbreviate(abs($totalPl), 1) }}
                         </flux:text>
                     @endif
                 </div>
@@ -346,7 +346,7 @@ new class extends Component {
                     @endif
                     @if (($metrics['shariah']['purification_amount'] ?? 0) > 0)
                         <flux:text class="mt-1 text-xs">
-                            {{ __('Purification due: :amount ⃁ in dividends from non-compliant holdings over the past year.', ['amount' => Number::format($metrics['shariah']['purification_amount'], 2)]) }}
+                            {{ __('Purification due: ⃁ :amount in dividends from non-compliant holdings over the past year.', ['amount' => Number::format($metrics['shariah']['purification_amount'], 2)]) }}
                         </flux:text>
                     @endif
                 </div>
