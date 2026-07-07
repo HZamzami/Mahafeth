@@ -6,6 +6,7 @@ use App\Actions\SyncConnection;
 use App\Models\Connection;
 use App\Models\Institution;
 use App\Models\PortfolioSnapshot;
+use App\Models\RiskProfile;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -29,6 +30,41 @@ class DashboardTest extends TestCase
 
         $response = $this->get('/dashboard');
         $response->assertStatus(200);
+    }
+
+    public function test_onboarding_walks_a_fresh_user_toward_connecting(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->get('/dashboard')
+            ->assertOk()
+            ->assertSee(__('Welcome to Mahafeth'))
+            ->assertSee(__('Connect your accounts'))
+            ->assertSee(__('Run your first analysis'));
+    }
+
+    public function test_onboarding_runs_the_first_analysis_and_hides_itself(): void
+    {
+        $user = $this->syncedAndAnalyzedUser();
+        $user->portfolioSnapshots()->delete();
+        RiskProfile::factory()->for($user)->create();
+        $this->actingAs($user);
+
+        Volt::test('dashboard.onboarding')
+            ->assertSee(__('Analyze now'))
+            ->call('analyze')
+            ->assertDontSee(__('Welcome to Mahafeth'));
+
+        $this->assertSame(1, $user->portfolioSnapshots()->count());
+    }
+
+    public function test_onboarding_is_hidden_for_analyzed_users(): void
+    {
+        $this->actingAs($this->syncedAndAnalyzedUser());
+
+        $this->get('/dashboard')
+            ->assertOk()
+            ->assertDontSee(__('Welcome to Mahafeth'));
     }
 
     public function test_the_profile_menu_offers_a_theme_toggle(): void
