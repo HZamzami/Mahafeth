@@ -53,7 +53,9 @@ class AlertEvaluatorTest extends TestCase
 
     public function test_volatility_above_target_raises_the_risk_alert(): void
     {
-        $profile = RiskProfile::factory()->makeOne(['target_volatility' => 0.15]);
+        // Overriding user_id keeps makeOne() from persisting the factory's
+        // nested user, so this unit test never needs a migrated database.
+        $profile = RiskProfile::factory()->makeOne(['user_id' => 1, 'target_volatility' => 0.15]);
 
         $metrics = $this->calmMetrics();
         $metrics['volatility'] = 0.25;
