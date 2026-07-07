@@ -88,6 +88,7 @@ class ClaudeInsightGenerator implements InsightGenerator
         Produce:
         1. "summary": an executive summary (3-5 sentences) explaining the overall health score, the single biggest problem, and the most important hidden risk. Reference concrete numbers.
         2. "recommendations": 3 to 5 prioritized, concretely actionable steps (each with "title", "body", and "priority" of high/medium/low). Recommendations must follow from the metrics — e.g. trimming the oversized position, moving toward the tangency allocation, adding low-correlation assets — and explain the expected effect on the health score.
+        3. For each recommendation, an "evidence" list of 1 to 3 entries citing the exact data that justifies it: "metric" is a short human-readable metric name (in the response language), "value" is the value exactly as it appears in the data, formatted for display (percentages as percentages). Only cite metrics present in the data above.
         PROMPT;
     }
 
@@ -121,8 +122,20 @@ class ClaudeInsightGenerator implements InsightGenerator
                             'title' => ['type' => 'string'],
                             'body' => ['type' => 'string'],
                             'priority' => ['type' => 'string', 'enum' => ['high', 'medium', 'low']],
+                            'evidence' => [
+                                'type' => 'array',
+                                'items' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'metric' => ['type' => 'string'],
+                                        'value' => ['type' => 'string'],
+                                    ],
+                                    'required' => ['metric', 'value'],
+                                    'additionalProperties' => false,
+                                ],
+                            ],
                         ],
-                        'required' => ['title', 'body', 'priority'],
+                        'required' => ['title', 'body', 'priority', 'evidence'],
                         'additionalProperties' => false,
                     ],
                 ],

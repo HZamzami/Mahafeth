@@ -54,6 +54,10 @@ class FakeInsightGenerator implements InsightGenerator
                     'weight' => Number::percentage($flagged['weight'] * 100, 1),
                 ], $locale),
                 'priority' => 'high',
+                'evidence' => [
+                    ['metric' => __('Non-compliant weight', [], $locale), 'value' => Number::percentage($shariah['non_compliant_weight'] * 100, 1)],
+                    ['metric' => __('Flagged position', [], $locale), 'value' => $flagged['name']],
+                ],
             ];
         }
 
@@ -64,11 +68,19 @@ class FakeInsightGenerator implements InsightGenerator
                     'name' => $largest['name'] ?? __('your largest holding', [], $locale),
                 ], $locale),
                 'priority' => 'high',
+                'evidence' => [
+                    ['metric' => __('Largest position', [], $locale), 'value' => Number::percentage(($largest['weight'] ?? 0) * 100, 1)],
+                    ['metric' => __('Concentration (HHI)', [], $locale), 'value' => number_format($metrics['hhi'] ?? 0, 2)],
+                ],
             ],
             [
                 'title' => __('Rebalance toward the efficient frontier', [], $locale),
                 'body' => __('The optimal allocation of your current assets offers a better return for less risk. Review the suggested allocation on the Analytics page.', [], $locale),
                 'priority' => 'medium',
+                'evidence' => [
+                    ['metric' => __('Efficiency gap', [], $locale), 'value' => Number::percentage(($metrics['frontier']['efficiency_gap'] ?? 0) * 100, 1)],
+                    ['metric' => __('Sharpe ratio', [], $locale), 'value' => number_format($metrics['sharpe'] ?? 0, 2)],
+                ],
             ],
             [
                 'title' => __('Broaden diversification', [], $locale),
@@ -76,6 +88,10 @@ class FakeInsightGenerator implements InsightGenerator
                     'effective' => number_format($metrics['effective_holdings'] ?? 0, 1),
                 ], $locale),
                 'priority' => 'medium',
+                'evidence' => [
+                    ['metric' => __('Effective holdings', [], $locale), 'value' => number_format($metrics['effective_holdings'] ?? 0, 1)],
+                    ['metric' => __('Average correlation', [], $locale), 'value' => number_format($metrics['average_correlation'] ?? 0, 2)],
+                ],
             ],
         ];
 

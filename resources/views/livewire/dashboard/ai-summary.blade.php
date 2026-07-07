@@ -71,6 +71,20 @@ new class extends Component {
                                 {{ __(ucfirst($recommendation['priority'])) }}</flux:badge>
                         </div>
                         <flux:text class="mt-1 text-sm">{{ $recommendation['body'] }}</flux:text>
+
+                        @if (($recommendation['evidence'] ?? []) !== [])
+                            <details class="mt-2">
+                                <summary
+                                    class="cursor-pointer text-xs font-medium text-teal-700 hover:underline dark:text-teal-300">
+                                    {{ __('Show the math') }}</summary>
+                                <div class="mt-2 flex flex-wrap gap-1.5">
+                                    @foreach ($recommendation['evidence'] as $evidence)
+                                        <flux:badge size="sm" dir="ltr">
+                                            {{ $evidence['metric'] }}: {{ $evidence['value'] }}</flux:badge>
+                                    @endforeach
+                                </div>
+                            </details>
+                        @endif
                     </div>
                 @endforeach
             </div>

@@ -51,7 +51,8 @@ class AiInsightTest extends TestCase
         Volt::test('dashboard.ai-summary')
             ->call('generate')
             ->assertSee(__('Executive Summary'))
-            ->assertSee(__('Action Plan'));
+            ->assertSee(__('Action Plan'))
+            ->assertSee(__('Show the math'));
 
         $insight = AiInsight::first();
 
@@ -60,6 +61,13 @@ class AiInsightTest extends TestCase
         $this->assertSame($user->latestSnapshot()->id, $insight->portfolio_snapshot_id);
         $this->assertStringContainsString('Apple', $insight->summary);
         $this->assertNotEmpty($insight->recommendations);
+
+        // Every action item cites the metrics that justify it.
+        foreach ($insight->recommendations as $recommendation) {
+            $this->assertNotEmpty($recommendation['evidence']);
+            $this->assertArrayHasKey('metric', $recommendation['evidence'][0]);
+            $this->assertArrayHasKey('value', $recommendation['evidence'][0]);
+        }
     }
 
     public function test_regenerating_updates_the_existing_row_instead_of_duplicating(): void

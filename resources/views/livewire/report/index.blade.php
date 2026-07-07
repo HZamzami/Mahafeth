@@ -489,6 +489,11 @@ new class extends Component {
                                 <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">
                                     {{ $index + 1 }}. {{ $recommendation['title'] }}</flux:text>
                                 <flux:text class="mt-0.5 text-sm">{{ $recommendation['body'] }}</flux:text>
+                                @if (($recommendation['evidence'] ?? []) !== [])
+                                    <flux:text class="mt-0.5 text-xs" dir="ltr">
+                                        {{ collect($recommendation['evidence'])->map(fn (array $evidence) => $evidence['metric'].': '.$evidence['value'])->join(' · ') }}
+                                    </flux:text>
+                                @endif
                             </div>
                         @endforeach
                     </div>
