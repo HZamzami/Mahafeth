@@ -3,26 +3,50 @@
 namespace App\Services\Prices;
 
 use App\Contracts\PriceProvider;
+use App\Enums\AssetClass;
+use App\Models\Asset;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Sleep;
 
 /**
  * End-of-day closes from the Twelve Data API. Tadawul symbols use the
- * exchange code XSAU (2222.SR maps to symbol 2222 on XSAU); US symbols
- * pass through unchanged. Symbols the API cannot serve fall back to the
- * simulated series so analysis never loses an asset.
+ * exchange code XSAU (2222.SR maps to symbol 2222 on XSAU), crypto maps
+ * to USD pairs (BTC to BTC/USD), and US symbols pass through unchanged.
+ * Cash needs no market series, so it skips the API entirely. Symbols the
+ * API cannot serve fall back to the simulated series so analysis never
+ * loses an asset.
  */
 class TwelveDataPriceProvider implements PriceProvider
 {
+    /**
+     * Pause between requests so a full sync stays inside the free-tier
+     * budget of 8 API credits per minute.
+     */
+    private const SECONDS_BETWEEN_REQUESTS = 8;
+
     public function __construct(private SimulatedPriceProvider $fallback) {}
 
     public function fetchDailyCloses(array $symbols, CarbonInterface $from, CarbonInterface $to): array
     {
+        $assetClasses = Asset::whereIn('symbol', $symbols)->pluck('asset_class', 'symbol');
+
         $series = [];
+        $requested = false;
 
         foreach ($symbols as $symbol) {
-            $fetched = $this->fetchSymbol($symbol, $from, $to);
+            $assetClass = $assetClasses[$symbol] ?? null;
+            $fetched = null;
+
+            if ($assetClass !== AssetClass::Cash) {
+                if ($requested) {
+                    Sleep::for(self::SECONDS_BETWEEN_REQUESTS)->seconds();
+                }
+
+                $requested = true;
+                $fetched = $this->fetchSymbol($symbol, $assetClass, $from, $to);
+            }
 
             if ($fetched === null) {
                 $fetched = $this->fallback->fetchDailyCloses([$symbol], $from, $to)[$symbol] ?? null;
@@ -39,7 +63,7 @@ class TwelveDataPriceProvider implements PriceProvider
     /**
      * @return ?array<string, float> [Y-m-d => close], null on failure
      */
-    private function fetchSymbol(string $symbol, CarbonInterface $from, CarbonInterface $to): ?array
+    private function fetchSymbol(string $symbol, ?AssetClass $assetClass, CarbonInterface $from, CarbonInterface $to): ?array
     {
         $query = [
             'interval' => '1day',
@@ -52,13 +76,15 @@ class TwelveDataPriceProvider implements PriceProvider
         if (str_ends_with($symbol, '.SR')) {
             $query['symbol'] = substr($symbol, 0, -3);
             $query['mic_code'] = 'XSAU';
+        } elseif ($assetClass === AssetClass::Crypto) {
+            $query['symbol'] = $symbol.'/USD';
         } else {
             $query['symbol'] = $symbol;
         }
 
         try {
             $response = Http::baseUrl(config('services.twelvedata.base_url'))
-                ->timeout(20)
+                ->timeout(45)
                 ->get('/time_series', $query)
                 ->throw()
                 ->json();
@@ -77,7 +103,7 @@ class TwelveDataPriceProvider implements PriceProvider
         } catch (\Throwable $exception) {
             Log::warning('Twelve Data price fetch failed, using simulated series.', [
                 'symbol' => $symbol,
-                'error' => $exception->getMessage(),
+                'error' => str_replace((string) config('services.twelvedata.key'), '***', $exception->getMessage()),
             ]);
 
             return null;
