@@ -31,6 +31,16 @@ class DashboardTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_the_profile_menu_offers_a_theme_toggle(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->get('/dashboard')
+            ->assertOk()
+            ->assertSee(__('Dark Mode'))
+            ->assertSee(__('Light Mode'));
+    }
+
     public function test_the_dashboard_shows_the_analyzed_portfolio(): void
     {
         $user = $this->syncedAndAnalyzedUser();

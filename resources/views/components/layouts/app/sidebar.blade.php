@@ -74,6 +74,10 @@
 
                 <flux:menu.radio.group>
                     <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
+                    <flux:menu.item as="button" type="button" x-data icon="moon"
+                        @click.prevent.stop="$flux.dark = ! $flux.dark">
+                        <span x-text="$flux.dark ? '{{ __('Light Mode') }}' : '{{ __('Dark Mode') }}'"></span>
+                    </flux:menu.item>
                     <flux:menu.item :href="route('locale.update', app()->getLocale() === 'ar' ? 'en' : 'ar')" icon="language">
                         {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
                     </flux:menu.item>
@@ -123,6 +127,10 @@
 
                 <flux:menu.radio.group>
                     <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
+                    <flux:menu.item as="button" type="button" x-data icon="moon"
+                        @click.prevent.stop="$flux.dark = ! $flux.dark">
+                        <span x-text="$flux.dark ? '{{ __('Light Mode') }}' : '{{ __('Dark Mode') }}'"></span>
+                    </flux:menu.item>
                     <flux:menu.item :href="route('locale.update', app()->getLocale() === 'ar' ? 'en' : 'ar')" icon="language">
                         {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
                     </flux:menu.item>
