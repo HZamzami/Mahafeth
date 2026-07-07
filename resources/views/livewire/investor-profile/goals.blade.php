@@ -94,9 +94,9 @@ new class extends Component {
                     <div>
                         <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">{{ $goal->name }}</flux:text>
                         <flux:text class="text-xs">
-                            {{ __(':amount SAR by :date', ['amount' => Number::format($goal->target_amount, 0), 'date' => $goal->target_date->isoFormat('MMM YYYY')]) }}
+                            {{ __(':amount ⃁ by :date', ['amount' => Number::format($goal->target_amount, 0), 'date' => $goal->target_date->isoFormat('MMM YYYY')]) }}
                             @if ($goal->monthly_contribution !== null)
-                                &bull; {{ __(':amount SAR monthly', ['amount' => Number::format($goal->monthly_contribution, 0)]) }}
+                                &bull; {{ __(':amount ⃁ monthly', ['amount' => Number::format($goal->monthly_contribution, 0)]) }}
                             @endif
                         </flux:text>
                     </div>
@@ -116,10 +116,10 @@ new class extends Component {
 
             <flux:input wire:model="name" :label="__('Goal name')" :placeholder="__('e.g. Retirement')" />
             <flux:input wire:model="targetAmount" type="number" min="1" step="1000"
-                :label="__('Target amount (SAR)')" />
+                :label="__('Target amount (⃁)')" />
             <flux:input wire:model="targetDate" type="date" :label="__('Target date')" />
             <flux:input wire:model="monthlyContribution" type="number" min="0" step="100"
-                :label="__('Monthly contribution (SAR, optional)')" />
+                :label="__('Monthly contribution (⃁, optional)')" />
 
             <div class="flex gap-2">
                 <flux:spacer />

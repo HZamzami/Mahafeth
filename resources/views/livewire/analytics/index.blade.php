@@ -395,7 +395,7 @@ new class extends Component {
                             <th class="pb-2 text-start font-medium">{{ __('Asset') }}</th>
                             <th class="pb-2 text-center font-medium">{{ __('Action') }}</th>
                             <th class="pb-2 text-end font-medium">{{ __('Units') }}</th>
-                            <th class="pb-2 text-end font-medium">{{ __('Est. Value') }} ({{ __('SAR') }})</th>
+                            <th class="pb-2 text-end font-medium">{{ __('Est. Value') }} (⃁)</th>
                             <th class="pb-2 text-end font-medium">{{ __('Weight Change') }}</th>
                         </tr>
                     </thead>

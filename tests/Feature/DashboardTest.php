@@ -53,6 +53,7 @@ class DashboardTest extends TestCase
             ->assertSee(__('Shariah Compliance'))
             ->assertSee(__('Flagged Positions'))
             ->assertSee(__('Purification Due'))
+            ->assertSee("\u{20C1}") // the official Saudi Riyal sign
             ->assertSee('JPM');
     }
 

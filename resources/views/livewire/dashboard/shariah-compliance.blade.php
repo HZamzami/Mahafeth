@@ -91,7 +91,7 @@ new class extends Component {
                     <flux:text class="text-xs font-medium uppercase tracking-widest">
                         {{ __('Purification Due') }}</flux:text>
                     <flux:text class="text-sm font-semibold !text-red-600 dark:!text-red-400" dir="ltr">
-                        {{ Number::format($shariah['purification_amount'], 2) }} {{ __('SAR') }}</flux:text>
+                        {{ Number::format($shariah['purification_amount'], 2) }} ⃁</flux:text>
                 </div>
                 <flux:text class="mt-1 text-xs">
                     {{ __('Dividends received from non-compliant holdings over the past year, to be donated to charity.') }}
