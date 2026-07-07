@@ -31,13 +31,13 @@ new class extends Component {
 }; ?>
 
 <div
-    class="flex grow flex-col rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+    class="flex grow flex-col card p-5">
     <div class="mb-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
-            <div class="flex size-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/20">
-                <flux:icon.sparkles class="size-5 text-blue-600 dark:text-blue-300" />
+            <div class="flex size-10 items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-500/20">
+                <flux:icon.sparkles class="size-5 text-teal-700 dark:text-teal-300" />
             </div>
-            <flux:heading class="!text-blue-600 dark:!text-blue-300" size="lg">{{ __('Mahafeth AI') }}
+            <flux:heading class="!text-teal-700 dark:!text-teal-300" size="lg">{{ __('Mahafeth AI') }}
             </flux:heading>
         </div>
 
@@ -48,7 +48,7 @@ new class extends Component {
     </div>
 
     <div wire:loading.flex wire:target="generate" class="grow flex-col items-center justify-center gap-3 py-10">
-        <flux:icon.loading class="size-6 text-blue-600 dark:text-blue-300" />
+        <flux:icon.loading class="size-6 text-teal-700 dark:text-teal-300" />
         <flux:text class="text-sm">{{ __('Analyzing your portfolio…') }}</flux:text>
     </div>
 

@@ -232,7 +232,7 @@ new class extends Component {
 
     @if ($symbols === [])
         <div
-            class="flex flex-col items-center justify-center gap-4 rounded-xl border border-neutral-200 bg-white p-16 dark:border-neutral-700 dark:bg-zinc-900">
+            class="flex flex-col items-center justify-center gap-4 card p-16">
             <flux:text>{{ __('Connect at least two holdings to see correlation analytics.') }}</flux:text>
             <flux:button variant="primary" :href="route('connections')" wire:navigate>
                 {{ __('Connect accounts') }}</flux:button>
@@ -241,7 +241,7 @@ new class extends Component {
         {{-- Efficient Frontier --}}
         <div class="grid gap-4 lg:grid-cols-3">
             <div
-                class="rounded-xl border border-neutral-200 bg-white p-5 lg:col-span-2 dark:border-neutral-700 dark:bg-zinc-900">
+                class="card p-5 lg:col-span-2">
                 <flux:heading size="lg">{{ __('Efficient Frontier') }}</flux:heading>
                 <flux:text class="mb-4 mt-1 text-sm">
                     {{ __('Each dot is a possible allocation of your current assets. The green line is the efficient frontier; the gap between your portfolio and it is recoverable performance.') }}
@@ -284,7 +284,7 @@ new class extends Component {
                     {{-- Cloud --}}
                     @foreach ($frontierPlot['cloud'] as $dot)
                         <circle cx="{{ $dot['x'] }}" cy="{{ $dot['y'] }}" r="1.3"
-                            class="fill-blue-400/25 dark:fill-blue-300/20" />
+                            class="fill-teal-500/25 dark:fill-teal-300/20" />
                     @endforeach
 
                     {{-- Capital Market Line --}}
@@ -292,7 +292,7 @@ new class extends Component {
                         <line x1="{{ $frontierPlot['cml']['x1'] }}" y1="{{ $frontierPlot['cml']['y1'] }}"
                             x2="{{ $frontierPlot['cml']['x2'] }}" y2="{{ $frontierPlot['cml']['y2'] }}"
                             stroke-width="1.5" stroke-dasharray="5 4"
-                            class="stroke-blue-400 dark:stroke-blue-300" />
+                            class="stroke-teal-500 dark:stroke-teal-300" />
                     @endif
 
                     {{-- Frontier --}}
@@ -316,7 +316,7 @@ new class extends Component {
                         <flux:text class="text-xs">{{ __('Optimal (max Sharpe)') }}</flux:text>
                     </span>
                     <span class="flex items-center gap-2">
-                        <span class="h-0 w-5 border-t-2 border-dashed border-blue-400"></span>
+                        <span class="h-0 w-5 border-t-2 border-dashed border-teal-500"></span>
                         <flux:text class="text-xs">{{ __('Capital Market Line') }}</flux:text>
                     </span>
                 </div>
@@ -324,7 +324,7 @@ new class extends Component {
 
             <div class="flex flex-col gap-4">
                 @php($signed = fn (float $value): string => ($value < 0 ? '−' : '').number_format(abs($value), 2))
-                <div class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+                <div class="card p-5">
                     <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Efficiency Gap') }}
                     </flux:text>
                     <flux:heading size="xl" dir="ltr">{{ $signed($frontier['efficiency_gap']) }}</flux:heading>
@@ -335,7 +335,7 @@ new class extends Component {
                         ]) }}
                     </flux:text>
                 </div>
-                <div class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+                <div class="card p-5">
                     <flux:text class="mb-2 text-xs font-medium uppercase tracking-widest">{{ __('Current vs Optimal') }}
                     </flux:text>
                     <div class="space-y-2" dir="ltr">
@@ -354,7 +354,7 @@ new class extends Component {
                     </div>
                 </div>
                 <div
-                    class="grow rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+                    class="grow card p-5">
                     <flux:text class="mb-3 text-xs font-medium uppercase tracking-widest">
                         {{ __('Suggested Allocation') }}</flux:text>
                     <div class="grid grid-cols-[1fr_auto_auto] items-center gap-x-4 gap-y-2.5">
@@ -378,7 +378,7 @@ new class extends Component {
 
         {{-- Rebalancing Plan --}}
         @if ($rebalanceOrders !== [])
-            <div class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+            <div class="card p-5">
                 <div class="flex items-center justify-between">
                     <div>
                         <flux:heading size="lg">{{ __('Rebalancing Plan') }}</flux:heading>
@@ -429,20 +429,20 @@ new class extends Component {
         {{-- Risk Decomposition --}}
         <div class="grid gap-4 md:grid-cols-2">
             @if ($decomposition !== null)
-                <div class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+                <div class="card p-5">
                     <flux:heading size="lg">{{ __('Risk Decomposition') }}</flux:heading>
                     <flux:text class="mb-4 mt-1 text-sm">
                         {{ __('Systematic risk follows the market and cannot be diversified away; unsystematic risk can.') }}
                     </flux:text>
                     <div class="flex h-3 w-full overflow-hidden rounded-full" dir="ltr">
-                        <div class="bg-blue-500 dark:bg-blue-400"
+                        <div class="bg-teal-600 dark:bg-teal-400"
                             style="width: {{ round($decomposition['systematic_share'] * 100) }}%"></div>
                         <div class="bg-amber-500 dark:bg-amber-400"
                             style="width: {{ round($decomposition['unsystematic_share'] * 100) }}%"></div>
                     </div>
                     <div class="mt-3 flex justify-between">
                         <span class="flex items-center gap-2">
-                            <span class="size-2 rounded-full bg-blue-500 dark:bg-blue-400"></span>
+                            <span class="size-2 rounded-full bg-teal-600 dark:bg-teal-400"></span>
                             <flux:text class="text-xs">
                                 {{ __('Systematic :percent', ['percent' => round($decomposition['systematic_share'] * 100).'%']) }}
                             </flux:text>
@@ -457,7 +457,7 @@ new class extends Component {
                 </div>
             @endif
 
-            <div class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+            <div class="card p-5">
                 <flux:heading size="lg">{{ __('Risk by Sector') }}</flux:heading>
                 <flux:text class="mb-4 mt-1 text-sm">
                     {{ __('Share of total portfolio risk contributed by each sector.') }}</flux:text>
@@ -470,7 +470,7 @@ new class extends Component {
                                     {{ number_format($share * 100, 1) }}%</flux:text>
                             </div>
                             <div class="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
-                                <div class="h-full bg-blue-500 dark:bg-blue-400"
+                                <div class="h-full bg-teal-600 dark:bg-teal-400"
                                     style="width: {{ min(100, round($share * 100)) }}%"></div>
                             </div>
                         </div>
@@ -481,14 +481,14 @@ new class extends Component {
 
         {{-- Correlation stats --}}
         <div class="grid gap-4 md:grid-cols-3">
-            <div class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+            <div class="card p-5">
                 <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Average Correlation') }}
                 </flux:text>
                 <flux:heading size="xl" dir="ltr">{{ number_format($averageCorrelation, 2) }}</flux:heading>
                 <flux:text class="mt-2 text-xs">
                     {{ __('Lower values generally indicate better diversification.') }}</flux:text>
             </div>
-            <div class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+            <div class="card p-5">
                 <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Stress Correlation') }}
                 </flux:text>
                 <flux:heading size="xl" dir="ltr">{{ number_format($stressAverage, 2) }}</flux:heading>
@@ -496,7 +496,7 @@ new class extends Component {
                     {{ __('Estimated average correlation during a market crisis, when assets tend to fall together.') }}
                 </flux:text>
             </div>
-            <div class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+            <div class="card p-5">
                 <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Hidden Factor (PCA)') }}
                 </flux:text>
                 <flux:heading size="xl" dir="ltr">{{ number_format($firstFactorShare * 100, 0) }}%</flux:heading>
@@ -507,7 +507,7 @@ new class extends Component {
         </div>
 
         {{-- Correlation Matrix --}}
-        <div class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+        <div class="card p-5">
             <flux:heading size="lg">{{ __('Correlation Matrix') }}</flux:heading>
             <flux:text class="mb-4 mt-1 text-sm">
                 {{ __('Values near 1 mean two assets move together; near 0, independently; below 0, in opposite directions.') }}

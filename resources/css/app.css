@@ -36,17 +36,33 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
+    /* Oasis green brand accent; Flux primary buttons, links, and focus
+       rings all derive from these three variables. */
+    --color-accent: var(--color-teal-700);
+    --color-accent-content: var(--color-teal-700);
     --color-accent-foreground: var(--color-white);
+
+    /* Soft layered lift for cards sitting on the sand background. */
+    --shadow-card: 0 1px 2px rgb(24 24 27 / 0.04), 0 4px 12px -4px rgb(24 24 27 / 0.08);
+
+    /* Warm page surfaces: sand in light mode, soft charcoal in dark. */
+    --color-sand-50: #faf9f7;
+    --color-sand-100: #f3f1ec;
+    --color-charcoal-950: #131315;
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
+        --color-accent: var(--color-teal-400);
+        --color-accent-content: var(--color-teal-300);
+        --color-accent-foreground: var(--color-teal-950);
     }
+}
+
+/* The app-wide card surface: hairline border and a soft layered lift on
+   the sand background in light mode, borderless-feel elevation in dark. */
+@utility card {
+    @apply rounded-xl border border-neutral-200/80 bg-white shadow-card print:shadow-none dark:border-neutral-700/60 dark:bg-zinc-900 dark:shadow-none;
 }
 
 @layer base {

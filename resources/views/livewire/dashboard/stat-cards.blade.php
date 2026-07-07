@@ -29,7 +29,7 @@ new class extends Component {
 
 <div class="grid auto-rows-fr gap-4 md:grid-cols-4">
     <div
-        class="flex flex-col justify-between rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+        class="flex flex-col justify-between card p-5">
         <div>
             <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Annualized Return') }}
             </flux:text>
@@ -50,7 +50,7 @@ new class extends Component {
     </div>
 
     <div
-        class="flex flex-col justify-between rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+        class="flex flex-col justify-between card p-5">
         <div>
             <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Annualized Volatility') }}
             </flux:text>
@@ -65,7 +65,7 @@ new class extends Component {
     </div>
 
     <div
-        class="flex flex-col justify-between rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+        class="flex flex-col justify-between card p-5">
         <div>
             <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Largest Holding') }}</flux:text>
             <flux:heading size="xl">
@@ -80,14 +80,14 @@ new class extends Component {
     </div>
 
     <div
-        class="flex flex-col justify-between rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+        class="flex flex-col justify-between card p-5">
         <div>
             <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Largest Sector') }}</flux:text>
             <flux:heading class="leading-tight" size="xl">{{ $largestSector !== null ? __($largestSector) : '—' }}
             </flux:heading>
         </div>
         <div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
-            <div class="h-full bg-blue-500 dark:bg-blue-400" style="width: {{ round($largestSectorWeight * 100) }}%">
+            <div class="h-full bg-teal-600 dark:bg-teal-400" style="width: {{ round($largestSectorWeight * 100) }}%">
             </div>
         </div>
     </div>

@@ -80,14 +80,14 @@ new class extends Component {
 
 <div>
     @if ($forecasts !== [])
-        <div class="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-zinc-900">
+        <div class="card p-6">
             <flux:heading size="lg">{{ __('Goal Forecast') }}</flux:heading>
 
             @if ($chart !== [])
                 <flux:chart class="aspect-3/1 relative mt-4" dir="ltr" :value="$chart">
                     <flux:chart.svg>
                         <flux:chart.line class="text-neutral-300 dark:text-zinc-600" field="p10" stroke-dasharray="4 4" />
-                        <flux:chart.line class="text-blue-500 dark:text-blue-400" curve="smooth" field="p50" />
+                        <flux:chart.line class="text-teal-600 dark:text-teal-400" curve="smooth" field="p50" />
                         <flux:chart.line class="text-neutral-300 dark:text-zinc-600" field="p90" stroke-dasharray="4 4" />
                         <flux:chart.line class="text-emerald-500 dark:text-emerald-400" field="target" stroke-dasharray="2 3" />
                         <flux:chart.axis axis="y">
@@ -121,7 +121,7 @@ new class extends Component {
             </div>
         </div>
     @elseif (! $hasGoals)
-        <div class="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-zinc-900">
+        <div class="card p-6">
             <flux:heading size="lg">{{ __('Goal Forecast') }}</flux:heading>
             <flux:text class="mt-2 text-sm">
                 {{ __('Add a financial goal and Mahafeth will forecast your odds of reaching it.') }}</flux:text>

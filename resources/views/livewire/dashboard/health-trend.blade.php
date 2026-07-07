@@ -30,7 +30,7 @@ new class extends Component {
 <div @class(['hidden' => count($points) < 2])>
     @if (count($points) >= 2)
         <div
-            class="relative shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+            class="relative shrink-0 overflow-hidden card p-5">
             <flux:heading class="mb-4" size="lg">{{ __('Health Trend') }}</flux:heading>
             <flux:chart class="aspect-4/1 relative" dir="ltr" :value="$points">
                 <flux:chart.svg>

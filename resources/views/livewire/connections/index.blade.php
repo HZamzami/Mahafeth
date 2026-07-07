@@ -139,7 +139,7 @@ new class extends Component {
             @php($isConnected = $connection?->status === \App\Enums\ConnectionStatus::Connected)
 
             <div
-                class="flex items-center gap-4 rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+                class="flex items-center gap-4 card p-5">
                 <div class="flex size-12 shrink-0 items-center justify-center rounded-lg"
                     style="background-color: {{ $institution->color }}20">
                     <flux:icon.building-library class="size-6" style="color: {{ $institution->color }}" />

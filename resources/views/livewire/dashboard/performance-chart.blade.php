@@ -78,7 +78,7 @@ new class extends Component {
 }; ?>
 
 <div
-    class="relative shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+    class="relative shrink-0 overflow-hidden card p-5">
     <flux:heading class="mb-4" size="lg">{{ __('Total Return') }}</flux:heading>
 
     @if ($points !== [])
@@ -89,8 +89,8 @@ new class extends Component {
                         curve="smooth" field="{{ $symbol }}" />
                 @endforeach
 
-                <flux:chart.line class="text-blue-500 dark:text-blue-400" curve="smooth" field="portfolio" />
-                <flux:chart.area class="text-blue-500/10 dark:text-blue-400/10" curve="smooth" field="portfolio" />
+                <flux:chart.line class="text-teal-600 dark:text-teal-400" curve="smooth" field="portfolio" />
+                <flux:chart.area class="text-teal-600/10 dark:text-teal-400/10" curve="smooth" field="portfolio" />
 
                 <flux:chart.axis axis="x" field="date" tick-count="6"
                     :format="['month' => 'short', 'day' => 'numeric']">
@@ -105,7 +105,7 @@ new class extends Component {
 
         <div class="mt-2 flex items-center justify-center gap-5">
             <span class="flex items-center gap-1.5">
-                <span class="h-0.5 w-4 rounded bg-blue-500 dark:bg-blue-400"></span>
+                <span class="h-0.5 w-4 rounded bg-teal-600 dark:bg-teal-400"></span>
                 <flux:text class="text-xs">{{ __('Your portfolio') }}</flux:text>
             </span>
             @foreach ($benchmarkSymbols as $symbol)

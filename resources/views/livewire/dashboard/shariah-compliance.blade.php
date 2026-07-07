@@ -22,7 +22,7 @@ new class extends Component {
 }; ?>
 
 <div
-    class="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-zinc-900">
+    class="card p-6">
     <div class="flex items-center justify-between">
         <flux:heading size="lg">{{ __('Shariah Compliance') }}</flux:heading>
         <flux:icon.check-badge class="size-5 text-emerald-500" />

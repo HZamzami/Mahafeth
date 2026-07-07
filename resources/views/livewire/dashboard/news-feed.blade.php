@@ -67,7 +67,7 @@ new class extends Component {
     }
 }; ?>
 
-<div class="shrink-0 space-y-4 rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+<div class="shrink-0 space-y-4 card p-5">
     <flux:heading class="uppercase tracking-widest !text-neutral-500 dark:!text-neutral-400" size="sm">
         {{ __('Market Context') }}
     </flux:heading>
@@ -91,7 +91,7 @@ new class extends Component {
                 <flux:text class="mt-1 text-xs">
                     {{ $entry['item']->source }} &bull; {{ $entry['item']->published_at->diffForHumans() }}
                 </flux:text>
-                <flux:text class="mt-1.5 flex items-center gap-1 text-xs !text-blue-600 dark:!text-blue-400">
+                <flux:text class="mt-1.5 flex items-center gap-1 text-xs !text-teal-700 dark:!text-teal-300">
                     <flux:icon.sparkles class="size-3.5 shrink-0" /> {{ $entry['why'] }}
                 </flux:text>
             </div>

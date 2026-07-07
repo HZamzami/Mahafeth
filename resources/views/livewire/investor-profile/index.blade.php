@@ -177,14 +177,14 @@ new class extends Component {
         <livewire:investor-profile.goals />
     @endif
 
-    <div class="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-zinc-900">
+    <div class="card p-6">
         <div class="mb-6 flex items-center justify-between">
             <flux:text class="text-xs font-medium uppercase tracking-widest">
                 {{ __('Question :current of :total', ['current' => $step, 'total' => $totalSteps]) }}</flux:text>
             <div class="flex gap-1" dir="ltr">
                 @for ($i = 1; $i <= $totalSteps; $i++)
                     <span
-                        class="h-1 w-8 rounded-full {{ $i <= $step ? 'bg-blue-500 dark:bg-blue-400' : 'bg-neutral-200 dark:bg-zinc-700' }}"></span>
+                        class="h-1 w-8 rounded-full {{ $i <= $step ? 'bg-teal-600 dark:bg-teal-400' : 'bg-neutral-200 dark:bg-zinc-700' }}"></span>
                 @endfor
             </div>
         </div>

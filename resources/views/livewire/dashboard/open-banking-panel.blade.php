@@ -21,7 +21,7 @@ new class extends Component {
     }
 }; ?>
 
-<div class="shrink-0 rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+<div class="shrink-0 card p-5">
     <div class="mb-4 flex items-start justify-between">
         <div>
             <flux:heading size="lg">{{ __('Open Banking') }}</flux:heading>
@@ -32,8 +32,8 @@ new class extends Component {
     </div>
     <div
         class="flex items-center gap-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-zinc-800">
-        <div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-500/20">
-            <flux:icon.building-library class="size-5 text-blue-600 dark:text-blue-300" />
+        <div class="rounded-lg bg-teal-100 p-2 dark:bg-teal-500/20">
+            <flux:icon.building-library class="size-5 text-teal-700 dark:text-teal-300" />
         </div>
         <div class="flex-1">
             <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">

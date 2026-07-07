@@ -185,7 +185,7 @@ new class extends Component {
 <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
     @if ($snapshot === null)
         <div
-            class="flex flex-col items-center justify-center gap-4 rounded-xl border border-neutral-200 bg-white p-16 dark:border-neutral-700 dark:bg-zinc-900">
+            class="flex flex-col items-center justify-center gap-4 card p-16">
             <flux:text>{{ __('Connect your accounts and run an analysis to build your report.') }}</flux:text>
             <flux:button variant="primary" :href="route('connections')" wire:navigate>
                 {{ __('Connect accounts') }}</flux:button>
@@ -204,7 +204,7 @@ new class extends Component {
                 {{ __('Print / Save as PDF') }}</flux:button>
         </div>
 
-        <div class="rounded-xl border border-neutral-200 bg-white p-8 print:border-0 print:p-0 dark:border-neutral-700 dark:bg-zinc-900">
+        <div class="card p-8 print:border-0 print:p-0">
             {{-- Header --}}
             <div class="flex items-start justify-between border-b border-neutral-200 pb-6 dark:border-neutral-700">
                 <div>
@@ -232,7 +232,7 @@ new class extends Component {
                 <div>
                     <flux:text class="mb-1 text-xs uppercase tracking-widest">{{ __('Portfolio Health Score') }}
                     </flux:text>
-                    <flux:heading class="!text-blue-600 dark:!text-blue-400" size="xl" dir="ltr">
+                    <flux:heading class="!text-teal-700 dark:!text-teal-300" size="xl" dir="ltr">
                         {{ $snapshot->health_score !== null ? $snapshot->health_score.'/100' : '—' }}</flux:heading>
                     @if ($profile !== null)
                         <flux:text class="mt-2 text-sm">

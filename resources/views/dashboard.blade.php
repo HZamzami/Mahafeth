@@ -1,7 +1,7 @@
 <x-layouts.app>
     <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
         @if (! auth()->user()->connections()->exists())
-            <flux:callout color="blue" icon="building-library">
+            <flux:callout color="teal" icon="building-library">
                 <flux:callout.heading>{{ __('Connect your accounts') }}</flux:callout.heading>
                 <flux:callout.text>
                     {{ __('Link your investment accounts through Open Banking to build your unified portfolio — everything on this page comes to life from there.') }}
@@ -12,7 +12,7 @@
                 </x-slot>
             </flux:callout>
         @elseif (auth()->user()->riskProfile === null)
-            <flux:callout color="blue" icon="clipboard-document-check">
+            <flux:callout color="teal" icon="clipboard-document-check">
                 <flux:callout.heading>{{ __('Complete your investor profile') }}</flux:callout.heading>
                 <flux:callout.text>
                     {{ __('Answer six quick questions so Mahafeth can score how well your portfolio fits your goals and risk tolerance.') }}

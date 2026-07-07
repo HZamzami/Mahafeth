@@ -53,7 +53,7 @@ new class extends Component {
 }; ?>
 
 <div
-    class="flex grow flex-col rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-zinc-900">
+    class="flex grow flex-col card p-5">
     <flux:heading size="lg">{{ __('Asset Allocation') }}</flux:heading>
 
     @if ($segments !== [])

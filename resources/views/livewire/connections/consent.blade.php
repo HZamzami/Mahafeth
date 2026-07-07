@@ -63,7 +63,7 @@ new class extends Component {
 }; ?>
 
 <div class="mx-auto flex w-full max-w-md flex-col gap-6">
-    <div class="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-zinc-900">
+    <div class="card p-6">
         <div class="flex items-center gap-4">
             <div class="flex size-12 shrink-0 items-center justify-center rounded-lg"
                 style="background-color: {{ $institution->color }}20">
@@ -92,7 +92,7 @@ new class extends Component {
         </div>
 
         <div class="mt-4 flex items-center gap-3 rounded-lg bg-neutral-50 p-3 dark:bg-zinc-800">
-            <flux:icon.clock class="size-5 shrink-0 text-blue-500" />
+            <flux:icon.clock class="size-5 shrink-0 text-teal-600" />
             <flux:text class="text-xs">
                 {{ __('This consent is valid for :days days and can be revoked at any time from the Connections page.', ['days' => $ttlDays]) }}
             </flux:text>

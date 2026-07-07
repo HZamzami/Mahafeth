@@ -74,7 +74,7 @@ new class extends Component {
     }
 }; ?>
 
-<div class="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-zinc-900">
+<div class="card p-6">
     <div class="flex items-center justify-between">
         <div>
             <flux:heading size="lg">{{ __('Financial Goals') }}</flux:heading>

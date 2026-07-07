@@ -45,7 +45,7 @@ new class extends Component {
 }; ?>
 
 <div
-    class="flex grow flex-col items-center rounded-xl border border-neutral-200 bg-white p-6 text-center dark:border-neutral-700 dark:bg-zinc-900">
+    class="flex grow flex-col items-center card p-6 text-center">
     <div class="flex w-full items-center justify-between">
         <flux:heading size="lg">{{ __('Portfolio Health Score') }}</flux:heading>
         @if ($hasSnapshot)
@@ -60,17 +60,17 @@ new class extends Component {
                 class="stroke-neutral-100 dark:stroke-zinc-800" />
             <circle cx="112" cy="112" r="100" fill="transparent" stroke-width="16" stroke-linecap="round"
                 stroke="url(#healthGradient)" stroke-dasharray="628" stroke-dashoffset="{{ $dashoffset }}"
-                class="drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]" />
+                class="drop-shadow-[0_0_8px_rgba(15,118,110,0.35)]" />
             <defs>
                 <linearGradient id="healthGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#93c5fd" />
-                    <stop offset="100%" stop-color="#3b82f6" />
+                    <stop offset="0%" stop-color="#5eead4" />
+                    <stop offset="100%" stop-color="#0f766e" />
                 </linearGradient>
             </defs>
         </svg>
         <div class="absolute inset-0 flex flex-col items-center justify-center">
             @if ($score !== null)
-                <span class="text-6xl font-bold text-blue-600 dark:text-blue-300">{{ $score }}</span>
+                <span class="text-6xl font-bold text-teal-700 dark:text-teal-300">{{ $score }}</span>
                 <flux:text class="text-sm uppercase tracking-widest">{{ $scoreLabel }}</flux:text>
             @elseif (! $hasProfile)
                 <span class="text-4xl font-bold text-neutral-300 dark:text-zinc-600">—</span>
@@ -99,7 +99,7 @@ new class extends Component {
         </div>
         <div class="text-center">
             <flux:text class="mb-1 text-xs">{{ __('Risk Alignment') }}</flux:text>
-            <flux:heading class="!text-blue-600 dark:!text-blue-400" dir="ltr">
+            <flux:heading class="!text-teal-700 dark:!text-teal-300" dir="ltr">
                 {{ isset($components['risk_alignment']) ? $components['risk_alignment'].'/100' : '—' }}</flux:heading>
         </div>
     </div>
