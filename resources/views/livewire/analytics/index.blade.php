@@ -506,6 +506,9 @@ new class extends Component {
             </div>
         </div>
 
+        {{-- Stress Test --}}
+        <livewire:analytics.stress-scenarios />
+
         {{-- Correlation Matrix --}}
         <div class="card p-5">
             <flux:heading size="lg">{{ __('Correlation Matrix') }}</flux:heading>

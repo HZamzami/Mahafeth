@@ -70,6 +70,37 @@ class AnalyticsPageTest extends TestCase
             ->assertSee(__('Risk by Sector'));
     }
 
+    public function test_the_stress_scenario_panel_replays_shocks_on_the_portfolio(): void
+    {
+        $user = User::factory()->create();
+        $institution = Institution::factory()->create(['slug' => 'derayah']);
+        $connection = Connection::factory()->pending()->create([
+            'user_id' => $user->id,
+            'institution_id' => $institution->id,
+        ]);
+
+        app(SyncConnection::class)->handle($connection);
+        app(PortfolioAnalyzer::class)->analyze($user);
+        $this->actingAs($user);
+
+        // Derayah is tech-heavy, so the tech correction hits harder than
+        // the broad market shock alone would.
+        Volt::test('analytics.stress-scenarios')
+            ->set('scenario', 'tech_correction')
+            ->assertSee(__('Stress Test'))
+            ->assertSee(__('Hardest-Hit Positions'))
+            ->assertSee('AAPL')
+            ->assertSee('%');
+    }
+
+    public function test_the_stress_panel_asks_for_analysis_without_a_snapshot(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        Volt::test('analytics.stress-scenarios')
+            ->assertSee(__('Run the analysis to stress test your portfolio.'));
+    }
+
     public function test_the_rebalancing_plan_renders_with_orders(): void
     {
         $user = User::factory()->create();
