@@ -349,6 +349,11 @@ new class extends Component {
                             {{ __('Purification due: ⃁ :amount in dividends from non-compliant holdings over the past year.', ['amount' => Number::format($metrics['shariah']['purification_amount'], 2)]) }}
                         </flux:text>
                     @endif
+                    @if (($metrics['zakat']['zakat_due'] ?? 0) > 0)
+                        <flux:text class="mt-1 text-xs">
+                            {{ __('Zakat due: ⃁ :amount on zakatable wealth of ⃁ :wealth.', ['amount' => Number::format($metrics['zakat']['zakat_due'], 2), 'wealth' => Number::format($metrics['zakat']['zakatable_value'], 0)]) }}
+                        </flux:text>
+                    @endif
                 </div>
             @endif
 

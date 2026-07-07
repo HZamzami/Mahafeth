@@ -10,10 +10,12 @@ new class extends Component {
      */
     public function with(): array
     {
-        $shariah = Auth::user()->latestSnapshot()?->metrics['shariah'] ?? null;
+        $metrics = Auth::user()->latestSnapshot()?->metrics;
+        $shariah = $metrics['shariah'] ?? null;
 
         return [
             'shariah' => $shariah,
+            'zakat' => $metrics['zakat'] ?? null,
             'compliantPct' => $shariah !== null ? $shariah['compliant_weight'] * 100 : null,
             'nonCompliantPct' => $shariah !== null ? $shariah['non_compliant_weight'] * 100 : null,
             'unknownPct' => $shariah !== null ? $shariah['unknown_weight'] * 100 : null,
@@ -95,6 +97,25 @@ new class extends Component {
                 </div>
                 <flux:text class="mt-1 text-xs">
                     {{ __('Dividends received from non-compliant holdings over the past year, to be donated to charity.') }}
+                </flux:text>
+            </div>
+        @endif
+
+        @if ($zakat !== null)
+            <div class="mt-4 rounded-lg bg-neutral-50 p-3 dark:bg-zinc-800/50">
+                <div class="flex items-center justify-between">
+                    <flux:text class="text-xs font-medium uppercase tracking-widest">
+                        {{ __('Zakat Due') }}</flux:text>
+                    <flux:text class="text-sm font-semibold !text-teal-700 dark:!text-teal-300" dir="ltr">
+                        @if ($zakat['below_nisab'])
+                            {{ __('Below nisab') }}
+                        @else
+                            ⃁ {{ Number::format($zakat['zakat_due'], 2) }}
+                        @endif
+                    </flux:text>
+                </div>
+                <flux:text class="mt-1 text-xs">
+                    {{ __('2.5% of your zakatable wealth (cash, equities, funds, and crypto at market value).') }}
                 </flux:text>
             </div>
         @endif

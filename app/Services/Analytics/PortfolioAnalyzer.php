@@ -27,6 +27,7 @@ class PortfolioAnalyzer
         private EfficientFrontierService $efficientFrontierService,
         private RiskDecomposer $riskDecomposer,
         private ShariahComplianceAnalyzer $shariahComplianceAnalyzer,
+        private ZakatCalculator $zakatCalculator,
     ) {}
 
     /**
@@ -108,6 +109,10 @@ class PortfolioAnalyzer
             'pca_first_factor_share' => $this->correlationAnalyzer->firstFactorShare($covariance),
             'weights' => $weights,
             'shariah' => $this->shariahComplianceAnalyzer->analyze($weights, $data['assets'], $data['dividends']),
+            'zakat' => $this->zakatCalculator->calculate(
+                array_map(fn (float $weight): float => $weight * $totalValue, $weights),
+                $data['assets'],
+            ),
             'allocations' => [
                 'asset_class' => $this->diversificationAnalyzer->groupWeights($weights, array_map(fn (array $asset) => $asset['asset_class'], $data['assets'])),
                 'sector' => $this->diversificationAnalyzer->groupWeights($weights, $sectors),

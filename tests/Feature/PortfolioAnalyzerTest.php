@@ -87,6 +87,20 @@ class PortfolioAnalyzerTest extends TestCase
         $this->assertEqualsWithDelta($expectedJpmDividends, $shariah['purification_amount'], 0.01);
     }
 
+    public function test_the_snapshot_carries_zakat_on_the_portfolio_value(): void
+    {
+        $user = $this->syncedUser();
+
+        $snapshot = app(PortfolioAnalyzer::class)->analyze($user);
+        $zakat = $snapshot->metrics['zakat'];
+
+        // Derayah is all-equity and worth far more than the nisab, so the
+        // whole portfolio is zakatable at the configured rate.
+        $this->assertFalse($zakat['below_nisab']);
+        $this->assertEqualsWithDelta((float) $snapshot->total_value, $zakat['zakatable_value'], 1.0);
+        $this->assertEqualsWithDelta($zakat['zakatable_value'] * config('mahafeth.zakat.rate'), $zakat['zakat_due'], 0.01);
+    }
+
     public function test_reanalyzing_the_same_day_updates_the_existing_snapshot(): void
     {
         $user = $this->syncedUser();

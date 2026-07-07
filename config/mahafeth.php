@@ -48,6 +48,48 @@ return [
     // Trailing window (in years) of price history used by the analyzer.
     'analysis_window_years' => 1,
 
+    // Zakat on the unified portfolio: rate applies to zakatable wealth at
+    // market value once it meets the nisab threshold (SAR, approximates
+    // the value of 85 grams of gold; adjust as the gold price moves).
+    'zakat' => [
+        'rate' => env('MAHAFETH_ZAKAT_RATE', 0.025),
+        'nisab' => env('MAHAFETH_ZAKAT_NISAB', 35000.0),
+    ],
+
+    // Deterministic stress scenarios replayed on the live portfolio: each
+    // combines a broad market shock with harder shocks on targeted sectors
+    // or asset classes. Labels are translation keys resolved in the view.
+    'stress_scenarios' => [
+        'oil_correction' => [
+            'label' => 'Oil price correction',
+            'market' => -0.05,
+            'targets' => [
+                ['group' => 'sector', 'value' => 'Energy', 'shock' => -0.20],
+            ],
+        ],
+        'rate_shock' => [
+            'label' => 'Interest rate shock',
+            'market' => -0.06,
+            'targets' => [
+                ['group' => 'sector', 'value' => 'Financials', 'shock' => -0.12],
+            ],
+        ],
+        'tech_correction' => [
+            'label' => 'Tech correction',
+            'market' => -0.08,
+            'targets' => [
+                ['group' => 'sector', 'value' => 'Technology', 'shock' => -0.25],
+            ],
+        ],
+        'crypto_winter' => [
+            'label' => 'Crypto winter',
+            'market' => -0.03,
+            'targets' => [
+                ['group' => 'asset_class', 'value' => 'crypto', 'shock' => -0.45],
+            ],
+        ],
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Portfolio Health Score
