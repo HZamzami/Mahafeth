@@ -94,6 +94,12 @@ new class extends Component {
                 <flux:text class="mt-1.5 flex items-center gap-1 text-xs !text-teal-700 dark:!text-teal-300">
                     <flux:icon.sparkles class="size-3.5 shrink-0" /> {{ $entry['why'] }}
                 </flux:text>
+                <a class="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-teal-700 hover:underline dark:text-teal-300"
+                    href="{{ route('advisor', ['ask' => __('Explain this news and what it means for my portfolio: ":headline"', ['headline' => $entry['item']->localizedHeadline()])]) }}"
+                    wire:navigate>
+                    <flux:icon.chat-bubble-left-right class="size-3.5" />
+                    {{ __('Ask Mahafeth AI') }}
+                </a>
             </div>
         </div>
     @empty

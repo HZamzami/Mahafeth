@@ -13,6 +13,28 @@ new class extends Component {
     public ?string $error = null;
 
     /**
+     * A question seeded through the "Ask Mahafeth AI" deep-link
+     * (?ask=...), sent right after the page renders so navigation from a
+     * filing or news item lands in a live conversation.
+     */
+    public ?string $pending = null;
+
+    public function mount(): void
+    {
+        $ask = mb_substr(trim((string) request()->query('ask')), 0, 1000);
+
+        $this->pending = $ask === '' ? null : $ask;
+    }
+
+    public function sendPending(SendChatMessage $sendChatMessage): void
+    {
+        if ($this->pending !== null) {
+            $this->sendContent($sendChatMessage, $this->pending);
+            $this->pending = null;
+        }
+    }
+
+    /**
      * Queue insight generation, mirroring the dashboard card, so the
      * Advisor page is self-sufficient.
      */
@@ -123,7 +145,7 @@ new class extends Component {
 }; ?>
 
 <div class="mx-auto flex w-full max-w-3xl flex-col gap-6"
-    @if ($isGenerating) wire:poll.3s @endif>
+    @if ($isGenerating) wire:poll.3s @endif @if ($pending !== null) wire:init="sendPending" @endif>
     <div class="flex items-start justify-between gap-4">
         <div>
             <flux:heading size="xl">{{ __('AI Advisor') }}</flux:heading>

@@ -20,6 +20,29 @@ class FakeChatResponder implements ChatResponder
         $metrics = $snapshot->metrics ?? [];
         $message = mb_strtolower(end($history)['content'] ?? '');
 
+        // Seeded filing/news questions embed arbitrary headlines that may
+        // contain other routing keywords, so this check runs first.
+        if ($this->mentions($message, ['disclosure', 'filing', 'إفصاح', 'explain this news', 'اشرح هذا الخبر'])) {
+            $weights = $metrics['weights'] ?? [];
+            $held = null;
+
+            foreach ($weights as $symbol => $weight) {
+                if (str_contains($message, mb_strtolower($symbol))) {
+                    $held = ['symbol' => $symbol, 'weight' => $weight];
+                    break;
+                }
+            }
+
+            if ($held !== null) {
+                return __('This matters to you directly: :symbol is :weight of your portfolio, so the figures it reports feed straight into your returns, risk, and health score. Watch how it shifts the position\'s outlook against your target allocation.', [
+                    'symbol' => $held['symbol'],
+                    'weight' => Number::percentage($held['weight'] * 100, 1),
+                ], $locale);
+            }
+
+            return __('You do not hold this company directly, so this has no first-order effect on your portfolio; any impact would come through sector or market moves.', [], $locale);
+        }
+
         if ($this->mentions($message, ['health', 'score', 'درجة', 'صحة'])) {
             $components = collect($snapshot->component_scores ?? [])->sort();
 

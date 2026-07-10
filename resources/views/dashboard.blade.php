@@ -45,6 +45,9 @@
 
                 {{-- Market Context --}}
                 <livewire:dashboard.news-feed />
+
+                {{-- Company Disclosures --}}
+                <livewire:dashboard.company-filings />
             </div>
         </div>
     </div>

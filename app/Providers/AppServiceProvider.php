@@ -3,10 +3,12 @@
 namespace App\Providers;
 
 use App\Contracts\ChatResponder;
+use App\Contracts\FilingProvider;
 use App\Contracts\InsightGenerator;
 use App\Contracts\NewsProvider;
 use App\Contracts\OpenBankingProvider;
 use App\Contracts\PriceProvider;
+use App\Services\Filings\CuratedFilingProvider;
 use App\Services\Insights\ClaudeChatResponder;
 use App\Services\Insights\ClaudeInsightGenerator;
 use App\Services\Insights\FakeChatResponder;
@@ -37,6 +39,10 @@ class AppServiceProvider extends ServiceProvider
                 ? $app->make(SimulatedPriceProvider::class)
                 : $app->make(TwelveDataPriceProvider::class);
         });
+
+        // Curated demo filings for now; a live SEC EDGAR or Tadawul
+        // provider slots in behind the same contract later.
+        $this->app->bind(FilingProvider::class, CuratedFilingProvider::class);
 
         $this->app->bind(NewsProvider::class, function (Application $app) {
             return empty($app->make('config')->get('services.marketaux.token'))

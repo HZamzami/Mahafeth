@@ -182,6 +182,40 @@ class AiAdvisorPageTest extends TestCase
             ->assertDontSee('<b>injected</b>', escape: false);
     }
 
+    public function test_the_ask_deep_link_auto_sends_the_seeded_question(): void
+    {
+        $user = $this->analyzedUser();
+        $this->actingAs($user);
+
+        $question = 'Explain this disclosure and what it means for my portfolio: "Apple Inc. files Form 10-Q" (AAPL). Key excerpt: Revenue of $93.4B.';
+
+        Volt::test('advisor.index', ['ask' => null])
+            ->set('pending', $question)
+            ->call('sendPending')
+            ->assertSet('pending', null)
+            ->assertSee('Apple Inc. files Form 10-Q');
+
+        $this->assertSame(2, $user->chatMessages()->count());
+
+        // The fake responder recognizes the disclosure and cites the held weight.
+        $reply = $user->chatMessages()->latest('id')->first();
+        $this->assertSame('assistant', $reply->role);
+        $this->assertStringContainsString('AAPL', $reply->content);
+    }
+
+    public function test_the_ask_query_parameter_populates_the_pending_question(): void
+    {
+        $this->actingAs($this->analyzedUser());
+
+        $this->get('/advisor?ask='.urlencode('What is my risk?'))
+            ->assertOk()
+            ->assertSee('sendPending');
+
+        $this->get('/advisor')
+            ->assertOk()
+            ->assertDontSee('sendPending');
+    }
+
     public function test_arabic_locale_produces_an_arabic_answer(): void
     {
         $user = $this->analyzedUser();

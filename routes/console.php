@@ -8,4 +8,5 @@ Schedule::command('mahafeth:fetch-fx-rates')->dailyAt('03:30');
 Schedule::command('mahafeth:expire-consents')->dailyAt('03:45');
 Schedule::command('mahafeth:refresh-portfolios')->dailyAt('04:00');
 Schedule::command('mahafeth:refresh-news')->everySixHours();
+Schedule::command('mahafeth:refresh-filings')->dailyAt('05:00');
 Schedule::command('queue:prune-failed --hours=168')->weekly();

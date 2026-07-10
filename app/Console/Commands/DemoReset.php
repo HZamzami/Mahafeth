@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\AiInsight;
 use App\Models\User;
 use Database\Seeders\DemoPortfolioSeeder;
+use Database\Seeders\FilingSeeder;
 use Database\Seeders\InstitutionSeeder;
 use Database\Seeders\NewsSeeder;
 use Illuminate\Console\Command;
@@ -41,6 +42,10 @@ class DemoReset extends Command
 
         $this->components->task('Seeding market news', function (): void {
             (new NewsSeeder)->run();
+        });
+
+        $this->components->task('Seeding company filings', function (): void {
+            (new FilingSeeder)->run();
         });
 
         $this->components->task('Building demo portfolio (connections, sync, analysis, history)', function (): void {
