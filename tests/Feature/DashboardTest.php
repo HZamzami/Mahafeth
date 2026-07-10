@@ -85,7 +85,7 @@ class DashboardTest extends TestCase
             ->get('/dashboard')
             ->assertOk()
             ->assertSee('AAPL')
-            ->assertSee('Technology');
+            ->assertSee('Information Technology');
     }
 
     public function test_the_dashboard_shows_the_shariah_screening_card(): void

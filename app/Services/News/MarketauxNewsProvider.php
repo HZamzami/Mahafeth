@@ -15,6 +15,27 @@ use Illuminate\Support\Facades\Log;
  */
 class MarketauxNewsProvider implements NewsProvider
 {
+    /**
+     * marketaux entity industries mapped onto the GICS sector names the
+     * rest of the platform uses, so news-to-portfolio matching keeps working.
+     *
+     * @var array<string, string>
+     */
+    private const array INDUSTRY_TO_GICS = [
+        'Technology' => 'Information Technology',
+        'Financial' => 'Financials',
+        'Financial Services' => 'Financials',
+        'Communication Services' => 'Communication Services',
+        'Consumer Cyclical' => 'Consumer Discretionary',
+        'Consumer Defensive' => 'Consumer Staples',
+        'Healthcare' => 'Health Care',
+        'Basic Materials' => 'Materials',
+        'Industrials' => 'Industrials',
+        'Energy' => 'Energy',
+        'Utilities' => 'Utilities',
+        'Real Estate' => 'Real Estate',
+    ];
+
     public function __construct(private CuratedNewsProvider $fallback) {}
 
     public function fetchLatest(): array
@@ -44,7 +65,10 @@ class MarketauxNewsProvider implements NewsProvider
                 'url' => $article['url'] ?? null,
                 'minutes' => max(1, (int) ceil(str_word_count($article['description'] ?? '') / 200) + 2),
                 'symbols' => array_values(array_unique(array_column($article['entities'] ?? [], 'symbol'))) ?: null,
-                'sectors' => array_values(array_filter(array_unique(array_column($article['entities'] ?? [], 'industry')))) ?: null,
+                'sectors' => array_values(array_unique(array_map(
+                    fn (string $industry): string => self::INDUSTRY_TO_GICS[$industry] ?? $industry,
+                    array_filter(array_column($article['entities'] ?? [], 'industry')),
+                ))) ?: null,
                 'published_at' => Carbon::parse($article['published_at'] ?? now()),
             ], $articles);
         } catch (\Throwable $exception) {

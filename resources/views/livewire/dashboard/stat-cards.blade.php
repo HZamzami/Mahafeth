@@ -12,7 +12,9 @@ new class extends Component {
     {
         $metrics = Auth::user()->latestSnapshot()?->metrics;
 
-        $sectors = $metrics['allocations']['sector'] ?? [];
+        // 'Other' holds assets GICS cannot classify (cash, crypto, index
+        // funds) and is not a sector, so it never wins this card.
+        $sectors = array_diff_key($metrics['allocations']['sector'] ?? [], ['Other' => null]);
 
         return [
             'expectedReturn' => $metrics['expected_return'] ?? null,

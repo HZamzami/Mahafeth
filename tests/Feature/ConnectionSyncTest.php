@@ -47,7 +47,7 @@ class ConnectionSyncTest extends TestCase
 
         $apple = Asset::where('symbol', 'AAPL')->first();
         $this->assertNotNull($apple);
-        $this->assertSame('Technology', $apple->sector);
+        $this->assertSame('Information Technology', $apple->sector);
         $this->assertInstanceOf(ShariahStatus::class, $apple->shariah_status);
         $this->assertGreaterThan(700, $apple->priceHistories()->count());
 

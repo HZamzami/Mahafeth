@@ -21,7 +21,7 @@ class CuratedNewsProvider implements NewsProvider
                 'source' => 'Market Pulse',
                 'minutes' => 4,
                 'symbols' => ['AAPL'],
-                'sectors' => ['Technology'],
+                'sectors' => ['Information Technology'],
                 'hours_ago' => 3,
             ],
             [
@@ -30,7 +30,7 @@ class CuratedNewsProvider implements NewsProvider
                 'source' => 'Alpha Insights',
                 'minutes' => 7,
                 'symbols' => ['AAPL', 'MSFT', 'NVDA', 'GOOGL'],
-                'sectors' => ['Technology'],
+                'sectors' => ['Information Technology'],
                 'hours_ago' => 9,
             ],
             [
@@ -66,7 +66,7 @@ class CuratedNewsProvider implements NewsProvider
                 'source' => 'Market Pulse',
                 'minutes' => 6,
                 'symbols' => ['SPY', 'AAPL', 'MSFT', 'NVDA'],
-                'sectors' => ['Technology'],
+                'sectors' => ['Information Technology'],
                 'hours_ago' => 40,
             ],
         ];

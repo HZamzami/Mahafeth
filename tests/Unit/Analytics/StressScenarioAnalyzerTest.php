@@ -24,7 +24,7 @@ class StressScenarioAnalyzerTest extends TestCase
         return [
             'market' => -0.08,
             'targets' => [
-                ['group' => 'sector', 'value' => 'Technology', 'shock' => -0.25],
+                ['group' => 'sector', 'value' => 'Information Technology', 'shock' => -0.25],
             ],
         ];
     }
@@ -34,7 +34,7 @@ class StressScenarioAnalyzerTest extends TestCase
         $result = $this->analyzer->apply(
             ['AAPL' => 0.5, '2222.SR' => 0.5],
             [
-                'AAPL' => ['name' => 'Apple Inc.', 'sector' => 'Technology', 'asset_class' => 'equity'],
+                'AAPL' => ['name' => 'Apple Inc.', 'sector' => 'Information Technology', 'asset_class' => 'equity'],
                 '2222.SR' => ['name' => 'Saudi Aramco', 'sector' => 'Energy', 'asset_class' => 'equity'],
             ],
             $this->techCorrection(),
@@ -53,7 +53,7 @@ class StressScenarioAnalyzerTest extends TestCase
             ['BTC' => 0.2, 'AAPL' => 0.8],
             [
                 'BTC' => ['name' => 'Bitcoin', 'sector' => null, 'asset_class' => 'crypto'],
-                'AAPL' => ['name' => 'Apple Inc.', 'sector' => 'Technology', 'asset_class' => 'equity'],
+                'AAPL' => ['name' => 'Apple Inc.', 'sector' => 'Information Technology', 'asset_class' => 'equity'],
             ],
             [
                 'market' => -0.03,

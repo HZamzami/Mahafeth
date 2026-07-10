@@ -24,7 +24,7 @@ class AssetFactory extends Factory
             'name' => fake()->company(),
             'name_ar' => null,
             'asset_class' => AssetClass::Equity,
-            'sector' => fake()->randomElement(['Technology', 'Financials', 'Healthcare', 'Energy', 'Consumer']),
+            'sector' => fake()->randomElement(['Information Technology', 'Financials', 'Health Care', 'Energy', 'Consumer Staples']),
             'country' => fake()->randomElement(['US', 'SA', 'GB', 'JP']),
             'currency' => 'USD',
             'shariah_status' => ShariahStatus::Unknown,

@@ -78,7 +78,7 @@ return [
             'label' => 'Tech correction',
             'market' => -0.08,
             'targets' => [
-                ['group' => 'sector', 'value' => 'Technology', 'shock' => -0.25],
+                ['group' => 'sector', 'value' => 'Information Technology', 'shock' => -0.25],
             ],
         ],
         'crypto_winter' => [

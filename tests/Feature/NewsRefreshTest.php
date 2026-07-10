@@ -67,7 +67,8 @@ class NewsRefreshTest extends TestCase
         $item = NewsItem::where('headline', 'Apple ships new device')->firstOrFail();
 
         $this->assertSame(['AAPL'], $item->symbols);
-        $this->assertSame(['Technology'], $item->sectors);
+        // The marketaux "Technology" industry is normalized to its GICS sector.
+        $this->assertSame(['Information Technology'], $item->sectors);
         $this->assertSame('newswire', $item->source);
         $this->assertSame('https://newswire.example/apple-ships-new-device', $item->url);
     }
