@@ -138,6 +138,7 @@ return [
         'model' => env('MAHAFETH_AI_MODEL', 'claude-opus-4-8'),
         'max_tokens' => 8192,
         'timeout' => 120,
+        'chat_model' => env('MAHAFETH_AI_CHAT_MODEL', 'claude-haiku-4-5'),
         'chat_max_tokens' => 1024,
         'chat_timeout' => 60,
     ],

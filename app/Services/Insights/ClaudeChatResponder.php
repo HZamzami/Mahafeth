@@ -30,7 +30,9 @@ class ClaudeChatResponder implements ChatResponder
             ->connectTimeout(10)
             ->retry(2, 1000, throw: false)
             ->post(self::API_URL, [
-                'model' => config('mahafeth.ai.model'),
+                // Chat answers are short and frequent; Haiku's tier is the
+                // cost/latency balance while insights keep the larger model.
+                'model' => config('mahafeth.ai.chat_model'),
                 'max_tokens' => (int) config('mahafeth.ai.chat_max_tokens'),
                 'thinking' => ['type' => 'adaptive'],
                 'system' => $this->systemBlocks($snapshot, $riskProfile, $locale, $goals),

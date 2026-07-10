@@ -73,7 +73,7 @@ class ClaudeChatResponderTest extends TestCase
 
             return $request->url() === 'https://api.anthropic.com/v1/messages'
                 && $request->hasHeader('anthropic-version')
-                && $body['model'] === config('mahafeth.ai.model')
+                && $body['model'] === config('mahafeth.ai.chat_model')
                 && $body['max_tokens'] === (int) config('mahafeth.ai.chat_max_tokens')
                 && $body['messages'] === [['role' => 'user', 'content' => 'What is my risk?']]
                 && str_contains($system->first()['text'], 'Arabic')
