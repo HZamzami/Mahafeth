@@ -69,7 +69,10 @@ class ClaudeInsightGenerator implements InsightGenerator
             'total_value_sar' => $snapshot->total_value,
             'health_score' => $snapshot->health_score,
             'component_scores' => $snapshot->component_scores,
-            'metrics' => $metrics,
+            // Zakat is an obligation the Shariah card already reports with
+            // the exact amount due; omitting it keeps the model from
+            // spending a recommendation slot restating it.
+            'metrics' => array_diff_key($metrics, ['zakat' => null]),
             'investor_profile' => $profile,
             'goals' => $goals,
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);

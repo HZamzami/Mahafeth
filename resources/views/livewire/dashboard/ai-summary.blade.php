@@ -79,8 +79,10 @@ new class extends Component {
                                     {{ __('Show the math') }}</summary>
                                 <div class="mt-2 flex flex-wrap gap-1.5">
                                     @foreach ($recommendation['evidence'] as $evidence)
-                                        <flux:badge size="sm" dir="ltr">
-                                            {{ $evidence['metric'] }}: {{ $evidence['value'] }}</flux:badge>
+                                        {{-- dir=auto keeps Arabic metric names reading right-to-left
+                                             while the LTR span stops signs and % from shuffling. --}}
+                                        <flux:badge size="sm" dir="auto">
+                                            {{ $evidence['metric'] }}: <span dir="ltr">{{ $evidence['value'] }}</span></flux:badge>
                                     @endforeach
                                 </div>
                             </details>

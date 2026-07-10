@@ -62,7 +62,7 @@ new class extends Component {
         <div class="mt-5 grid grid-cols-2 gap-4">
             <div>
                 <flux:text class="text-xs">{{ __('Portfolio value under this scenario') }}</flux:text>
-                <flux:heading size="lg" dir="ltr">⃁ {{ Number::abbreviate($shockedValue, 1) }}</flux:heading>
+                <flux:heading size="lg" dir="ltr">⃁ {{ Number::localizedAbbreviate($shockedValue, 1) }}</flux:heading>
             </div>
             <div>
                 <flux:text class="text-xs">{{ __('Estimated impact') }}</flux:text>

@@ -340,13 +340,13 @@ new class extends Component {
                     </flux:text>
                     <div class="space-y-2" dir="ltr">
                         <div class="flex justify-between">
-                            <flux:text class="text-sm">{{ __('Return') }}</flux:text>
+                            <flux:text class="text-sm">{{ __('Expected Return') }}</flux:text>
                             <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">
                                 {{ number_format($frontier['current']['return'] * 100, 1) }}% →
                                 {{ number_format($frontier['tangency']['return'] * 100, 1) }}%</flux:text>
                         </div>
                         <div class="flex justify-between">
-                            <flux:text class="text-sm">{{ __('Risk') }}</flux:text>
+                            <flux:text class="text-sm">{{ __('Expected Risk (Volatility)') }}</flux:text>
                             <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">
                                 {{ number_format($frontier['current']['risk'] * 100, 1) }}% →
                                 {{ number_format($frontier['tangency']['risk'] * 100, 1) }}%</flux:text>

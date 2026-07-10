@@ -60,6 +60,23 @@ class AppServiceProvider extends ServiceProvider
         // mixed-direction glitches around +/− signs in RTL layouts.
         Number::useLocale('en');
 
+        // Abbreviated money amounts spell the scale through the translator,
+        // so Arabic reads "3.0 مليون" instead of Number::abbreviate's
+        // hardcoded Latin "3.0M".
+        Number::macro('localizedAbbreviate', function (float $value, int $precision = 1): string {
+            $absolute = abs($value);
+
+            [$divisor, $key] = match (true) {
+                $absolute >= 1e12 => [1e12, ':numberT'],
+                $absolute >= 1e9 => [1e9, ':numberB'],
+                $absolute >= 1e6 => [1e6, ':numberM'],
+                $absolute >= 1e3 => [1e3, ':numberK'],
+                default => [1.0, ':number'],
+            };
+
+            return __($key, ['number' => Number::format($value / $divisor, $divisor > 1 ? $precision : null, $divisor > 1 ? null : $precision)]);
+        });
+
         // Surface background failures (analysis, insights, scheduled syncs)
         // at critical level so hosting alerts pick them up.
         Queue::failing(function (JobFailed $event): void {

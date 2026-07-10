@@ -111,6 +111,19 @@ class ClaudeInsightGeneratorTest extends TestCase
         $this->assertStringContainsString('constraints', $prompt);
     }
 
+    public function test_the_prompt_omits_zakat_metrics(): void
+    {
+        [$snapshot, $profile] = $this->snapshotAndProfile();
+        $snapshot->update(['metrics' => array_merge($snapshot->metrics, [
+            'zakat' => ['zakat_due' => 74974.17, 'zakatable_value' => 2998966.86, 'below_nisab' => false],
+        ])]);
+
+        $prompt = (new ClaudeInsightGenerator)->buildPrompt($snapshot->fresh(), $profile, 'en');
+
+        $this->assertStringNotContainsString('zakat', $prompt);
+        $this->assertStringContainsString('0.261', $prompt);
+    }
+
     public function test_an_unexpected_response_shape_throws(): void
     {
         [$snapshot, $profile] = $this->snapshotAndProfile();
