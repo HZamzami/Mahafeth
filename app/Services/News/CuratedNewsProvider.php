@@ -17,7 +17,7 @@ class CuratedNewsProvider implements NewsProvider
         $items = [
             [
                 'headline' => 'Apple earnings preview: services growth in focus as hardware demand cools',
-                'headline_ar' => 'ترقّب نتائج أبل: نمو الخدمات في دائرة الضوء مع تباطؤ الطلب على الأجهزة',
+                'headline_ar' => 'ترقب نتائج أبل: نمو الخدمات في دائرة الضوء مع تباطؤ الطلب على الأجهزة',
                 'source' => 'Market Pulse',
                 'minutes' => 4,
                 'symbols' => ['AAPL'],
@@ -26,7 +26,7 @@ class CuratedNewsProvider implements NewsProvider
             ],
             [
                 'headline' => 'Tech mega-caps now move in lockstep — what high correlation means for concentrated portfolios',
-                'headline_ar' => 'أسهم التقنية الكبرى تتحرك كتلة واحدة — ماذا يعني الارتباط المرتفع للمحافظ المركّزة',
+                'headline_ar' => 'أسهم التقنية الكبرى تتحرك كتلة واحدة — ماذا يعني الارتباط المرتفع للمحافظ المركزة',
                 'source' => 'Alpha Insights',
                 'minutes' => 7,
                 'symbols' => ['AAPL', 'MSFT', 'NVDA', 'GOOGL'],
@@ -53,7 +53,7 @@ class CuratedNewsProvider implements NewsProvider
             ],
             [
                 'headline' => 'Saudi banks report strong quarter as lending margins widen',
-                'headline_ar' => 'البنوك السعودية تسجّل ربعًا قويًا مع اتساع هوامش الإقراض',
+                'headline_ar' => 'البنوك السعودية تسجل ربعًا قويًا مع اتساع هوامش الإقراض',
                 'source' => 'Tadawul Daily',
                 'minutes' => 4,
                 'symbols' => ['1120.SR', '1010.SR'],
@@ -62,7 +62,7 @@ class CuratedNewsProvider implements NewsProvider
             ],
             [
                 'headline' => 'Fed holds rates steady; growth stocks rally on dovish tone',
-                'headline_ar' => 'الفيدرالي يثبّت الفائدة؛ وأسهم النمو ترتفع مع نبرة تيسيرية',
+                'headline_ar' => 'الفيدرالي يثبت الفائدة؛ وأسهم النمو ترتفع مع نبرة تيسيرية',
                 'source' => 'Market Pulse',
                 'minutes' => 6,
                 'symbols' => ['SPY', 'AAPL', 'MSFT', 'NVDA'],

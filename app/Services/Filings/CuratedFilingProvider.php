@@ -35,7 +35,7 @@ class CuratedFilingProvider implements FilingProvider
                 'source' => 'Tadawul',
                 'url' => 'https://www.saudiexchange.sa/wps/portal/saudiexchange/newsandreports',
                 'excerpt' => 'Net income of SAR 104.9B, down 4% versus Q2 2025 on lower realized crude prices. Free cash flow SAR 79.5B. Base dividend maintained at SAR 0.35 per share plus performance-linked component. Gearing at 6.3%.',
-                'excerpt_ar' => 'صافي دخل 104.9 مليار ريال بانخفاض 4% مقارنة بالربع الثاني 2025 نتيجة انخفاض أسعار الخام المحققة. تدفقات نقدية حرة 79.5 مليار ريال. الحفاظ على التوزيعات الأساسية عند 0.35 ريال للسهم إضافة إلى المكوّن المرتبط بالأداء. نسبة المديونية 6.3%.',
+                'excerpt_ar' => 'صافي دخل 104.9 مليار ريال بانخفاض 4% مقارنة بالربع الثاني 2025 نتيجة انخفاض أسعار الخام المحققة. تدفقات نقدية حرة 79.5 مليار ريال. الحفاظ على التوزيعات الأساسية عند 0.35 ريال للسهم إضافة إلى المكون المرتبط بالأداء. نسبة المديونية 6.3%.',
                 'hours_ago' => 26,
             ],
             [
@@ -57,7 +57,7 @@ class CuratedFilingProvider implements FilingProvider
                 'source' => 'Tadawul',
                 'url' => 'https://www.saudiexchange.sa/wps/portal/saudiexchange/newsandreports',
                 'excerpt' => 'Board recommends increasing capital from SAR 40B to SAR 50B through one bonus share for every four held, capitalized from retained earnings, subject to regulatory and general assembly approval.',
-                'excerpt_ar' => 'أوصى المجلس بزيادة رأس المال من 40 إلى 50 مليار ريال عبر منح سهم مجاني لكل أربعة أسهم مملوكة، تُرسمل من الأرباح المبقاة، وذلك بعد موافقة الجهات التنظيمية والجمعية العامة.',
+                'excerpt_ar' => 'أوصى المجلس بزيادة رأس المال من 40 إلى 50 مليار ريال عبر منح سهم مجاني لكل أربعة أسهم مملوكة، ترسمل من الأرباح المبقاة، وذلك بعد موافقة الجهات التنظيمية والجمعية العامة.',
                 'hours_ago' => 76,
             ],
             [
@@ -73,13 +73,13 @@ class CuratedFilingProvider implements FilingProvider
             ],
             [
                 'headline' => 'NVIDIA annual report highlights customer concentration risk',
-                'headline_ar' => 'التقرير السنوي لإنفيديا يبرز مخاطر تركّز العملاء',
+                'headline_ar' => 'التقرير السنوي لإنفيديا يبرز مخاطر تركز العملاء',
                 'symbol' => 'NVDA',
                 'type' => 'annual_report',
                 'source' => 'SEC',
                 'url' => 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001045810&type=10-K',
                 'excerpt' => 'Form 10-K risk factors: four hyperscale customers represent 46% of data-center revenue. Full-year revenue $148B (+42%), gross margin 74.2%. Export-control restrictions on advanced accelerators cited as a material uncertainty.',
-                'excerpt_ar' => 'عوامل المخاطر في نموذج 10-K: أربعة عملاء من مزودي الحوسبة السحابية الكبار يمثلون 46% من إيرادات مراكز البيانات. إيرادات السنة الكاملة 148 مليار دولار (+42%) وهامش إجمالي 74.2%. وذُكرت قيود ضوابط التصدير على المسرّعات المتقدمة كعامل عدم يقين جوهري.',
+                'excerpt_ar' => 'عوامل المخاطر في نموذج 10-K: أربعة عملاء من مزودي الحوسبة السحابية الكبار يمثلون 46% من إيرادات مراكز البيانات. إيرادات السنة الكاملة 148 مليار دولار (+42%) وهامش إجمالي 74.2%. وذكرت قيود ضوابط التصدير على المسرعات المتقدمة كعامل عدم يقين جوهري.',
                 'hours_ago' => 130,
             ],
         ];
