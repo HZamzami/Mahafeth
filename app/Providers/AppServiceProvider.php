@@ -2,11 +2,14 @@
 
 namespace App\Providers;
 
+use App\Contracts\ChatResponder;
 use App\Contracts\InsightGenerator;
 use App\Contracts\NewsProvider;
 use App\Contracts\OpenBankingProvider;
 use App\Contracts\PriceProvider;
+use App\Services\Insights\ClaudeChatResponder;
 use App\Services\Insights\ClaudeInsightGenerator;
+use App\Services\Insights\FakeChatResponder;
 use App\Services\Insights\FakeInsightGenerator;
 use App\Services\News\CuratedNewsProvider;
 use App\Services\News\MarketauxNewsProvider;
@@ -47,6 +50,14 @@ class AppServiceProvider extends ServiceProvider
             return $config['fake'] || empty($config['api_key'])
                 ? $app->make(FakeInsightGenerator::class)
                 : $app->make(ClaudeInsightGenerator::class);
+        });
+
+        $this->app->bind(ChatResponder::class, function (Application $app) {
+            $config = $app->make('config')->get('mahafeth.ai');
+
+            return $config['fake'] || empty($config['api_key'])
+                ? $app->make(FakeChatResponder::class)
+                : $app->make(ClaudeChatResponder::class);
         });
     }
 

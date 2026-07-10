@@ -77,6 +77,11 @@ class User extends Authenticatable implements HasLocalePreference // implements 
         return $this->hasMany(Goal::class);
     }
 
+    public function chatMessages(): HasMany
+    {
+        return $this->hasMany(AiChatMessage::class);
+    }
+
     public function consents(): HasMany
     {
         return $this->hasMany(Consent::class);

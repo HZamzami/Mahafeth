@@ -53,29 +53,7 @@ class ClaudeInsightGenerator implements InsightGenerator
      */
     public function buildPrompt(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $goals = []): string
     {
-        $metrics = $snapshot->metrics ?? [];
-
-        $profile = $riskProfile === null ? null : [
-            'risk_tolerance' => $riskProfile->risk_tolerance->value,
-            'time_horizon' => $riskProfile->time_horizon->value,
-            'target_return' => $riskProfile->target_return,
-            'target_volatility' => $riskProfile->target_volatility,
-            'liquidity_needs' => $riskProfile->liquidity_needs,
-            'constraints' => $riskProfile->constraints,
-        ];
-
-        $payload = json_encode([
-            'as_of' => $snapshot->as_of->toDateString(),
-            'total_value_sar' => $snapshot->total_value,
-            'health_score' => $snapshot->health_score,
-            'component_scores' => $snapshot->component_scores,
-            // Zakat is an obligation the Shariah card already reports with
-            // the exact amount due; omitting it keeps the model from
-            // spending a recommendation slot restating it.
-            'metrics' => array_diff_key($metrics, ['zakat' => null]),
-            'investor_profile' => $profile,
-            'goals' => $goals,
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        $payload = app(PortfolioContext::class)->payload($snapshot, $riskProfile, $goals);
 
         $language = $locale === 'ar'
             ? 'Write every field of your response in Arabic (Modern Standard Arabic, natural financial register).'

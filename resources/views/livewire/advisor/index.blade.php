@@ -1,0 +1,238 @@
+<?php
+
+use App\Actions\SendChatMessage;
+use App\Jobs\GenerateInsightsJob;
+use App\Models\AiInsight;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Livewire\Volt\Component;
+
+new class extends Component {
+    public string $message = '';
+
+    public ?string $error = null;
+
+    /**
+     * Queue insight generation, mirroring the dashboard card, so the
+     * Advisor page is self-sufficient.
+     */
+    public function generate(): void
+    {
+        $user = Auth::user();
+        $locale = app()->getLocale();
+
+        Cache::put(GenerateInsightsJob::cacheKey($user, $locale), true, now()->addMinutes(5));
+        GenerateInsightsJob::dispatch($user, $locale);
+    }
+
+    public function send(SendChatMessage $sendChatMessage): void
+    {
+        $this->sendContent($sendChatMessage, trim($this->message));
+        $this->message = '';
+    }
+
+    /**
+     * Starter chips seed the chat with a suggested question.
+     */
+    public function ask(SendChatMessage $sendChatMessage, int $index): void
+    {
+        $question = $this->starters()[$index] ?? null;
+
+        if ($question !== null) {
+            $this->sendContent($sendChatMessage, $question);
+        }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function starters(): array
+    {
+        return [
+            __('Why is my health score :score?', ['score' => Auth::user()->latestSnapshot()?->health_score ?? '—']),
+            __('What is my biggest hidden risk?'),
+            __('How can I improve my diversification?'),
+        ];
+    }
+
+    /**
+     * "Discuss this" on a recommendation seeds the chat with it.
+     */
+    public function discuss(SendChatMessage $sendChatMessage, int $index): void
+    {
+        $recommendation = $this->latestInsight()?->recommendations[$index] ?? null;
+
+        if ($recommendation === null) {
+            return;
+        }
+
+        $this->sendContent($sendChatMessage, __('I\'d like to discuss this recommendation: ":title". How do I do this?', [
+            'title' => $recommendation['title'],
+        ]));
+    }
+
+    public function clearChat(): void
+    {
+        Auth::user()->chatMessages()->delete();
+    }
+
+    private function sendContent(SendChatMessage $sendChatMessage, string $content): void
+    {
+        $this->error = null;
+
+        if ($content === '' || mb_strlen($content) > 1000 || Auth::user()->latestSnapshot() === null) {
+            return;
+        }
+
+        try {
+            $sendChatMessage->handle(Auth::user(), $content, app()->getLocale());
+        } catch (\Throwable $exception) {
+            report($exception);
+            $this->error = __('Something went wrong — please try sending again.');
+        }
+
+        $this->dispatch('chat-updated');
+    }
+
+    private function latestInsight(): ?AiInsight
+    {
+        $snapshot = Auth::user()->latestSnapshot();
+
+        return $snapshot === null ? null : AiInsight::query()
+            ->where('portfolio_snapshot_id', $snapshot->id)
+            ->where('locale', app()->getLocale())
+            ->first();
+    }
+
+    public function with(): array
+    {
+        $snapshot = Auth::user()->latestSnapshot();
+        $insight = $this->latestInsight();
+
+        return [
+            'hasSnapshot' => $snapshot !== null,
+            'insight' => $insight,
+            'isGenerating' => Cache::has(GenerateInsightsJob::cacheKey(Auth::user(), app()->getLocale())),
+            'messages' => Auth::user()->chatMessages()->oldest('id')->get(),
+            'starters' => $this->starters(),
+        ];
+    }
+}; ?>
+
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-6"
+    @if ($isGenerating) wire:poll.3s @endif>
+    <div class="flex items-start justify-between gap-4">
+        <div>
+            <flux:heading size="xl">{{ __('AI Advisor') }}</flux:heading>
+            <flux:text class="mt-1">
+                {{ __('Ask anything about your unified portfolio — answers are grounded in your own numbers.') }}
+            </flux:text>
+        </div>
+        @if ($messages->isNotEmpty())
+            <flux:button size="sm" variant="subtle" icon="trash" wire:click="clearChat"
+                wire:confirm="{{ __('Clear the whole conversation?') }}">
+                {{ __('Clear conversation') }}</flux:button>
+        @endif
+    </div>
+
+    @if (! $hasSnapshot)
+        <div class="flex flex-col items-center gap-4 card p-12 text-center">
+            <flux:text class="max-w-64 text-sm">
+                {{ __('Connect your accounts and Mahafeth AI will explain your portfolio in plain language.') }}
+            </flux:text>
+            <flux:button size="sm" variant="primary" :href="route('connections')" wire:navigate>
+                {{ __('Connect accounts') }}</flux:button>
+        </div>
+    @else
+        {{-- Insight entry point: summary and recommendations to discuss --}}
+        @if ($insight !== null)
+            <div class="card space-y-4 p-5">
+                <flux:callout color="blue" icon="light-bulb">
+                    <flux:callout.heading>{{ __('Executive Summary') }}</flux:callout.heading>
+                    <flux:callout.text>{{ $insight->summary }}</flux:callout.text>
+                </flux:callout>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                    @foreach ($insight->recommendations as $index => $recommendation)
+                        <div
+                            class="flex flex-col rounded-lg border border-neutral-200/60 bg-neutral-50 p-3 dark:border-neutral-700/60 dark:bg-zinc-800/50">
+                            <div class="flex items-start justify-between gap-2">
+                                <flux:heading size="sm">{{ $recommendation['title'] }}</flux:heading>
+                                <flux:badge size="sm" inset="top bottom"
+                                    :color="['high' => 'red', 'medium' => 'amber', 'low' => 'zinc'][$recommendation['priority']] ?? 'zinc'">
+                                    {{ __(ucfirst($recommendation['priority'])) }}</flux:badge>
+                            </div>
+                            <flux:text class="mt-1 line-clamp-2 grow text-sm">{{ $recommendation['body'] }}
+                            </flux:text>
+                            <flux:button class="mt-3 self-start" size="sm" icon="chat-bubble-oval-left"
+                                wire:click="discuss({{ $index }})" wire:loading.attr="disabled">
+                                {{ __('Discuss this') }}</flux:button>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @elseif ($isGenerating)
+            <div class="flex flex-col items-center gap-3 card p-10 text-center">
+                <flux:icon.loading class="size-6 text-teal-700 dark:text-teal-300" />
+                <flux:text class="text-sm">{{ __('Analyzing your portfolio…') }}</flux:text>
+                <flux:text class="max-w-56 text-xs">
+                    {{ __('This runs in the background — feel free to keep browsing.') }}</flux:text>
+            </div>
+        @else
+            <div class="flex flex-col items-center gap-4 card p-10 text-center">
+                <flux:text class="max-w-72 text-sm">
+                    {{ __('Generate insights first to start a conversation grounded in your portfolio.') }}
+                </flux:text>
+                <flux:button variant="primary" icon="sparkles" wire:click="generate" wire:loading.attr="disabled">
+                    {{ __('Generate Insights') }}</flux:button>
+            </div>
+        @endif
+
+        {{-- Chat --}}
+        <div class="flex flex-col card">
+            <div class="max-h-[55vh] min-h-40 space-y-3 overflow-y-auto p-5" x-data
+                x-init="$el.scrollTop = $el.scrollHeight"
+                @chat-updated.window="$nextTick(() => $el.scrollTop = $el.scrollHeight)">
+                @forelse ($messages as $chatMessage)
+                    <div @class([
+                        'max-w-[85%] rounded-2xl px-4 py-2.5 text-sm',
+                        'ms-auto bg-teal-600 text-white dark:bg-teal-500' => $chatMessage->role === 'user',
+                        'me-auto bg-neutral-100 text-neutral-800 dark:bg-zinc-800 dark:text-neutral-100' => $chatMessage->role !== 'user',
+                    ])>
+                        <p class="whitespace-pre-wrap" dir="auto">{{ $chatMessage->content }}</p>
+                    </div>
+                @empty
+                    <div class="flex flex-col items-center gap-3 py-6 text-center">
+                        <flux:text class="text-sm">
+                            {{ __('Start with one of these, or ask your own question.') }}</flux:text>
+                        <div class="flex flex-wrap justify-center gap-2">
+                            @foreach ($starters as $index => $starter)
+                                <flux:button size="sm" wire:loading.attr="disabled"
+                                    wire:click="ask({{ $index }})">{{ $starter }}</flux:button>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforelse
+
+                <div wire:loading.flex wire:target="send, ask, discuss"
+                    class="me-auto max-w-[85%] items-center gap-1.5 rounded-2xl bg-neutral-100 px-4 py-3 dark:bg-zinc-800">
+                    <span class="size-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:-0.3s]"></span>
+                    <span class="size-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:-0.15s]"></span>
+                    <span class="size-1.5 animate-bounce rounded-full bg-neutral-400"></span>
+                    <span class="sr-only">{{ __('Mahafeth AI is thinking…') }}</span>
+                </div>
+            </div>
+
+            @if ($error !== null)
+                <flux:text class="px-5 pb-2 text-sm !text-red-600 dark:!text-red-400">{{ $error }}</flux:text>
+            @endif
+
+            <div class="flex items-center gap-2 border-t border-neutral-200 p-3 dark:border-neutral-700">
+                <flux:input class="grow" wire:model="message" wire:keydown.enter="send"
+                    :placeholder="__('Ask about your portfolio…')" maxlength="1000" />
+                <flux:button variant="primary" icon="paper-airplane" wire:click="send"
+                    wire:loading.attr="disabled" :aria-label="__('Send')" />
+            </div>
+        </div>
+    @endif
+</div>

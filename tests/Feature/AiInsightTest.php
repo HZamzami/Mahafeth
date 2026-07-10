@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Actions\GenerateInsights;
 use App\Actions\SyncConnection;
 use App\Contracts\InsightGenerator;
+use App\Jobs\GenerateInsightsJob;
 use App\Models\AiInsight;
 use App\Models\Connection;
 use App\Models\Institution;
@@ -12,6 +14,8 @@ use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
 use App\Services\Insights\FakeInsightGenerator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
 
@@ -48,11 +52,13 @@ class AiInsightTest extends TestCase
         $user = $this->analyzedUser();
         $this->actingAs($user);
 
+        // The sync test queue runs the job inline, so the teaser renders
+        // the finished insight in the same call.
         Volt::test('dashboard.ai-summary')
             ->call('generate')
             ->assertSee(__('Executive Summary'))
-            ->assertSee(__('Action Plan'))
-            ->assertSee(__('Show the math'));
+            ->assertSee(__('Top recommendation'))
+            ->assertSee(__('Ask Mahafeth AI'));
 
         $insight = AiInsight::first();
 
@@ -112,6 +118,52 @@ class AiInsightTest extends TestCase
         $this->assertSame(__('Replace non-compliant holdings'), $insight['recommendations'][0]['title']);
         $this->assertStringContainsString('JPMorgan', $insight['recommendations'][0]['body']);
         $this->assertSame('high', $insight['recommendations'][0]['priority']);
+    }
+
+    public function test_generate_dispatches_a_unique_job_and_flags_the_generation_as_in_flight(): void
+    {
+        Queue::fake();
+
+        $user = $this->analyzedUser();
+        $this->actingAs($user);
+
+        Volt::test('dashboard.ai-summary')->call('generate');
+
+        Queue::assertPushed(GenerateInsightsJob::class, 1);
+        $this->assertTrue(Cache::has(GenerateInsightsJob::cacheKey($user, 'en')));
+    }
+
+    public function test_the_generating_state_survives_a_reload_and_the_job_clears_it(): void
+    {
+        $user = $this->analyzedUser();
+        $this->actingAs($user);
+
+        // A fresh component render mid-generation (a reload) shows the
+        // persistent analyzing state instead of the Generate button.
+        Cache::put(GenerateInsightsJob::cacheKey($user, 'en'), true, now()->addMinutes(5));
+
+        Volt::test('dashboard.ai-summary')
+            ->assertSee(__('Analyzing your portfolio…'))
+            ->assertDontSee(__('Generate Insights'));
+
+        (new GenerateInsightsJob($user, 'en'))->handle(app(GenerateInsights::class));
+
+        $this->assertFalse(Cache::has(GenerateInsightsJob::cacheKey($user, 'en')));
+
+        Volt::test('dashboard.ai-summary')
+            ->assertSee(__('Executive Summary'))
+            ->assertDontSee(__('Analyzing your portfolio…'));
+    }
+
+    public function test_a_failed_job_clears_the_in_flight_flag(): void
+    {
+        $user = User::factory()->create();
+
+        Cache::put(GenerateInsightsJob::cacheKey($user, 'en'), true, now()->addMinutes(5));
+
+        (new GenerateInsightsJob($user, 'en'))->failed();
+
+        $this->assertFalse(Cache::has(GenerateInsightsJob::cacheKey($user, 'en')));
     }
 
     public function test_users_without_a_snapshot_see_the_empty_state(): void

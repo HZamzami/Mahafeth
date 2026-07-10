@@ -72,12 +72,23 @@ class DemoJourneyTest extends TestCase
             ->assertSee(__('Efficient Frontier'))
             ->assertSee(__('Correlation Matrix'));
 
-        // 8. Generate the AI action plan (fake generator in tests).
+        // 8. Generate the AI insight (fake generator in tests; the sync
+        // queue runs the job inline) and open the advisor conversation.
         Volt::test('dashboard.ai-summary')
             ->call('generate')
-            ->assertSee(__('Action Plan'));
+            ->assertSee(__('Top recommendation'));
 
         $this->assertSame(1, AiInsight::count());
+
+        $this->get('/advisor')
+            ->assertOk()
+            ->assertSee(__('Executive Summary'))
+            ->assertSee(__('Discuss this'));
+
+        Volt::test('advisor.index')
+            ->set('message', 'What is my biggest risk?')
+            ->call('send')
+            ->assertSee('What is my biggest risk?');
     }
 
     public function test_demo_reset_builds_the_golden_demo_in_one_command(): void

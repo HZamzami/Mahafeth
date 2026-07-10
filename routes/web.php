@@ -21,6 +21,10 @@ Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+Volt::route('advisor', 'advisor.index')
+    ->middleware(['auth', 'verified'])
+    ->name('advisor');
+
 Volt::route('connections', 'connections.index')
     ->middleware(['auth', 'verified'])
     ->name('connections');
