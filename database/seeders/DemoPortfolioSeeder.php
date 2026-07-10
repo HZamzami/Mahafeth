@@ -111,13 +111,13 @@ class DemoPortfolioSeeder extends Seeder
         });
 
         $user->riskProfile()->updateOrCreate([], [
-            'answers' => ['horizon' => 3, 'goal' => 3, 'drop_reaction' => 3, 'liquidity' => 3, 'target_return' => 2, 'shariah' => 1],
+            'answers' => ['age' => 2, 'horizon' => 3, 'goal' => 3, 'drop_reaction' => 3, 'experience' => 3, 'liquidity' => 3, 'target_return' => 2, 'contributions' => 1, 'base_currency' => 1, 'shariah' => 1],
             'risk_tolerance' => $tolerance,
             'time_horizon' => TimeHorizon::Long,
             'target_return' => $tolerance->targetReturn(),
             'target_volatility' => $tolerance->targetVolatility(),
             'liquidity_needs' => 'moderate',
-            'constraints' => ['shariah_required' => true, 'shariah_preferred' => false],
+            'constraints' => ['shariah_required' => true, 'shariah_preferred' => false, 'base_currency' => 'SAR', 'contribution_frequency' => 'monthly'],
         ]);
 
         return $user;

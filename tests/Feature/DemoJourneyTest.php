@@ -39,7 +39,7 @@ class DemoJourneyTest extends TestCase
 
         // 3. Complete the IPS questionnaire.
         Volt::test('investor-profile.index')
-            ->set('answers', ['horizon' => 3, 'goal' => 3, 'drop_reaction' => 3, 'liquidity' => 3, 'target_return' => 2, 'shariah' => 1])
+            ->set('answers', ['age' => 2, 'horizon' => 3, 'goal' => 3, 'drop_reaction' => 3, 'experience' => 3, 'liquidity' => 3, 'target_return' => 2, 'contributions' => 1, 'base_currency' => 1, 'shariah' => 1])
             ->call('submit')
             ->assertRedirect(route('dashboard'));
 

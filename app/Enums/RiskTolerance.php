@@ -11,15 +11,15 @@ enum RiskTolerance: string
     case Aggressive = 'aggressive';
 
     /**
-     * Map a questionnaire score (5–20) to a tolerance band.
+     * Map a questionnaire score (7–28, from the seven scored questions) to a tolerance band.
      */
     public static function fromQuestionnaireScore(int $score): self
     {
         return match (true) {
-            $score <= 8 => self::VeryConservative,
-            $score <= 11 => self::Conservative,
-            $score <= 14 => self::Balanced,
-            $score <= 17 => self::Growth,
+            $score <= 11 => self::VeryConservative,
+            $score <= 15 => self::Conservative,
+            $score <= 19 => self::Balanced,
+            $score <= 23 => self::Growth,
             default => self::Aggressive,
         };
     }

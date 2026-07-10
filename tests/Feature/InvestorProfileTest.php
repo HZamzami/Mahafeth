@@ -27,7 +27,29 @@ class InvestorProfileTest extends TestCase
 
         Volt::test('investor-profile.index')
             ->call('next')
-            ->assertHasErrors('answers.horizon');
+            ->assertHasErrors('answers.age');
+    }
+
+    /**
+     * @param  array<string, int>  $overrides
+     * @return array<string, int>
+     */
+    private function answers(array $overrides = []): array
+    {
+        // All 3s on the risk questions with a 30–45 age bracket (inverted to
+        // a 3) → total 21 → Growth band.
+        return array_merge([
+            'age' => 2,
+            'horizon' => 3,
+            'goal' => 3,
+            'drop_reaction' => 3,
+            'experience' => 3,
+            'liquidity' => 3,
+            'target_return' => 3,
+            'contributions' => 1,
+            'base_currency' => 1,
+            'shariah' => 1,
+        ], $overrides);
     }
 
     public function test_completing_the_questionnaire_persists_a_mapped_profile(): void
@@ -35,10 +57,8 @@ class InvestorProfileTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        // All 3s on the five risk questions → total 15 → Growth band. The
-        // Shariah answer is a constraint and must not shift the band.
         Volt::test('investor-profile.index')
-            ->set('answers', ['horizon' => 3, 'goal' => 3, 'drop_reaction' => 3, 'liquidity' => 3, 'target_return' => 3, 'shariah' => 1])
+            ->set('answers', $this->answers())
             ->call('submit')
             ->assertRedirect(route('dashboard'));
 
@@ -50,6 +70,8 @@ class InvestorProfileTest extends TestCase
         $this->assertEqualsWithDelta(RiskTolerance::Growth->targetReturn(), $profile->target_return, 1e-6);
         $this->assertTrue($profile->constraints['shariah_required']);
         $this->assertFalse($profile->constraints['shariah_preferred']);
+        $this->assertSame('SAR', $profile->constraints['base_currency']);
+        $this->assertSame('monthly', $profile->constraints['contribution_frequency']);
     }
 
     public function test_declining_the_shariah_requirement_persists_an_unconstrained_profile(): void
@@ -58,13 +80,51 @@ class InvestorProfileTest extends TestCase
         $this->actingAs($user);
 
         Volt::test('investor-profile.index')
-            ->set('answers', ['horizon' => 3, 'goal' => 3, 'drop_reaction' => 3, 'liquidity' => 3, 'target_return' => 3, 'shariah' => 3])
+            ->set('answers', $this->answers(['shariah' => 3]))
             ->call('submit');
 
         $profile = $user->riskProfile()->first();
 
         $this->assertFalse($profile->constraints['shariah_required']);
         $this->assertSame(RiskTolerance::Growth, $profile->risk_tolerance);
+    }
+
+    public function test_the_constraint_questions_do_not_shift_the_risk_band(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        Volt::test('investor-profile.index')
+            ->set('answers', $this->answers(['contributions' => 4, 'base_currency' => 4, 'shariah' => 3]))
+            ->call('submit');
+
+        $profile = $user->riskProfile()->first();
+
+        $this->assertSame(RiskTolerance::Growth, $profile->risk_tolerance);
+        $this->assertSame('other', $profile->constraints['base_currency']);
+        $this->assertSame('none', $profile->constraints['contribution_frequency']);
+    }
+
+    public function test_an_older_investor_lands_in_a_lower_risk_band_than_a_younger_one(): void
+    {
+        $older = User::factory()->create();
+        $this->actingAs($older);
+
+        // Same answers except age: Over 60 scores 1 (total 19, Balanced)
+        // where Under 30 scores 4 (total 22, Growth).
+        Volt::test('investor-profile.index')
+            ->set('answers', $this->answers(['age' => 4]))
+            ->call('submit');
+
+        $younger = User::factory()->create();
+        $this->actingAs($younger);
+
+        Volt::test('investor-profile.index')
+            ->set('answers', $this->answers(['age' => 1]))
+            ->call('submit');
+
+        $this->assertSame(RiskTolerance::Balanced, $older->riskProfile()->first()->risk_tolerance);
+        $this->assertSame(RiskTolerance::Growth, $younger->riskProfile()->first()->risk_tolerance);
     }
 
     public function test_submitting_with_a_synced_portfolio_computes_the_health_score(): void
@@ -80,7 +140,7 @@ class InvestorProfileTest extends TestCase
         $this->actingAs($user);
 
         Volt::test('investor-profile.index')
-            ->set('answers', ['horizon' => 2, 'goal' => 2, 'drop_reaction' => 2, 'liquidity' => 3, 'target_return' => 2, 'shariah' => 1])
+            ->set('answers', $this->answers(['horizon' => 2, 'goal' => 2, 'drop_reaction' => 2, 'experience' => 2, 'liquidity' => 3, 'target_return' => 2]))
             ->call('submit');
 
         $snapshot = $user->fresh()->latestSnapshot();

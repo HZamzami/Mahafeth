@@ -38,7 +38,7 @@ new class extends Component {
             ],
             [
                 'label' => __('Build your investor profile'),
-                'description' => __('Six quick questions define the goals and risk tolerance your portfolio is judged against.'),
+                'description' => __('Ten quick questions define the goals and risk tolerance your portfolio is judged against.'),
                 'done' => $profiled,
                 'current' => $connected && ! $profiled,
                 'href' => route('investor-profile'),

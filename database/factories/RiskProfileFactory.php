@@ -24,7 +24,7 @@ class RiskProfileFactory extends Factory
 
         return [
             'user_id' => User::factory(),
-            'answers' => ['horizon' => 3, 'goal' => 3, 'drop_reaction' => 3, 'liquidity' => 3, 'target_return' => 3],
+            'answers' => ['age' => 2, 'horizon' => 3, 'goal' => 3, 'drop_reaction' => 3, 'experience' => 3, 'liquidity' => 3, 'target_return' => 3, 'contributions' => 1, 'base_currency' => 1, 'shariah' => 1],
             'risk_tolerance' => $tolerance,
             'time_horizon' => fake()->randomElement(TimeHorizon::cases()),
             'target_return' => $tolerance->targetReturn(),

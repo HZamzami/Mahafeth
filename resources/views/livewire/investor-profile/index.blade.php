@@ -11,11 +11,15 @@ new class extends Component {
 
     /** @var array<string, ?int> */
     public array $answers = [
+        'age' => null,
         'horizon' => null,
         'goal' => null,
         'drop_reaction' => null,
+        'experience' => null,
         'liquidity' => null,
         'target_return' => null,
+        'contributions' => null,
+        'base_currency' => null,
         'shariah' => null,
     ];
 
@@ -29,15 +33,27 @@ new class extends Component {
     }
 
     /**
-     * The IPS questionnaire: each risk answer scores 1 (most cautious) to 4.
-     * The Shariah question is a constraint, not a risk score, and is left
-     * out of the tolerance sum.
+     * The IPS questionnaire, following the CFA framework: return objective,
+     * risk tolerance, time horizon, liquidity needs, and constraints. Each
+     * risk answer scores 1 (most cautious) to 4, except age where the scale
+     * is inverted since younger investors have more risk capacity. The
+     * Shariah, contribution, and currency questions are constraints, not
+     * risk scores, and are left out of the tolerance sum.
      *
      * @return array<string, array{question: string, options: list<string>}>
      */
     public function questions(): array
     {
         return [
+            'age' => [
+                'question' => __('What is your age bracket?'),
+                'options' => [
+                    __('Under 30'),
+                    __('30–45'),
+                    __('45–60'),
+                    __('Over 60'),
+                ],
+            ],
             'horizon' => [
                 'question' => __('How long do you plan to keep this money invested?'),
                 'options' => [
@@ -65,6 +81,15 @@ new class extends Component {
                     __('Buy more at the lower prices'),
                 ],
             ],
+            'experience' => [
+                'question' => __('How experienced are you with investing?'),
+                'options' => [
+                    __('I am new to investing'),
+                    __('1–3 years of experience'),
+                    __('3–10 years of experience'),
+                    __('More than 10 years of experience'),
+                ],
+            ],
             'liquidity' => [
                 'question' => __('How much of this portfolio might you need to withdraw within a year?'),
                 'options' => [
@@ -81,6 +106,24 @@ new class extends Component {
                     __('Around 7% — modest growth'),
                     __('Around 10% — solid growth'),
                     __('15% or more — high growth'),
+                ],
+            ],
+            'contributions' => [
+                'question' => __('Do you plan to add money to your portfolio regularly?'),
+                'options' => [
+                    __('Yes, monthly'),
+                    __('Yes, every few months'),
+                    __('Occasionally, with no fixed schedule'),
+                    __('No, this is a one-time investment'),
+                ],
+            ],
+            'base_currency' => [
+                'question' => __('What is the primary currency you invest in?'),
+                'options' => [
+                    __('Saudi riyal (SAR)'),
+                    __('US dollar (USD)'),
+                    __('Euro (EUR)'),
+                    __('Another currency'),
                 ],
             ],
             'shariah' => [
@@ -121,11 +164,14 @@ new class extends Component {
         }
         $this->validate($rules);
 
-        $riskAnswers = array_diff_key($this->answers, ['shariah' => null]);
+        $riskAnswers = array_intersect_key($this->answers, array_flip(['age', 'horizon', 'goal', 'drop_reaction', 'experience', 'liquidity', 'target_return']));
+        $riskAnswers['age'] = 5 - $riskAnswers['age'];
         $tolerance = RiskTolerance::fromQuestionnaireScore((int) array_sum($riskAnswers));
 
         $horizons = [1 => TimeHorizon::Short, 2 => TimeHorizon::Medium, 3 => TimeHorizon::Long, 4 => TimeHorizon::VeryLong];
         $liquidity = [1 => 'high', 2 => 'elevated', 3 => 'moderate', 4 => 'minimal'];
+        $currencies = [1 => 'SAR', 2 => 'USD', 3 => 'EUR', 4 => 'other'];
+        $contributions = [1 => 'monthly', 2 => 'quarterly', 3 => 'occasional', 4 => 'none'];
 
         Auth::user()->riskProfile()->updateOrCreate([], [
             'answers' => $this->answers,
@@ -137,6 +183,8 @@ new class extends Component {
             'constraints' => [
                 'shariah_required' => $this->answers['shariah'] === 1,
                 'shariah_preferred' => $this->answers['shariah'] === 2,
+                'base_currency' => $currencies[$this->answers['base_currency']],
+                'contribution_frequency' => $contributions[$this->answers['contributions']],
             ],
         ]);
 
@@ -162,7 +210,7 @@ new class extends Component {
     <div>
         <flux:heading size="xl">{{ __('Investor Profile') }}</flux:heading>
         <flux:text class="mt-1">
-            {{ __('Six quick questions build your Investment Policy Statement, so Mahafeth can judge whether your portfolio actually fits you.') }}
+            {{ __('Ten quick questions build your Investment Policy Statement, so Mahafeth can judge whether your portfolio actually fits you.') }}
         </flux:text>
         @if (auth()->user()->riskProfile !== null)
             <flux:callout class="mt-4" color="zinc" icon="check-circle" inline>
