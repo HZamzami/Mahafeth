@@ -152,8 +152,16 @@ new class extends Component {
                     <flux:callout.text>{{ $insight->summary }}</flux:callout.text>
                 </flux:callout>
 
-                <div class="space-y-3">
-                    @foreach ($insight->recommendations as $index => $recommendation)
+                <details class="group">
+                    <summary
+                        class="flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-teal-700 hover:underline dark:text-teal-300">
+                        <flux:icon.chevron-down class="size-4 transition-transform group-open:rotate-180" />
+                        {{ __('View the action plan') }}
+                        <flux:badge size="sm">{{ count($insight->recommendations) }}</flux:badge>
+                    </summary>
+
+                    <div class="mt-3 space-y-3">
+                        @foreach ($insight->recommendations as $index => $recommendation)
                         <div
                             class="flex flex-col rounded-lg border border-neutral-200/60 bg-neutral-50 p-3 dark:border-neutral-700/60 dark:bg-zinc-800/50">
                             <div class="flex items-start justify-between gap-2">
@@ -184,8 +192,9 @@ new class extends Component {
                                 wire:click="discuss({{ $index }})" wire:loading.attr="disabled">
                                 {{ __('Discuss this') }}</flux:button>
                         </div>
-                    @endforeach
-                </div>
+                        @endforeach
+                    </div>
+                </details>
             </div>
         @elseif ($isGenerating)
             <div class="flex flex-col items-center gap-3 card p-10 text-center">
