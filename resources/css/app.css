@@ -45,9 +45,10 @@
     /* Soft layered lift for cards sitting on the sand background. */
     --shadow-card: 0 1px 2px rgb(24 24 27 / 0.04), 0 4px 12px -4px rgb(24 24 27 / 0.08);
 
-    /* Warm page surfaces: sand in light mode, soft charcoal in dark. */
-    --color-sand-50: #faf9f7;
-    --color-sand-100: #f3f1ec;
+    /* Warm page surfaces: a barely-there sand in light mode (near-white,
+       so white cards still read as cards), soft charcoal in dark. */
+    --color-sand-50: #fdfcfb;
+    --color-sand-100: #f8f7f4;
     --color-charcoal-950: #131315;
 }
 
