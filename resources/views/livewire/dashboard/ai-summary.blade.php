@@ -34,6 +34,9 @@ new class extends Component {
             'hasSnapshot' => $snapshot !== null,
             'insight' => $insight,
             'isGenerating' => Cache::has(GenerateInsightsJob::cacheKey(Auth::user(), app()->getLocale())),
+            // Same-day re-analysis updates the snapshot row in place, so an
+            // insight older than its snapshot explains numbers that changed.
+            'isStale' => $insight !== null && $insight->updated_at->lt($snapshot->updated_at),
         ];
     }
 }; ?>
@@ -56,6 +59,15 @@ new class extends Component {
     </div>
 
     @if ($insight !== null)
+        @if ($isStale && ! $isGenerating)
+            <flux:callout class="mb-4" color="amber" icon="exclamation-triangle" inline>
+                <flux:callout.text>
+                    {{ __('Your analysis has changed since this was generated.') }}
+                    <flux:link class="cursor-pointer" wire:click="generate">{{ __('Regenerate') }}</flux:link>
+                </flux:callout.text>
+            </flux:callout>
+        @endif
+
         <flux:callout color="blue" icon="light-bulb">
             <flux:callout.heading>{{ __('Executive Summary') }}</flux:callout.heading>
             <flux:callout.text>{{ $insight->summary }}</flux:callout.text>

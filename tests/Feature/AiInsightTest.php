@@ -166,6 +166,32 @@ class AiInsightTest extends TestCase
         $this->assertFalse(Cache::has(GenerateInsightsJob::cacheKey($user, 'en')));
     }
 
+    public function test_a_same_day_reanalysis_marks_the_insight_as_stale(): void
+    {
+        $user = $this->analyzedUser();
+        $this->actingAs($user);
+
+        Volt::test('dashboard.ai-summary')
+            ->call('generate')
+            ->assertDontSee(__('Your analysis has changed since this was generated.'));
+
+        // A profile edit or a new sync re-analyzes the same day, updating
+        // the snapshot row in place after the insight was written.
+        AiInsight::query()->update(['updated_at' => now()->subMinute()]);
+        $user->latestSnapshot()->touch();
+
+        Volt::test('dashboard.ai-summary')
+            ->assertSee(__('Your analysis has changed since this was generated.'));
+
+        Volt::test('advisor.index')
+            ->assertSee(__('Your analysis has changed since this was generated.'));
+
+        // Regenerating refreshes the insight and clears the nudge.
+        Volt::test('dashboard.ai-summary')
+            ->call('generate')
+            ->assertDontSee(__('Your analysis has changed since this was generated.'));
+    }
+
     public function test_users_without_a_snapshot_see_the_empty_state(): void
     {
         $this->actingAs(User::factory()->create());

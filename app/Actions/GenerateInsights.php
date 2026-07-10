@@ -33,9 +33,16 @@ class GenerateInsights
             $this->context->goals($user, $snapshot),
         );
 
-        return AiInsight::updateOrCreate(
+        $insight = AiInsight::updateOrCreate(
             ['portfolio_snapshot_id' => $snapshot->id, 'locale' => $locale],
             ['summary' => $result['summary'], 'recommendations' => $result['recommendations']],
         );
+
+        // Record that a regeneration ran even when the model returned the
+        // identical text, so staleness checks against the snapshot's
+        // updated_at stay truthful.
+        $insight->touch();
+
+        return $insight;
     }
 }
