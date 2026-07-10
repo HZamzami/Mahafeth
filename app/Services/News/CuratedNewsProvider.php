@@ -17,7 +17,7 @@ class CuratedNewsProvider implements NewsProvider
         $items = [
             [
                 'headline' => 'Apple earnings preview: services growth in focus as hardware demand cools',
-                'headline_ar' => 'ترقّب نتائج آبل: نمو الخدمات في دائرة الضوء مع تباطؤ الطلب على الأجهزة',
+                'headline_ar' => 'ترقّب نتائج أبل: نمو الخدمات في دائرة الضوء مع تباطؤ الطلب على الأجهزة',
                 'source' => 'Market Pulse',
                 'minutes' => 4,
                 'symbols' => ['AAPL'],

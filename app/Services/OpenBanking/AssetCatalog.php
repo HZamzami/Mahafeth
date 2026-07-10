@@ -15,7 +15,7 @@ class AssetCatalog
      * @var array<string, array{name: string, name_ar: ?string, asset_class: string, sector: ?string, country: ?string, currency: string, shariah_status: string, start: float, drift: float, vol: float, loading: float}>
      */
     private const ASSETS = [
-        'AAPL' => ['name' => 'Apple Inc.', 'name_ar' => 'آبل', 'asset_class' => 'equity', 'sector' => 'Information Technology', 'country' => 'US', 'currency' => 'USD', 'shariah_status' => 'compliant', 'start' => 130.0, 'drift' => 0.18, 'vol' => 0.28, 'loading' => 0.80],
+        'AAPL' => ['name' => 'Apple Inc.', 'name_ar' => 'أبل', 'asset_class' => 'equity', 'sector' => 'Information Technology', 'country' => 'US', 'currency' => 'USD', 'shariah_status' => 'compliant', 'start' => 130.0, 'drift' => 0.18, 'vol' => 0.28, 'loading' => 0.80],
         'MSFT' => ['name' => 'Microsoft Corporation', 'name_ar' => 'مايكروسوفت', 'asset_class' => 'equity', 'sector' => 'Information Technology', 'country' => 'US', 'currency' => 'USD', 'shariah_status' => 'compliant', 'start' => 250.0, 'drift' => 0.16, 'vol' => 0.26, 'loading' => 0.80],
         'NVDA' => ['name' => 'NVIDIA Corporation', 'name_ar' => 'إنفيديا', 'asset_class' => 'equity', 'sector' => 'Information Technology', 'country' => 'US', 'currency' => 'USD', 'shariah_status' => 'compliant', 'start' => 180.0, 'drift' => 0.35, 'vol' => 0.45, 'loading' => 0.75],
         'GOOGL' => ['name' => 'Alphabet Inc.', 'name_ar' => 'ألفابت', 'asset_class' => 'equity', 'sector' => 'Communication Services', 'country' => 'US', 'currency' => 'USD', 'shariah_status' => 'compliant', 'start' => 100.0, 'drift' => 0.14, 'vol' => 0.30, 'loading' => 0.78],

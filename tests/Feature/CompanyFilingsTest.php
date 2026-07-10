@@ -82,7 +82,7 @@ class CompanyFilingsTest extends TestCase
         app()->setLocale('ar');
 
         Volt::test('dashboard.company-filings')
-            ->assertSee('آبل تودع تقرير الربع الثالث');
+            ->assertSee('أبل تودع تقرير الربع الثالث');
     }
 
     public function test_users_without_holdings_see_the_empty_state(): void

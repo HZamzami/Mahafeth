@@ -18,7 +18,7 @@ class CuratedFilingProvider implements FilingProvider
         $filings = [
             [
                 'headline' => 'Apple Inc. files Form 10-Q for fiscal Q3 2026',
-                'headline_ar' => 'آبل تودع تقرير الربع الثالث من السنة المالية 2026 (نموذج 10-Q)',
+                'headline_ar' => 'أبل تودع تقرير الربع الثالث من السنة المالية 2026 (نموذج 10-Q)',
                 'symbol' => 'AAPL',
                 'type' => 'quarterly_report',
                 'source' => 'SEC',
