@@ -16,6 +16,13 @@ class NewsSeeder extends Seeder
      */
     public function run(): void
     {
+        // With a live news API configured, the refresh command owns the
+        // feed; seeding synthetic headlines here would shadow real,
+        // clickable articles (curated items are always "hours old").
+        if (! empty(config('services.marketaux.token'))) {
+            return;
+        }
+
         foreach (app(CuratedNewsProvider::class)->fetchLatest() as $item) {
             NewsItem::updateOrCreate(
                 ['headline' => $item['headline']],

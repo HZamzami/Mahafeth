@@ -7,6 +7,7 @@ use App\Models\Asset;
 use App\Models\NewsItem;
 use App\Services\News\CuratedNewsProvider;
 use App\Services\News\MarketauxNewsProvider;
+use Database\Seeders\NewsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -42,6 +43,54 @@ class NewsRefreshTest extends TestCase
         $count = NewsItem::count();
         $this->artisan('mahafeth:refresh-news')->assertSuccessful();
         $this->assertSame($count, NewsItem::count());
+    }
+
+    public function test_the_seeder_skips_synthetic_headlines_when_a_live_api_is_configured(): void
+    {
+        config(['services.marketaux.token' => 'token-123']);
+
+        (new NewsSeeder)->run();
+
+        $this->assertSame(0, NewsItem::count());
+    }
+
+    public function test_a_live_refresh_prunes_leftover_synthetic_headlines(): void
+    {
+        // Seeded earlier without a token: synthetic, url-less items.
+        config(['services.marketaux.token' => null]);
+        (new NewsSeeder)->run();
+        $this->assertGreaterThan(0, NewsItem::whereNull('url')->count());
+
+        // A live batch (every article has a url) takes over the feed.
+        config(['services.marketaux.token' => 'token-123']);
+        Asset::factory()->create(['symbol' => 'AAPL']);
+        Http::fake([
+            'api.marketaux.com/*' => Http::response([
+                'data' => [[
+                    'title' => 'Apple ships new device',
+                    'description' => 'word',
+                    'source' => 'newswire',
+                    'url' => 'https://newswire.example/apple',
+                    'published_at' => now()->toIso8601String(),
+                    'entities' => [['symbol' => 'AAPL', 'industry' => 'Technology']],
+                ]],
+            ]),
+        ]);
+
+        $this->artisan('mahafeth:refresh-news')->assertSuccessful();
+
+        $this->assertSame(0, NewsItem::whereNull('url')->count());
+        $this->assertSame(1, NewsItem::count());
+    }
+
+    public function test_a_curated_fallback_batch_keeps_the_synthetic_feed(): void
+    {
+        config(['services.marketaux.token' => null]);
+
+        $this->artisan('mahafeth:refresh-news')->assertSuccessful();
+        $this->artisan('mahafeth:refresh-news')->assertSuccessful();
+
+        $this->assertGreaterThan(0, NewsItem::whereNull('url')->count());
     }
 
     public function test_marketaux_articles_map_to_news_items(): void

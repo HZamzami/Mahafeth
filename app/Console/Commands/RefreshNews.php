@@ -48,6 +48,15 @@ class RefreshNews extends Command
 
         $pruned = NewsItem::where('published_at', '<', now()->subDays(self::KEEP_DAYS))->delete();
 
+        // A fully-linked batch means the live provider answered; drop any
+        // leftover synthetic curated headlines (always url-less) so they
+        // stop shadowing real, clickable articles. When the provider fell
+        // back to curated headlines the batch contains null urls, and the
+        // synthetic feed is kept.
+        if ($items !== [] && collect($items)->every(fn (array $item): bool => ! empty($item['url']))) {
+            $pruned += NewsItem::whereNull('url')->delete();
+        }
+
         $this->components->info(sprintf('Stored %d items, pruned %d stale ones.', count($items), $pruned));
 
         return self::SUCCESS;
