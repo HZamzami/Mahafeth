@@ -87,7 +87,7 @@ new class extends Component {
                 'question' => __('Do you require your investments to be Shariah-compliant?'),
                 'options' => [
                     __('Yes, my portfolio must be fully Shariah-compliant'),
-                    __('I prefer compliant investments but allow exceptions'),
+                    __('I prefer compliant investments while allowing a purification percentage'),
                     __('No requirement'),
                 ],
             ],

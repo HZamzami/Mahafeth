@@ -91,13 +91,18 @@ new class extends Component {
             <div class="mt-4 rounded-lg bg-neutral-50 p-3 dark:bg-zinc-800/50">
                 <div class="flex items-center justify-between">
                     <flux:text class="text-xs font-medium uppercase tracking-widest">
-                        {{ __('Purification Due') }}</flux:text>
+                        {{ __('Stock Purification') }}</flux:text>
                     <flux:text class="text-sm font-semibold !text-red-600 dark:!text-red-400" dir="ltr">
                         ⃁ {{ Number::format($shariah['purification_amount'], 2) }}</flux:text>
                 </div>
                 <flux:text class="mt-1 text-xs">
                     {{ __('Dividends received from non-compliant holdings over the past year, to be donated to charity.') }}
                 </flux:text>
+                <a class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-teal-700 hover:underline dark:text-teal-300"
+                    href="https://ehsan.sa/stockspurification" target="_blank" rel="noopener">
+                    {{ __('Donate via Ehsan') }}
+                    <flux:icon.arrow-top-right-on-square class="size-3" />
+                </a>
             </div>
         @endif
 

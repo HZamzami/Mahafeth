@@ -98,7 +98,8 @@ class DashboardTest extends TestCase
             ->assertOk()
             ->assertSee(__('Shariah Compliance'))
             ->assertSee(__('Flagged Positions'))
-            ->assertSee(__('Purification Due'))
+            ->assertSee(__('Stock Purification'))
+            ->assertSee('https://ehsan.sa/stockspurification')
             ->assertSee(__('Zakat Due'))
             ->assertSee("\u{20C1}") // the official Saudi Riyal sign
             ->assertSee('JPM');

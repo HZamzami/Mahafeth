@@ -346,7 +346,9 @@ new class extends Component {
                     @endif
                     @if (($metrics['shariah']['purification_amount'] ?? 0) > 0)
                         <flux:text class="mt-1 text-xs">
-                            {{ __('Purification due: ⃁ :amount in dividends from non-compliant holdings over the past year.', ['amount' => Number::format($metrics['shariah']['purification_amount'], 2)]) }}
+                            {{ __('Stock purification: ⃁ :amount in dividends from non-compliant holdings over the past year.', ['amount' => Number::format($metrics['shariah']['purification_amount'], 2)]) }}
+                            <a class="font-medium text-teal-700 hover:underline dark:text-teal-300"
+                                href="https://ehsan.sa/stockspurification" target="_blank" rel="noopener">{{ __('Donate via Ehsan') }}</a>
                         </flux:text>
                     @endif
                     @if (($metrics['zakat']['zakat_due'] ?? 0) > 0)
