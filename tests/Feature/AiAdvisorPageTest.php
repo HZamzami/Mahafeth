@@ -65,6 +65,7 @@ class AiAdvisorPageTest extends TestCase
         Volt::test('advisor.index')
             ->assertSee(__('Executive Summary'))
             ->assertSee(__('Discuss this'))
+            ->assertSee(__('Show the math'))
             ->assertSee(__('Start with one of these, or ask your own question.'));
     }
 
@@ -147,6 +148,37 @@ class AiAdvisorPageTest extends TestCase
         $this->actingAs($user);
 
         Volt::test('advisor.index')->assertDontSee('private message of another user');
+    }
+
+    public function test_assistant_markdown_renders_bold_while_raw_html_is_stripped(): void
+    {
+        $user = $this->analyzedUser();
+        AiChatMessage::factory()->assistant()->create([
+            'user_id' => $user->id,
+            'content' => 'Your **health score** is 50. <script>alert(1)</script><a href="javascript:alert(1)">click</a>',
+        ]);
+
+        $this->actingAs($user);
+
+        Volt::test('advisor.index')
+            ->assertSee('<strong>health score</strong>', escape: false)
+            ->assertDontSee('<script>', escape: false)
+            ->assertDontSee('javascript:alert', escape: false);
+    }
+
+    public function test_user_messages_render_escaped_and_never_as_markup(): void
+    {
+        $user = $this->analyzedUser();
+        AiChatMessage::factory()->create([
+            'user_id' => $user->id,
+            'content' => '<b>injected</b> **not bold**',
+        ]);
+
+        $this->actingAs($user);
+
+        Volt::test('advisor.index')
+            ->assertSee('<b>injected</b> **not bold**')
+            ->assertDontSee('<b>injected</b>', escape: false);
     }
 
     public function test_arabic_locale_produces_an_arabic_answer(): void

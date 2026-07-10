@@ -152,7 +152,7 @@ new class extends Component {
                     <flux:callout.text>{{ $insight->summary }}</flux:callout.text>
                 </flux:callout>
 
-                <div class="grid gap-3 sm:grid-cols-2">
+                <div class="space-y-3">
                     @foreach ($insight->recommendations as $index => $recommendation)
                         <div
                             class="flex flex-col rounded-lg border border-neutral-200/60 bg-neutral-50 p-3 dark:border-neutral-700/60 dark:bg-zinc-800/50">
@@ -162,8 +162,24 @@ new class extends Component {
                                     :color="['high' => 'red', 'medium' => 'amber', 'low' => 'zinc'][$recommendation['priority']] ?? 'zinc'">
                                     {{ __(ucfirst($recommendation['priority'])) }}</flux:badge>
                             </div>
-                            <flux:text class="mt-1 line-clamp-2 grow text-sm">{{ $recommendation['body'] }}
-                            </flux:text>
+                            <flux:text class="mt-1 text-sm">{{ $recommendation['body'] }}</flux:text>
+
+                            @if (($recommendation['evidence'] ?? []) !== [])
+                                <details class="mt-2">
+                                    <summary
+                                        class="cursor-pointer text-xs font-medium text-teal-700 hover:underline dark:text-teal-300">
+                                        {{ __('Show the math') }}</summary>
+                                    <div class="mt-2 flex flex-wrap gap-1.5">
+                                        @foreach ($recommendation['evidence'] as $evidence)
+                                            {{-- dir=auto keeps Arabic metric names reading right-to-left
+                                                 while the LTR span stops signs and % from shuffling. --}}
+                                            <flux:badge size="sm" dir="auto">
+                                                {{ $evidence['metric'] }}: <span dir="ltr">{{ $evidence['value'] }}</span></flux:badge>
+                                        @endforeach
+                                    </div>
+                                </details>
+                            @endif
+
                             <flux:button class="mt-3 self-start" size="sm" icon="chat-bubble-oval-left"
                                 wire:click="discuss({{ $index }})" wire:loading.attr="disabled">
                                 {{ __('Discuss this') }}</flux:button>
@@ -195,11 +211,21 @@ new class extends Component {
                 @chat-updated.window="$nextTick(() => $el.scrollTop = $el.scrollHeight)">
                 @forelse ($messages as $chatMessage)
                     <div @class([
-                        'max-w-[85%] rounded-2xl px-4 py-2.5 text-sm',
+                        'w-fit max-w-[85%] rounded-2xl px-4 py-2.5 text-sm',
                         'ms-auto bg-teal-600 text-white dark:bg-teal-500' => $chatMessage->role === 'user',
                         'me-auto bg-neutral-100 text-neutral-800 dark:bg-zinc-800 dark:text-neutral-100' => $chatMessage->role !== 'user',
                     ])>
-                        <p class="whitespace-pre-wrap" dir="auto">{{ $chatMessage->content }}</p>
+                        @if ($chatMessage->role === 'user')
+                            <p class="whitespace-pre-wrap" dir="auto">{{ $chatMessage->content }}</p>
+                        @else
+                            {{-- Model output rendered as Markdown: html_input strip
+                                 removes any raw HTML and unsafe links are blocked,
+                                 so a prompt-injected reply cannot become XSS. --}}
+                            <div class="[&_li]:mt-1 [&_ol]:list-decimal [&_ol]:ps-5 [&_p:not(:last-child)]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ps-5"
+                                dir="auto">
+                                {!! Illuminate\Support\Str::markdown($chatMessage->content, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                            </div>
+                        @endif
                     </div>
                 @empty
                     <div class="flex flex-col items-center gap-3 py-6 text-center">
