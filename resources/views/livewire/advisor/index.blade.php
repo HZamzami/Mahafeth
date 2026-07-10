@@ -31,6 +31,10 @@ new class extends Component {
         if ($this->pending !== null) {
             $this->sendContent($sendChatMessage, $this->pending);
             $this->pending = null;
+
+            // Drop ?ask= from the address bar, otherwise a page refresh
+            // re-sends the seeded question.
+            $this->js("window.history.replaceState({}, '', '".route('advisor')."')");
         }
     }
 
@@ -102,7 +106,19 @@ new class extends Component {
     {
         $this->error = null;
 
-        if ($content === '' || mb_strlen($content) > 1000 || Auth::user()->latestSnapshot() === null) {
+        if ($content === '') {
+            return;
+        }
+
+        if (mb_strlen($content) > 1000) {
+            $this->error = __('That message is too long — please keep it under 1,000 characters.');
+
+            return;
+        }
+
+        if (Auth::user()->latestSnapshot() === null) {
+            $this->error = __('Connect your accounts and run an analysis first — then I can answer questions about your portfolio.');
+
             return;
         }
 
@@ -110,7 +126,7 @@ new class extends Component {
             $sendChatMessage->handle(Auth::user(), $content, app()->getLocale());
         } catch (\Throwable $exception) {
             report($exception);
-            $this->error = __('Something went wrong — please try sending again.');
+            $this->error = __('The assistant could not be reached — your message was not lost, please try sending it again.');
         }
 
         $this->dispatch('chat-updated');
@@ -293,7 +309,11 @@ new class extends Component {
             </div>
 
             @if ($error !== null)
-                <flux:text class="px-5 pb-2 text-sm !text-red-600 dark:!text-red-400">{{ $error }}</flux:text>
+                <div class="px-5 pb-3">
+                    <flux:callout color="red" icon="exclamation-triangle" inline>
+                        <flux:callout.text>{{ $error }}</flux:callout.text>
+                    </flux:callout>
+                </div>
             @endif
 
             <div class="flex items-center gap-2 border-t border-neutral-200 p-3 dark:border-neutral-700">

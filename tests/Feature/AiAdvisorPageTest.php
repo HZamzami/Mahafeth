@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Actions\GenerateInsights;
 use App\Actions\SyncConnection;
+use App\Contracts\ChatResponder;
 use App\Models\AiChatMessage;
 use App\Models\Connection;
 use App\Models\Institution;
+use App\Models\PortfolioSnapshot;
 use App\Models\RiskProfile;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
@@ -88,6 +90,41 @@ class AiAdvisorPageTest extends TestCase
         $reply = $user->chatMessages()->latest('id')->first();
         $this->assertSame('assistant', $reply->role);
         $this->assertStringContainsString('volatility', $reply->content);
+    }
+
+    public function test_an_unreachable_assistant_shows_a_specific_error_and_keeps_the_message_draft(): void
+    {
+        $user = $this->analyzedUser();
+        $this->actingAs($user);
+
+        $this->app->bind(ChatResponder::class, fn () => new class implements ChatResponder
+        {
+            public function respond(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $goals, array $history): string
+            {
+                throw new \RuntimeException('api down');
+            }
+        });
+
+        Volt::test('advisor.index')
+            ->set('message', 'What is my risk?')
+            ->call('send')
+            ->assertSee(__('The assistant could not be reached — your message was not lost, please try sending it again.'));
+
+        // The user message persisted, so nothing is lost on retry.
+        $this->assertSame(1, $user->chatMessages()->count());
+    }
+
+    public function test_an_overlong_message_shows_a_specific_error(): void
+    {
+        $user = $this->analyzedUser();
+        $this->actingAs($user);
+
+        Volt::test('advisor.index')
+            ->set('message', str_repeat('a', 1001))
+            ->call('send')
+            ->assertSee(__('That message is too long — please keep it under 1,000 characters.'));
+
+        $this->assertSame(0, $user->chatMessages()->count());
     }
 
     public function test_blank_messages_are_ignored(): void

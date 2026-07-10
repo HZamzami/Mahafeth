@@ -32,9 +32,10 @@ class ClaudeChatResponder implements ChatResponder
             ->post(self::API_URL, [
                 // Chat answers are short and frequent; Haiku's tier is the
                 // cost/latency balance while insights keep the larger model.
+                // No thinking param: Haiku does not support adaptive
+                // thinking, and short conversational replies don't need it.
                 'model' => config('mahafeth.ai.chat_model'),
                 'max_tokens' => (int) config('mahafeth.ai.chat_max_tokens'),
-                'thinking' => ['type' => 'adaptive'],
                 'system' => $this->systemBlocks($snapshot, $riskProfile, $locale, $goals),
                 'messages' => $history,
             ])

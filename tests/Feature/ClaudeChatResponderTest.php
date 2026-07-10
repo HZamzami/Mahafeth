@@ -75,6 +75,8 @@ class ClaudeChatResponderTest extends TestCase
                 && $request->hasHeader('anthropic-version')
                 && $body['model'] === config('mahafeth.ai.chat_model')
                 && $body['max_tokens'] === (int) config('mahafeth.ai.chat_max_tokens')
+                // Haiku rejects adaptive thinking; the chat must not send it.
+                && ! isset($body['thinking'])
                 && $body['messages'] === [['role' => 'user', 'content' => 'What is my risk?']]
                 && str_contains($system->first()['text'], 'Arabic')
                 && str_contains($system->last()['text'], '0.261')
