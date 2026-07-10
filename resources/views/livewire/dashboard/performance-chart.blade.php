@@ -92,8 +92,10 @@ new class extends Component {
                 <flux:chart.line class="text-teal-600 dark:text-teal-400" curve="smooth" field="portfolio" />
                 <flux:chart.area class="text-teal-600/10 dark:text-teal-400/10" curve="smooth" field="portfolio" />
 
+                {{-- The window spans years, so ticks carry the year; "Jan 1"
+                     three times in a row hid every year change. --}}
                 <flux:chart.axis axis="x" field="date" tick-count="6"
-                    :format="['month' => 'short', 'day' => 'numeric']">
+                    :format="['month' => 'short', 'year' => 'numeric']">
                     <flux:chart.axis.tick />
                 </flux:chart.axis>
                 <flux:chart.axis axis="y">
@@ -103,7 +105,7 @@ new class extends Component {
             </flux:chart.svg>
         </flux:chart>
 
-        <div class="mt-2 flex items-center justify-center gap-5">
+        <div class="mt-2 flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
             <span class="flex items-center gap-1.5">
                 <span class="h-0.5 w-4 rounded bg-teal-600 dark:bg-teal-400"></span>
                 <flux:text class="text-xs">{{ __('Your portfolio') }}</flux:text>
@@ -112,10 +114,14 @@ new class extends Component {
                 <span class="flex items-center gap-1.5">
                     <span
                         class="h-0.5 w-4 rounded {{ $symbol === 'TASI' ? 'bg-amber-400' : 'bg-zinc-400' }}"></span>
-                    <flux:text class="text-xs">{{ $symbol }}</flux:text>
+                    <flux:text class="text-xs">
+                        {{ $symbol === 'TASI' ? __('Saudi market (TASI)') : __('US market (SPY)') }}</flux:text>
                 </span>
             @endforeach
         </div>
+        <flux:text class="mt-1.5 text-center text-xs">
+            {{ __('Growth in % since the start of the window — above the market lines means your portfolio beat them.') }}
+        </flux:text>
     @else
         <div class="flex aspect-3/1 flex-col items-center justify-center gap-3">
             <flux:text class="text-sm">{{ __('Connect your accounts to see your portfolio performance.') }}</flux:text>

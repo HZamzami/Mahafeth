@@ -21,9 +21,6 @@
 
                 {{-- Shariah Compliance --}}
                 <livewire:dashboard.shariah-compliance />
-
-                {{-- Goal Forecast --}}
-                <livewire:dashboard.goal-progress />
             </div>
 
             {{-- Center column --}}
@@ -38,10 +35,10 @@
                 <livewire:dashboard.performance-chart />
             </div>
 
-            {{-- Right rail --}}
+            {{-- Right rail; the AI experience lives on the Advisor tab --}}
             <div class="flex flex-col gap-4 lg:col-span-4">
-                {{-- Mahafeth AI --}}
-                <livewire:dashboard.ai-summary />
+                {{-- Goal Forecast --}}
+                <livewire:dashboard.goal-progress />
 
                 {{-- Market Context --}}
                 <livewire:dashboard.news-feed />

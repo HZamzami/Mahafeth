@@ -10,6 +10,7 @@ use App\Models\Connection;
 use App\Models\Institution;
 use App\Models\PriceHistory;
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -77,6 +78,27 @@ class ConnectionSyncTest extends TestCase
         $this->assertSame($counts['transactions'], $connection->accounts->first()->transactions()->count());
         $this->assertSame($counts['assets'], Asset::count());
         $this->assertSame($counts['prices'], PriceHistory::count());
+    }
+
+    public function test_a_resync_removes_price_rows_from_another_provider(): void
+    {
+        $connection = $this->makeDerayahConnection();
+        app(SyncConnection::class)->handle($connection);
+
+        // A leftover close from a different provider on a date the current
+        // provider never returns (a weekend) zigzags the return series and
+        // inflates every volatility-derived metric.
+        $apple = Asset::where('symbol', 'AAPL')->first();
+        $saturday = now()->subMonths(6)->next(CarbonInterface::SATURDAY)->toDateString();
+        PriceHistory::factory()->create([
+            'asset_id' => $apple->id,
+            'date' => $saturday,
+            'close' => 1.0,
+        ]);
+
+        app(SyncConnection::class)->handle($connection->refresh());
+
+        $this->assertFalse($apple->priceHistories()->where('date', $saturday)->exists());
     }
 
     public function test_syncing_an_institution_unknown_to_the_provider_creates_no_accounts(): void
