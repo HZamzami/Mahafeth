@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\NewsItem;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Number;
 use Livewire\Volt\Component;
 
@@ -12,6 +14,23 @@ new class extends Component {
     }
 
     private const MAX_ITEMS = 3;
+
+    /**
+     * Pull the latest headlines from the news provider on demand; the
+     * scheduler covers production, this covers demos and impatience.
+     */
+    public function refreshNews(): void
+    {
+        if (! RateLimiter::attempt('refresh-news:'.Auth::id(), maxAttempts: 3, callback: fn () => true, decaySeconds: 300)) {
+            $this->dispatch('toast', message: __('Please wait a few minutes between refreshes.'));
+
+            return;
+        }
+
+        Artisan::call('mahafeth:refresh-news');
+
+        $this->dispatch('toast', message: __('News refreshed.'));
+    }
 
     /**
      * News items relevant to the user's actual holdings, each with a
@@ -79,9 +98,13 @@ new class extends Component {
 }; ?>
 
 <div class="shrink-0 space-y-4 card p-5">
-    <flux:heading class="uppercase tracking-widest !text-neutral-500 dark:!text-neutral-400" size="sm">
-        {{ __('Market Context') }}
-    </flux:heading>
+    <div class="flex items-center justify-between">
+        <flux:heading class="uppercase tracking-widest !text-neutral-500 dark:!text-neutral-400" size="sm">
+            {{ __('Market Context') }}
+        </flux:heading>
+        <flux:button size="sm" variant="subtle" icon="arrow-path" wire:click="refreshNews"
+            wire:loading.attr="disabled" :tooltip="__('Refresh')" :aria-label="__('Refresh')" />
+    </div>
 
     @forelse ($entries as $entry)
         <div

@@ -5,11 +5,13 @@ namespace Tests\Feature;
 use App\Contracts\NewsProvider;
 use App\Models\Asset;
 use App\Models\NewsItem;
+use App\Models\User;
 use App\Services\News\CuratedNewsProvider;
 use App\Services\News\MarketauxNewsProvider;
 use Database\Seeders\NewsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Livewire\Volt\Volt;
 use Tests\TestCase;
 
 class NewsRefreshTest extends TestCase
@@ -43,6 +45,17 @@ class NewsRefreshTest extends TestCase
         $count = NewsItem::count();
         $this->artisan('mahafeth:refresh-news')->assertSuccessful();
         $this->assertSame($count, NewsItem::count());
+    }
+
+    public function test_the_news_card_refresh_button_pulls_fresh_items(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        Volt::test('dashboard.news-feed')
+            ->call('refreshNews')
+            ->assertDispatched('toast');
+
+        $this->assertGreaterThan(0, NewsItem::count());
     }
 
     public function test_the_seeder_skips_synthetic_headlines_when_a_live_api_is_configured(): void

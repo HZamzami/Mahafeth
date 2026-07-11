@@ -899,5 +899,8 @@
     "Chart by TradingView": "الرسم من TradingView",
     "Related News": "أخبار ذات صلة",
     "Ask Mahafeth AI about this holding": "اسأل ذكاء محافظ عن هذا الأصل",
-    "Tell me about my :symbol position: how it affects my portfolio risk, and whether I should trim, hold, or add.": "حدثني عن مركزي في :symbol: كيف يؤثر على مخاطر محفظتي، وهل الأفضل أن أقلص أو أحتفظ أو أزيد."
+    "Tell me about my :symbol position: how it affects my portfolio risk, and whether I should trim, hold, or add.": "حدثني عن مركزي في :symbol: كيف يؤثر على مخاطر محفظتي، وهل الأفضل أن أقلص أو أحتفظ أو أزيد.",
+    "Refresh": "تحديث",
+    "News refreshed.": "تم تحديث الأخبار.",
+    "Please wait a few minutes between refreshes.": "يرجى الانتظار بضع دقائق بين التحديثات."
 }
