@@ -8,7 +8,7 @@
 <body class="min-h-screen bg-sand-50 dark:bg-charcoal-950">
     <flux:sidebar sticky stashable
         class="border-e border-zinc-200 bg-sand-100 pt-[env(safe-area-inset-top)] print:hidden dark:border-zinc-700 dark:bg-zinc-900">
-        <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2" wire:navigate>
+        <a href="{{ route('dashboard') }}" class="me-5 mb-2 mt-3 flex items-center space-x-2" wire:navigate>
             <x-app-logo class="size-8"></x-app-logo>
         </a>
 
@@ -98,9 +98,12 @@
 
     <!-- Mobile User Menu -->
     <flux:header class="pt-[env(safe-area-inset-top)] lg:hidden print:hidden">
-        <a href="{{ route('dashboard') }}" class="flex items-center" wire:navigate>
-            <x-app-logo class="size-8" />
-        </a>
+        {{-- Equal flex-1 side zones keep the page title truly centered. --}}
+        <div class="flex flex-1 items-center">
+            <a href="{{ route('dashboard') }}" class="flex items-center" wire:navigate>
+                <x-app-logo class="size-8" />
+            </a>
+        </div>
 
         @php($pageTitle = match (true) {
             request()->routeIs('analytics') => __('Analytics'),
@@ -112,11 +115,10 @@
             default => null,
         })
         @if ($pageTitle !== null)
-            <flux:heading class="ms-3" size="lg">{{ $pageTitle }}</flux:heading>
+            <flux:heading class="shrink-0 truncate" size="lg">{{ $pageTitle }}</flux:heading>
         @endif
 
-        <flux:spacer />
-
+        <div class="flex flex-1 items-center justify-end">
         <flux:dropdown position="top" align="end">
             <flux:profile :initials="auth()->user()->initials()" icon-trailing="chevron-down" />
 
@@ -162,6 +164,7 @@
                 </form>
             </flux:menu>
         </flux:dropdown>
+        </div>
     </flux:header>
 
     {{ $slot }}
