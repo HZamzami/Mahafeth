@@ -389,35 +389,37 @@ new class extends Component {
                     <flux:button size="sm" variant="outline" icon="arrow-down-tray"
                         wire:click="downloadRebalanceCsv">{{ __('Download CSV') }}</flux:button>
                 </div>
-                <table class="mt-4 w-full text-sm">
-                    <thead>
-                        <tr class="text-xs uppercase tracking-wide text-neutral-400">
-                            <th class="pb-2 text-start font-medium">{{ __('Asset') }}</th>
-                            <th class="pb-2 text-center font-medium">{{ __('Action') }}</th>
-                            <th class="pb-2 text-end font-medium">{{ __('Units') }}</th>
-                            <th class="pb-2 text-end font-medium">{{ __('Est. Value') }} (⃁)</th>
-                            <th class="pb-2 text-end font-medium">{{ __('Weight Change') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($rebalanceOrders as $order)
-                            <tr class="border-t border-neutral-100 dark:border-zinc-800">
-                                <td class="py-1.5">
-                                    <span class="font-medium text-zinc-800 dark:text-white">{{ $order['symbol'] }}</span>
-                                    <span class="text-neutral-400"> · {{ $order['name'] }}</span>
-                                </td>
-                                <td class="py-1.5 text-center">
-                                    <flux:badge size="sm" :color="$order['side'] === 'buy' ? 'emerald' : 'red'">
-                                        {{ $order['side'] === 'buy' ? __('Buy') : __('Sell') }}</flux:badge>
-                                </td>
-                                <td class="py-1.5 text-end tabular-nums" dir="ltr">{{ number_format($order['quantity'], 2) }}</td>
-                                <td class="py-1.5 text-end tabular-nums" dir="ltr">{{ number_format($order['value'], 0) }}</td>
-                                <td class="py-1.5 text-end tabular-nums" dir="ltr">
-                                    {{ number_format($order['current_weight'] * 100, 1) }}% → {{ number_format($order['target_weight'] * 100, 1) }}%</td>
+                <div class="mt-4 overflow-x-auto scrollbar-thin">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-xs uppercase tracking-wide text-neutral-400">
+                                <th class="pb-2 text-start font-medium">{{ __('Asset') }}</th>
+                                <th class="pb-2 text-center font-medium">{{ __('Action') }}</th>
+                                <th class="pb-2 text-end font-medium">{{ __('Units') }}</th>
+                                <th class="pb-2 text-end font-medium">{{ __('Est. Value') }} (⃁)</th>
+                                <th class="pb-2 text-end font-medium">{{ __('Weight Change') }}</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach ($rebalanceOrders as $order)
+                                <tr class="border-t border-neutral-100 dark:border-zinc-800">
+                                    <td class="py-1.5">
+                                        <span class="font-medium text-zinc-800 dark:text-white">{{ $order['symbol'] }}</span>
+                                        <span class="text-neutral-400"> · {{ $order['name'] }}</span>
+                                    </td>
+                                    <td class="py-1.5 text-center">
+                                        <flux:badge size="sm" :color="$order['side'] === 'buy' ? 'emerald' : 'red'">
+                                            {{ $order['side'] === 'buy' ? __('Buy') : __('Sell') }}</flux:badge>
+                                    </td>
+                                    <td class="py-1.5 text-end tabular-nums" dir="ltr">{{ number_format($order['quantity'], 2) }}</td>
+                                    <td class="py-1.5 text-end tabular-nums" dir="ltr">{{ number_format($order['value'], 0) }}</td>
+                                    <td class="py-1.5 text-end tabular-nums" dir="ltr">
+                                        {{ number_format($order['current_weight'] * 100, 1) }}% → {{ number_format($order['target_weight'] * 100, 1) }}%</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
                 @if ((bool) (auth()->user()->riskProfile?->constraints['shariah_required'] ?? false))
                     <flux:text class="mt-3 text-xs">
                         {{ __('Buys of non-compliant assets are excluded and their budget reallocated to compliant holdings.') }}
@@ -516,7 +518,7 @@ new class extends Component {
                 {{ __('Values near 1 mean two assets move together; near 0, independently; below 0, in opposite directions.') }}
             </flux:text>
 
-            <div class="overflow-x-auto" dir="ltr">
+            <div class="overflow-x-auto scrollbar-thin" dir="ltr">
                 <table class="w-full border-separate border-spacing-1 text-center text-xs">
                     <thead>
                         <tr>

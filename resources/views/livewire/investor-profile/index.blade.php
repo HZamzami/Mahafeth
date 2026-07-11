@@ -226,13 +226,13 @@ new class extends Component {
     @endif
 
     <div class="card p-6">
-        <div class="mb-6 flex items-center justify-between">
-            <flux:text class="text-xs font-medium uppercase tracking-widest">
+        <div class="mb-6 flex items-center justify-between gap-4">
+            <flux:text class="shrink-0 text-xs font-medium uppercase tracking-widest">
                 {{ __('Question :current of :total', ['current' => $step, 'total' => $totalSteps]) }}</flux:text>
-            <div class="flex gap-1" dir="ltr">
+            <div class="flex w-full max-w-80 gap-1" dir="ltr">
                 @for ($i = 1; $i <= $totalSteps; $i++)
                     <span
-                        class="h-1 w-8 rounded-full {{ $i <= $step ? 'bg-teal-600 dark:bg-teal-400' : 'bg-neutral-200 dark:bg-zinc-700' }}"></span>
+                        class="h-1 flex-1 rounded-full {{ $i <= $step ? 'bg-teal-600 dark:bg-teal-400' : 'bg-neutral-200 dark:bg-zinc-700' }}"></span>
                 @endfor
             </div>
         </div>

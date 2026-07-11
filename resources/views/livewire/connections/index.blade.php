@@ -139,59 +139,63 @@ new class extends Component {
             @php($isConnected = $connection?->status === \App\Enums\ConnectionStatus::Connected)
 
             <div
-                class="flex items-center gap-4 card p-5">
-                <div class="flex size-12 shrink-0 items-center justify-center rounded-lg"
-                    style="background-color: {{ $institution->color }}20">
-                    <flux:icon.building-library class="size-6" style="color: {{ $institution->color }}" />
-                </div>
-
-                <div class="flex-1">
-                    <div class="flex items-center gap-2">
-                        <flux:heading size="lg">{{ $institution->localizedName() }}</flux:heading>
-                        @if ($isConnected)
-                            <flux:badge color="emerald" size="sm">{{ __('Connected') }}</flux:badge>
-                        @elseif ($connection?->status === \App\Enums\ConnectionStatus::Disconnected)
-                            <flux:badge color="zinc" size="sm">{{ __('Disconnected') }}</flux:badge>
-                        @endif
+                class="flex flex-col gap-4 card p-5 sm:flex-row sm:items-center">
+                <div class="flex min-w-0 flex-1 items-center gap-4">
+                    <div class="flex size-12 shrink-0 items-center justify-center rounded-lg"
+                        style="background-color: {{ $institution->color }}20">
+                        <flux:icon.building-library class="size-6" style="color: {{ $institution->color }}" />
                     </div>
-                    <flux:text class="text-sm">
-                        {{ $institution->type->label() }}
-                        @if ($isConnected && $connection->last_synced_at !== null)
-                            &bull; {{ __('Last sync: :time', ['time' => $connection->last_synced_at->diffForHumans()]) }}
-                        @endif
-                        @if ($isConnected && $connection->latestConsent?->isActive())
-                            &bull;
-                            <span class="{{ $connection->latestConsent->daysUntilExpiry() < 14 ? 'text-amber-600 dark:text-amber-400' : '' }}">
-                                {{ __('Consent expires in :days days', ['days' => $connection->latestConsent->daysUntilExpiry()]) }}
-                            </span>
-                        @endif
-                    </flux:text>
+
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <flux:heading size="lg">{{ $institution->localizedName() }}</flux:heading>
+                            @if ($isConnected)
+                                <flux:badge color="emerald" size="sm">{{ __('Connected') }}</flux:badge>
+                            @elseif ($connection?->status === \App\Enums\ConnectionStatus::Disconnected)
+                                <flux:badge color="zinc" size="sm">{{ __('Disconnected') }}</flux:badge>
+                            @endif
+                        </div>
+                        <flux:text class="text-sm">
+                            {{ $institution->type->label() }}
+                            @if ($isConnected && $connection->last_synced_at !== null)
+                                &bull; {{ __('Last sync: :time', ['time' => $connection->last_synced_at->diffForHumans()]) }}
+                            @endif
+                            @if ($isConnected && $connection->latestConsent?->isActive())
+                                &bull;
+                                <span class="{{ $connection->latestConsent->daysUntilExpiry() < 14 ? 'text-amber-600 dark:text-amber-400' : '' }}">
+                                    {{ __('Consent expires in :days days', ['days' => $connection->latestConsent->daysUntilExpiry()]) }}
+                                </span>
+                            @endif
+                        </flux:text>
+                    </div>
                 </div>
 
+                <div class="flex shrink-0 flex-wrap gap-2">
                 @if ($isConnected)
-                    @if ($institution->provider === 'import')
+                        @if ($institution->provider === 'import')
+                            <flux:modal.trigger name="import-{{ $institution->id }}">
+                                <flux:button size="sm" variant="outline">{{ __('Import statement') }}</flux:button>
+                            </flux:modal.trigger>
+                        @else
+                            <flux:button size="sm" variant="outline" wire:click="sync({{ $connection->id }})"
+                                wire:loading.attr="disabled">
+                                {{ __('Sync') }}
+                            </flux:button>
+                        @endif
+                        <flux:button size="sm" variant="subtle" wire:click="disconnect({{ $connection->id }})"
+                            wire:loading.attr="disabled">
+                            {{ $institution->provider === 'import' ? __('Disconnect') : __('Revoke access') }}
+                        </flux:button>
+                    @elseif ($institution->provider === 'import')
                         <flux:modal.trigger name="import-{{ $institution->id }}">
-                            <flux:button size="sm" variant="outline">{{ __('Import statement') }}</flux:button>
+                            <flux:button size="sm" variant="primary">{{ __('Import statement') }}</flux:button>
                         </flux:modal.trigger>
                     @else
-                        <flux:button size="sm" variant="outline" wire:click="sync({{ $connection->id }})"
-                            wire:loading.attr="disabled">
-                            {{ __('Sync') }}
-                        </flux:button>
+                        <flux:button size="sm" variant="primary"
+                            :href="route('connections.consent', $institution)" wire:navigate>
+                            {{ __('Connect') }}</flux:button>
                     @endif
-                    <flux:button size="sm" variant="subtle" wire:click="disconnect({{ $connection->id }})"
-                        wire:loading.attr="disabled">
-                        {{ $institution->provider === 'import' ? __('Disconnect') : __('Revoke access') }}
-                    </flux:button>
-                @elseif ($institution->provider === 'import')
-                    <flux:modal.trigger name="import-{{ $institution->id }}">
-                        <flux:button size="sm" variant="primary">{{ __('Import statement') }}</flux:button>
-                    </flux:modal.trigger>
-                @else
-                    <flux:button size="sm" variant="primary"
-                        :href="route('connections.consent', $institution)" wire:navigate>
-                        {{ __('Connect') }}</flux:button>
-                @endif
+                </div>
             </div>
 
             @if ($institution->provider === 'import')

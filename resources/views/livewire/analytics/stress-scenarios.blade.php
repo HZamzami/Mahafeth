@@ -53,11 +53,14 @@ new class extends Component {
     @if ($result === null)
         <flux:text class="text-sm">{{ __('Run the analysis to stress test your portfolio.') }}</flux:text>
     @else
-        <flux:radio.group variant="segmented" size="sm" wire:model.live="scenario">
-            @foreach ($scenarios as $key => $definition)
-                <flux:radio value="{{ $key }}" :label="__($definition['label'])" />
-            @endforeach
-        </flux:radio.group>
+        <div class="overflow-x-auto scrollbar-thin">
+            <flux:radio.group variant="segmented" size="sm" wire:model.live="scenario"
+                class="w-max min-w-full whitespace-nowrap">
+                @foreach ($scenarios as $key => $definition)
+                    <flux:radio value="{{ $key }}" :label="__($definition['label'])" />
+                @endforeach
+            </flux:radio.group>
+        </div>
 
         <div class="mt-5 grid grid-cols-2 gap-4">
             <div>

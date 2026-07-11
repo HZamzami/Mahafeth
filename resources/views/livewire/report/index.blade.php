@@ -295,33 +295,35 @@ new class extends Component {
             @if ($goalForecasts !== [])
                 <div class="border-b border-neutral-200 py-6 dark:border-neutral-700">
                     <flux:heading size="lg">{{ __('Financial Goals') }}</flux:heading>
-                    <table class="mt-4 w-full text-sm">
-                        <thead>
-                            {{-- The label column absorbs the free width so the numeric
-                                 columns hug their headers instead of scattering. --}}
-                            <tr class="text-xs uppercase tracking-wide text-neutral-400">
-                                <th class="w-full pb-2 text-start font-medium">{{ __('Goal') }}</th>
-                                <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Target') }} (⃁)</th>
-                                <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Horizon') }}</th>
-                                <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Success odds') }}</th>
-                                <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('At optimal mix') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($goalForecasts as $row)
-                                <tr class="border-t border-neutral-100 dark:border-zinc-800">
-                                    <td class="py-1.5 font-medium text-zinc-800 dark:text-white">{{ $row['name'] }}</td>
-                                    {{-- dir=ltr lives on an inner span: on the cell itself it flips
-                                         what text-end means and detaches values from their headers in RTL. --}}
-                                    <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums"><span dir="ltr">{{ number_format($row['target'], 0) }}</span></td>
-                                    <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">{{ __(':months mo', ['months' => $row['months']]) }}</td>
-                                    <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums"><span dir="ltr">{{ Number::percentage($row['probability'] * 100, 0) }}</span></td>
-                                    <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">
-                                        <span dir="ltr">{{ $row['probabilityOptimal'] !== null ? Number::percentage($row['probabilityOptimal'] * 100, 0) : '—' }}</span></td>
+                    <div class="mt-4 overflow-x-auto scrollbar-thin">
+                        <table class="w-full text-sm">
+                            <thead>
+                                {{-- The label column absorbs the free width so the numeric
+                                     columns hug their headers instead of scattering. --}}
+                                <tr class="text-xs uppercase tracking-wide text-neutral-400">
+                                    <th class="w-full pb-2 text-start font-medium">{{ __('Goal') }}</th>
+                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Target') }} (⃁)</th>
+                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Horizon') }}</th>
+                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Success odds') }}</th>
+                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('At optimal mix') }}</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach ($goalForecasts as $row)
+                                    <tr class="border-t border-neutral-100 dark:border-zinc-800">
+                                        <td class="py-1.5 font-medium text-zinc-800 dark:text-white">{{ $row['name'] }}</td>
+                                        {{-- dir=ltr lives on an inner span: on the cell itself it flips
+                                             what text-end means and detaches values from their headers in RTL. --}}
+                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums"><span dir="ltr">{{ number_format($row['target'], 0) }}</span></td>
+                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">{{ __(':months mo', ['months' => $row['months']]) }}</td>
+                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums"><span dir="ltr">{{ Number::percentage($row['probability'] * 100, 0) }}</span></td>
+                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">
+                                            <span dir="ltr">{{ $row['probabilityOptimal'] !== null ? Number::percentage($row['probabilityOptimal'] * 100, 0) : '—' }}</span></td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             @endif
 
@@ -367,40 +369,42 @@ new class extends Component {
             @if ($holdings['rows'] !== [])
                 <div class="border-b border-neutral-200 py-6 dark:border-neutral-700">
                     <flux:heading size="lg">{{ __('Holdings') }}</flux:heading>
-                    <table class="mt-4 w-full text-sm">
-                        <thead>
-                            <tr class="text-start text-xs uppercase tracking-wide text-neutral-400">
-                                <th class="w-full pb-2 text-start font-medium">{{ __('Asset') }}</th>
-                                <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Quantity') }}</th>
-                                <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Value') }} (⃁)</th>
-                                <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Cost Basis') }} (⃁)</th>
-                                <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Unrealized P/L') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($holdings['rows'] as $row)
-                                <tr class="border-t border-neutral-100 dark:border-zinc-800">
-                                    <td class="py-1.5">
-                                        <span class="font-medium text-zinc-800 dark:text-white">{{ $row['symbol'] }}</span>
-                                        <span class="text-neutral-400"> · {{ $row['name'] }}</span>
-                                        @if ($row['shariah'] === ShariahStatus::NonCompliant)
-                                            <flux:badge color="red" size="sm">{{ $row['shariah']->label() }}</flux:badge>
-                                        @endif
-                                    </td>
-                                    <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">
-                                        <span dir="ltr">{{ number_format($row['quantity'], 2) }}</span></td>
-                                    <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">
-                                        <span dir="ltr">{{ number_format($row['value'], 0) }}</span></td>
-                                    <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">
-                                        <span dir="ltr">{{ number_format($row['cost'], 0) }}</span></td>
-                                    <td
-                                        class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums {{ $row['pl'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
-                                        <span dir="ltr">{{ $row['pl'] >= 0 ? '+' : '−' }}{{ number_format(abs($row['pl']), 0) }}
-                                            ({{ number_format($row['plPct'] * 100, 1) }}%)</span></td>
+                    <div class="mt-4 overflow-x-auto scrollbar-thin">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-start text-xs uppercase tracking-wide text-neutral-400">
+                                    <th class="w-full pb-2 text-start font-medium">{{ __('Asset') }}</th>
+                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Quantity') }}</th>
+                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Value') }} (⃁)</th>
+                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Cost Basis') }} (⃁)</th>
+                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Unrealized P/L') }}</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach ($holdings['rows'] as $row)
+                                    <tr class="border-t border-neutral-100 dark:border-zinc-800">
+                                        <td class="py-1.5">
+                                            <span class="font-medium text-zinc-800 dark:text-white">{{ $row['symbol'] }}</span>
+                                            <span class="text-neutral-400"> · {{ $row['name'] }}</span>
+                                            @if ($row['shariah'] === ShariahStatus::NonCompliant)
+                                                <flux:badge color="red" size="sm">{{ $row['shariah']->label() }}</flux:badge>
+                                            @endif
+                                        </td>
+                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">
+                                            <span dir="ltr">{{ number_format($row['quantity'], 2) }}</span></td>
+                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">
+                                            <span dir="ltr">{{ number_format($row['value'], 0) }}</span></td>
+                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">
+                                            <span dir="ltr">{{ number_format($row['cost'], 0) }}</span></td>
+                                        <td
+                                            class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums {{ $row['pl'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+                                            <span dir="ltr">{{ $row['pl'] >= 0 ? '+' : '−' }}{{ number_format(abs($row['pl']), 0) }}
+                                                ({{ number_format($row['plPct'] * 100, 1) }}%)</span></td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             @endif
 
@@ -408,26 +412,28 @@ new class extends Component {
             @if ($rebalanceOrders !== [])
                 <div class="border-b border-neutral-200 py-6 dark:border-neutral-700">
                     <flux:heading size="lg">{{ __('Rebalancing Plan') }}</flux:heading>
-                    <table class="mt-4 w-full text-sm">
-                        <thead>
-                            <tr class="text-xs uppercase tracking-wide text-neutral-400">
-                                <th class="w-full pb-2 text-start font-medium">{{ __('Asset') }}</th>
-                                <th class="whitespace-nowrap pb-2 ps-8 text-center font-medium">{{ __('Action') }}</th>
-                                <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Units') }}</th>
-                                <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Est. Value') }} (⃁)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($rebalanceOrders as $order)
-                                <tr class="border-t border-neutral-100 dark:border-zinc-800">
-                                    <td class="py-1.5 font-medium text-zinc-800 dark:text-white">{{ $order['symbol'] }}</td>
-                                    <td class="whitespace-nowrap py-1.5 ps-8 text-center">{{ $order['side'] === 'buy' ? __('Buy') : __('Sell') }}</td>
-                                    <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums"><span dir="ltr">{{ number_format($order['quantity'], 2) }}</span></td>
-                                    <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums"><span dir="ltr">{{ number_format($order['value'], 0) }}</span></td>
+                    <div class="mt-4 overflow-x-auto scrollbar-thin">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-xs uppercase tracking-wide text-neutral-400">
+                                    <th class="w-full pb-2 text-start font-medium">{{ __('Asset') }}</th>
+                                    <th class="whitespace-nowrap pb-2 ps-8 text-center font-medium">{{ __('Action') }}</th>
+                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Units') }}</th>
+                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Est. Value') }} (⃁)</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach ($rebalanceOrders as $order)
+                                    <tr class="border-t border-neutral-100 dark:border-zinc-800">
+                                        <td class="py-1.5 font-medium text-zinc-800 dark:text-white">{{ $order['symbol'] }}</td>
+                                        <td class="whitespace-nowrap py-1.5 ps-8 text-center">{{ $order['side'] === 'buy' ? __('Buy') : __('Sell') }}</td>
+                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums"><span dir="ltr">{{ number_format($order['quantity'], 2) }}</span></td>
+                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums"><span dir="ltr">{{ number_format($order['value'], 0) }}</span></td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             @endif
 

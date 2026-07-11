@@ -29,7 +29,8 @@ class ConnectionsPageTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->get('/connections')
             ->assertOk()
-            ->assertSee('Derayah Financial');
+            ->assertSee('Derayah Financial')
+            ->assertSeeHtml('sm:flex-row sm:items-center');
     }
 
     public function test_approving_consent_creates_and_syncs_the_connection(): void
