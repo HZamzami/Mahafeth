@@ -239,6 +239,7 @@ new class extends Component {
                 {{ __('Connect accounts') }}</flux:button>
         </div>
     @else
+        <flux:tab.group class="flex flex-col gap-6">
         <flux:tabs scrollable>
             <flux:tab name="frontier" selected icon="chart-bar">{{ __('Efficient Frontier') }}</flux:tab>
             <flux:tab name="rebalancing" icon="scale">{{ __('Rebalancing Plan') }}</flux:tab>
@@ -246,7 +247,6 @@ new class extends Component {
             <flux:tab name="correlation" icon="arrows-pointing-in">{{ __('Correlation') }}</flux:tab>
         </flux:tabs>
 
-        <flux:tab.group>
         <flux:tab.panel name="frontier" selected class="flex flex-col gap-4">
         {{-- Efficient Frontier --}}
         <div class="grid gap-4 lg:grid-cols-3">
