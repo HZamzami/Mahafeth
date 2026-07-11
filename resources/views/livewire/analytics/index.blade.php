@@ -240,7 +240,7 @@ new class extends Component {
         </div>
     @else
         <flux:tab.group class="flex flex-col gap-6">
-        <flux:tabs scrollable>
+        <flux:tabs scrollable scrollable:fade scrollable:scrollbar="hide">
             <flux:tab name="frontier" selected icon="chart-bar">{{ __('Efficient Frontier') }}</flux:tab>
             <flux:tab name="rebalancing" icon="scale">{{ __('Rebalancing Plan') }}</flux:tab>
             <flux:tab name="risk" icon="shield-exclamation">{{ __('Risk') }}</flux:tab>
