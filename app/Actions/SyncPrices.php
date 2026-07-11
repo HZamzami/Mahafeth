@@ -44,13 +44,12 @@ class SyncPrices
                 PriceHistory::upsert($chunk, ['asset_id', 'date'], ['close']);
             }
 
-            // Rows inside the window on dates the provider did not return are
-            // leftovers from another provider (e.g. simulated closes on real
-            // market holidays). Mixing sources zigzags the series and blows
-            // up every volatility-derived metric, so the fetched series
-            // replaces the window outright.
+            // Rows on dates the provider did not return are leftovers from
+            // another provider (e.g. simulated closes on real market
+            // holidays) or from older sync windows. Mixing sources zigzags
+            // the series and blows up every volatility-derived metric, so
+            // the fetched series replaces the asset's history outright.
             PriceHistory::where('asset_id', $assetIds[$symbol])
-                ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
                 ->whereNotIn('date', array_keys($prices))
                 ->delete();
         }
