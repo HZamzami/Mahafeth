@@ -73,6 +73,10 @@
             {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
         </a>
     </main>
+
+    @include('partials.pwa-install-banner')
+
+    @fluxScripts
 </body>
 
 </html>

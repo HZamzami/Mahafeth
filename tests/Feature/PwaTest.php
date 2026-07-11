@@ -34,6 +34,7 @@ class PwaTest extends TestCase
         $response->assertOk();
         $response->assertSee('<link rel="manifest" href="/manifest.webmanifest" />', false);
         $response->assertSee('<meta name="theme-color" content="#131b2c" />', false);
+        $response->assertSee(__('Install Mahafeth'));
     }
 
     public function test_manifest_declares_installable_app(): void
