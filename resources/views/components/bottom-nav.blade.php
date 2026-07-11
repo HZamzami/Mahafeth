@@ -1,8 +1,7 @@
 @php($inactive = 'text-zinc-500 dark:text-zinc-400')
 @php($active = 'text-teal-600 dark:text-teal-400')
 
-<nav data-swipe-tabs
-    class="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden print:hidden dark:border-zinc-700 dark:bg-zinc-900">
+<nav class="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden print:hidden dark:border-zinc-700 dark:bg-zinc-900">
     <div class="grid grid-cols-5">
         <a href="{{ route('dashboard') }}" wire:navigate
             class="flex flex-col items-center gap-1 py-2 text-[10px] font-medium {{ request()->routeIs('dashboard') ? $active : $inactive }}">
