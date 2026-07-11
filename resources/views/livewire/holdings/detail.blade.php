@@ -141,7 +141,8 @@ new class extends Component {
             {{ __('Ask Mahafeth AI about this holding') }}</flux:button>
     </div>
 
-    {{-- Market chart --}}
+    {{-- Market chart; cash has no market to chart --}}
+    @if ($asset->asset_class !== AssetClass::Cash)
     <div class="card p-5">
         <div class="flex items-center justify-between">
             <flux:heading class="uppercase tracking-widest !text-neutral-500 dark:!text-neutral-400" size="sm">
@@ -156,6 +157,7 @@ new class extends Component {
                 x-init="if (! document.documentElement.classList.contains('dark')) $el.src = $el.src.replace('theme=dark', 'theme=light')"></iframe>
         </div>
     </div>
+    @endif
 
     {{-- Related disclosures --}}
     @if ($filings->isNotEmpty())
