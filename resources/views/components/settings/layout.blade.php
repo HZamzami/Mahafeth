@@ -9,19 +9,21 @@
     </div>
 
     {{-- Mobile: horizontal pill row --}}
-    <div class="flex w-full gap-2 overflow-x-auto pb-4 scrollbar-thin md:hidden">
-        @foreach ([
-            'settings.profile' => __('Profile'),
-            'settings.password' => __('Password'),
-            'settings.appearance' => __('Appearance'),
-        ] as $routeName => $label)
-            <a href="{{ route($routeName) }}" wire:navigate
-                class="shrink-0 rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap {{ request()->routeIs($routeName)
-                    ? 'bg-teal-600 text-white dark:bg-teal-500'
-                    : 'bg-neutral-100 text-zinc-700 hover:bg-neutral-200/60 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700/60' }}">
-                {{ $label }}</a>
-        @endforeach
-    </div>
+    <x-scroll-hint class="w-full md:hidden">
+        <div data-scroll-area class="flex w-full gap-2 overflow-x-auto pb-4 scrollbar-thin">
+            @foreach ([
+                'settings.profile' => __('Profile'),
+                'settings.password' => __('Password'),
+                'settings.appearance' => __('Appearance'),
+            ] as $routeName => $label)
+                <a href="{{ route($routeName) }}" wire:navigate
+                    class="shrink-0 rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap {{ request()->routeIs($routeName)
+                        ? 'bg-teal-600 text-white dark:bg-teal-500'
+                        : 'bg-neutral-100 text-zinc-700 hover:bg-neutral-200/60 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700/60' }}">
+                    {{ $label }}</a>
+            @endforeach
+        </div>
+    </x-scroll-hint>
 
     <div class="flex-1 self-stretch max-md:pt-2">
         <flux:heading>{{ $heading ?? '' }}</flux:heading>

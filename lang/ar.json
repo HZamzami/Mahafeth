@@ -888,5 +888,7 @@
     "Your portfolio already sits close to the optimal allocation — no orders needed.": "محفظتك قريبة بالفعل من التوزيع الأمثل، لا حاجة لأي أوامر.",
     "Drop your CSV here or click to browse": "أسقط ملف CSV هنا أو اضغط للاختيار",
     "Up to 1 MB": "حتى 1 ميجابايت",
-    "Health Score": "مؤشر الصحة"
+    "Health Score": "مؤشر الصحة",
+    "Frontier": "الحد الكفء",
+    "Rebalancing": "التوازن"
 }

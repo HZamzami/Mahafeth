@@ -301,9 +301,17 @@ new class extends Component {
                     <div class="flex flex-col items-center gap-3 py-6 text-center">
                         <flux:text class="text-sm">
                             {{ __('Start with one of these, or ask your own question.') }}</flux:text>
-                        <div class="flex w-full gap-2 overflow-x-auto pb-1 scrollbar-thin lg:flex-wrap lg:justify-center lg:overflow-visible">
+                        <x-scroll-hint class="w-full lg:hidden" surface="card">
+                            <div data-scroll-area class="flex w-full gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                                @foreach ($starters as $index => $starter)
+                                    <flux:button class="shrink-0 whitespace-nowrap" size="sm" wire:loading.attr="disabled"
+                                        wire:click="ask({{ $index }})">{{ $starter }}</flux:button>
+                                @endforeach
+                            </div>
+                        </x-scroll-hint>
+                        <div class="hidden w-full flex-wrap justify-center gap-2 lg:flex">
                             @foreach ($starters as $index => $starter)
-                                <flux:button class="shrink-0 whitespace-nowrap" size="sm" wire:loading.attr="disabled"
+                                <flux:button class="whitespace-nowrap" size="sm" wire:loading.attr="disabled"
                                     wire:click="ask({{ $index }})">{{ $starter }}</flux:button>
                             @endforeach
                         </div>

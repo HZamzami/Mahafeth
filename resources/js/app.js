@@ -23,6 +23,25 @@ document.addEventListener('livewire:navigated', () => {
 // health score. Renders the real value server-side, so without JS (or with
 // reduced motion) the number is simply already there.
 document.addEventListener('alpine:init', () => {
+    // Shows a gradient + chevron on horizontally scrollable strips (tabs,
+    // chip rows) while more content hides past the trailing edge.
+    window.Alpine.data('scrollHint', () => ({
+        more: false,
+
+        init() {
+            const area =
+                this.$el.querySelector('ui-tabs-scroll-area, [data-scroll-area]') ?? this.$el.firstElementChild;
+
+            const update = () => {
+                this.more = area.scrollWidth - area.clientWidth - Math.abs(area.scrollLeft) > 8;
+            };
+
+            area.addEventListener('scroll', update, { passive: true });
+            new ResizeObserver(update).observe(area);
+            requestAnimationFrame(update);
+        },
+    }));
+
     window.Alpine.data('countUp', (target) => ({
         shown: target,
         start() {
