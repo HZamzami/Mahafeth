@@ -8,8 +8,6 @@
 <body class="min-h-screen bg-sand-50 dark:bg-charcoal-950">
     <flux:sidebar sticky stashable
         class="border-e border-zinc-200 bg-sand-100 print:hidden dark:border-zinc-700 dark:bg-zinc-900">
-        <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
-
         <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2" wire:navigate>
             <x-app-logo class="size-8"></x-app-logo>
         </a>
@@ -100,7 +98,9 @@
 
     <!-- Mobile User Menu -->
     <flux:header class="lg:hidden print:hidden">
-        <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+        <a href="{{ route('dashboard') }}" class="flex items-center" wire:navigate>
+            <x-app-logo class="size-8" />
+        </a>
 
         <flux:spacer />
 
@@ -152,6 +152,8 @@
     </flux:header>
 
     {{ $slot }}
+
+    <x-bottom-nav />
 
     @include('partials.pwa-install-banner')
 

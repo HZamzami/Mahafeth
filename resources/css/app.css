@@ -12,6 +12,17 @@
     display: none !important;
 }
 
+html {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Installed as a PWA: disable the rubber-band page bounce so it feels like an app. */
+@media (display-mode: standalone) {
+    body {
+        overscroll-behavior-y: none;
+    }
+}
+
 @utility scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: var(--color-zinc-300) transparent;

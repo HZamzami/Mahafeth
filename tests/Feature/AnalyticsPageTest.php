@@ -91,7 +91,8 @@ class AnalyticsPageTest extends TestCase
             ->assertSee(__('Hardest-Hit Positions'))
             ->assertSee('AAPL')
             ->assertSee('%')
-            ->assertSeeHtml('overflow-x-auto scrollbar-thin');
+            ->assertSeeHtml('sm:hidden')
+            ->assertSeeHtml('hidden sm:block');
     }
 
     public function test_the_stress_panel_asks_for_analysis_without_a_snapshot(): void
