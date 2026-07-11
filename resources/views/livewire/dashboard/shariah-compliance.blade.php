@@ -92,7 +92,7 @@ new class extends Component {
                 <div class="flex items-center justify-between">
                     <flux:text class="text-xs font-medium uppercase tracking-widest">
                         {{ __('Stock Purification') }}</flux:text>
-                    <flux:text class="text-sm font-semibold !text-red-600 dark:!text-red-400" dir="ltr">
+                    <flux:text class="text-sm font-semibold !text-red-600 dark:!text-red-400" dir="ltr" data-amount>
                         ⃁ {{ Number::format($shariah['purification_amount'], 2) }}</flux:text>
                 </div>
                 <flux:text class="mt-1 text-xs">
@@ -111,7 +111,7 @@ new class extends Component {
                 <div class="flex items-center justify-between">
                     <flux:text class="text-xs font-medium uppercase tracking-widest">
                         {{ __('Zakat Due') }}</flux:text>
-                    <flux:text class="text-sm font-semibold !text-teal-700 dark:!text-teal-300" dir="ltr">
+                    <flux:text class="text-sm font-semibold !text-teal-700 dark:!text-teal-300" dir="ltr" data-amount>
                         @if ($zakat['below_nisab'])
                             {{ __('Below nisab') }}
                         @else

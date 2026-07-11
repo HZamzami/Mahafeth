@@ -100,10 +100,11 @@ new class extends Component {
                             @endif
                         </flux:text>
                     </div>
-                    <div class="flex gap-1">
-                        <flux:button size="xs" variant="subtle" icon="pencil" wire:click="edit({{ $goal->id }})" />
-                        <flux:button size="xs" variant="subtle" icon="trash" wire:click="delete({{ $goal->id }})"
-                            wire:confirm="{{ __('Delete this goal?') }}" />
+                    <div class="flex shrink-0 gap-2">
+                        <flux:button size="sm" variant="subtle" icon="pencil" wire:click="edit({{ $goal->id }})"
+                            :aria-label="__('Edit')" />
+                        <flux:button size="sm" variant="subtle" icon="trash" wire:click="delete({{ $goal->id }})"
+                            wire:confirm="{{ __('Delete this goal?') }}" :aria-label="__('Delete')" />
                     </div>
                 </div>
             @endforeach

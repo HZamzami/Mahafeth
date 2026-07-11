@@ -160,7 +160,9 @@ new class extends Component {
     }
 }; ?>
 
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-6"
+{{-- min-h on mobile stretches the thread so the input sits at the bottom of
+     the screen like a native chat; 12rem ≈ header + main padding + bottom nav. --}}
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:min-h-[calc(100dvh-12rem)]"
     @if ($isGenerating) wire:poll.3s @endif @if ($pending !== null) wire:init="sendPending" @endif>
     <div class="flex items-start justify-between gap-4">
         <div>
@@ -264,8 +266,8 @@ new class extends Component {
         @endif
 
         {{-- Chat --}}
-        <div class="flex flex-col card">
-            <div class="max-h-[55vh] min-h-40 space-y-3 overflow-y-auto p-5" x-data
+        <div class="flex flex-col card max-lg:min-h-0 max-lg:flex-1">
+            <div class="min-h-40 space-y-3 overflow-y-auto p-5 max-lg:flex-1 lg:max-h-[55vh]" x-data
                 x-init="$el.scrollTop = $el.scrollHeight"
                 @chat-updated.window="$nextTick(() => $el.scrollTop = $el.scrollHeight)">
                 @forelse ($messages as $chatMessage)
@@ -290,9 +292,9 @@ new class extends Component {
                     <div class="flex flex-col items-center gap-3 py-6 text-center">
                         <flux:text class="text-sm">
                             {{ __('Start with one of these, or ask your own question.') }}</flux:text>
-                        <div class="flex flex-wrap justify-center gap-2">
+                        <div class="flex w-full gap-2 overflow-x-auto pb-1 scrollbar-thin lg:flex-wrap lg:justify-center lg:overflow-visible">
                             @foreach ($starters as $index => $starter)
-                                <flux:button size="sm" wire:loading.attr="disabled"
+                                <flux:button class="shrink-0 whitespace-nowrap" size="sm" wire:loading.attr="disabled"
                                     wire:click="ask({{ $index }})">{{ $starter }}</flux:button>
                             @endforeach
                         </div>

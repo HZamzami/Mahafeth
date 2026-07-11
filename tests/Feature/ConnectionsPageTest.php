@@ -56,7 +56,9 @@ class ConnectionsPageTest extends TestCase
 
         $this->actingAs($user);
 
-        Volt::test('connections.index')->call('disconnect', $connection->id);
+        Volt::test('connections.index')
+            ->call('disconnect', $connection->id)
+            ->assertDispatched('toast');
 
         $this->assertSame(ConnectionStatus::Disconnected, $connection->refresh()->status);
     }

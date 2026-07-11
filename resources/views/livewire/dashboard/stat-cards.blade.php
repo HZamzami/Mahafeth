@@ -29,7 +29,7 @@ new class extends Component {
     }
 }; ?>
 
-<div class="grid auto-rows-fr gap-4 md:grid-cols-4">
+<div class="grid auto-rows-fr grid-cols-2 gap-4 md:grid-cols-4">
     <div
         class="flex flex-col justify-between card p-5">
         <div>

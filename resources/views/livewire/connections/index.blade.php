@@ -36,6 +36,8 @@ new class extends Component {
 
         $syncConnection->handle($connection);
         $analyzer->analyze(Auth::user());
+
+        $this->dispatch('toast', message: __('Synced and re-analyzed.'));
     }
 
     /**
@@ -73,6 +75,8 @@ new class extends Component {
         $this->importNotices = $result['errors'];
         $this->reset('statement');
         $this->modal('import-'.$institution->id)->close();
+
+        $this->dispatch('toast', message: __(':count holdings imported.', ['count' => count($result['rows'])]));
     }
 
     /**
@@ -91,6 +95,8 @@ new class extends Component {
             ->update(['status' => ConsentStatus::Revoked, 'revoked_at' => now()]);
 
         $analyzer->analyze(Auth::user());
+
+        $this->dispatch('toast', message: __('Access revoked.'));
     }
 
     public function with(): array

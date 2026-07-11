@@ -112,18 +112,20 @@ class GoalsPageTest extends TestCase
             'target_date' => now()->addYears(10),
         ]);
 
-        $this->actingAs($user)
-            ->get('/dashboard')
-            ->assertOk()
+        $this->actingAs($user);
+
+        // The card is lazy-loaded on the dashboard, so its content is
+        // asserted at the component level.
+        Volt::test('dashboard.goal-progress')
             ->assertSee(__('Goal Forecast'))
             ->assertSee('Retirement');
     }
 
     public function test_the_dashboard_nudges_users_without_goals(): void
     {
-        $this->actingAs($this->userWithProfile())
-            ->get('/dashboard')
-            ->assertOk()
+        $this->actingAs($this->userWithProfile());
+
+        Volt::test('dashboard.goal-progress')
             ->assertSee(__('Add a financial goal and Mahafeth will forecast your odds of reaching it.'));
     }
 

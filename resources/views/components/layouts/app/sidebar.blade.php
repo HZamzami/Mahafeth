@@ -102,6 +102,19 @@
             <x-app-logo class="size-8" />
         </a>
 
+        @php($pageTitle = match (true) {
+            request()->routeIs('analytics') => __('Analytics'),
+            request()->routeIs('advisor') => __('AI Advisor'),
+            request()->routeIs('connections*') => __('Connections'),
+            request()->routeIs('investor-profile') => __('Investor Profile'),
+            request()->routeIs('report') => __('Report'),
+            request()->routeIs('settings.*') => __('Settings'),
+            default => null,
+        })
+        @if ($pageTitle !== null)
+            <flux:heading class="ms-3" size="lg">{{ $pageTitle }}</flux:heading>
+        @endif
+
         <flux:spacer />
 
         <flux:dropdown position="top" align="end">
@@ -154,6 +167,8 @@
     {{ $slot }}
 
     <x-bottom-nav />
+
+    <x-snackbar />
 
     @include('partials.pwa-install-banner')
 

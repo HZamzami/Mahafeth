@@ -6,6 +6,11 @@ use Illuminate\Support\Number;
 use Livewire\Volt\Component;
 
 new class extends Component {
+    public function placeholder(): \Illuminate\Contracts\View\View
+    {
+        return view('partials.skeleton-card');
+    }
+
     protected $listeners = ['portfolio-analyzed' => '$refresh'];
 
     /**
@@ -131,7 +136,7 @@ new class extends Component {
                                     {{ Number::percentage($forecast['probability'] * 100, 0) }}</flux:badge>
                             </span>
                         </div>
-                        <flux:text class="mt-1 text-xs">
+                        <flux:text class="mt-1 text-xs" data-amount>
                             {{ __('⃁ :amount in :months months', ['amount' => Number::localizedAbbreviate($forecast['goal']->target_amount, 1), 'months' => $forecast['months']]) }}
                             @if ($forecast['probabilityOptimal'] !== null)
                                 &bull; {{ __('at the optimal mix: :percent', ['percent' => Number::percentage($forecast['probabilityOptimal'] * 100, 0)]) }}

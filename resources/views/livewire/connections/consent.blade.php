@@ -102,7 +102,8 @@ new class extends Component {
             <flux:button class="flex-1" variant="ghost" wire:click="deny">{{ __('Deny') }}</flux:button>
             <flux:button class="flex-1" variant="primary" wire:click="approve" wire:loading.attr="disabled">
                 <span wire:loading.remove wire:target="approve">{{ __('Approve access') }}</span>
-                <span wire:loading wire:target="approve">{{ __('Linking…') }}</span>
+                <span wire:loading wire:target="approve" class="flex items-center justify-center gap-2">
+                    <flux:icon.loading class="size-4" />{{ __('Linking…') }}</span>
             </flux:button>
         </div>
     </div>

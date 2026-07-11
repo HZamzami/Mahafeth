@@ -873,5 +873,16 @@
     "Get portfolio alerts on this device even when the app is closed. On iPhone, install the app to your home screen first.": "استقبل تنبيهات محفظتك على هذا الجهاز حتى عندما يكون التطبيق مغلقا. على الآيفون، ثبت التطبيق على الشاشة الرئيسية أولا.",
     "Enable on this device": "تفعيل على هذا الجهاز",
     "Enabled on this device": "مفعلة على هذا الجهاز",
-    "Send test notification": "إرسال إشعار تجريبي"
+    "Send test notification": "إرسال إشعار تجريبي",
+    "Good morning, :name": "صباح الخير، :name",
+    "Good afternoon, :name": "مساء الخير، :name",
+    "Good evening, :name": "مساء الخير، :name",
+    "Total Portfolio": "إجمالي المحفظة",
+    "since last analysis": "منذ آخر تحليل",
+    "Your unified portfolio starts here": "محفظتك الموحدة تبدأ من هنا",
+    "Hide balances": "إخفاء الأرصدة",
+    "Synced and re-analyzed.": "تمت المزامنة وإعادة التحليل.",
+    ":count holdings imported.": "تم استيراد :count من الأصول.",
+    "Access revoked.": "تم إلغاء الوصول.",
+    "Test notification sent.": "تم إرسال الإشعار التجريبي."
 }

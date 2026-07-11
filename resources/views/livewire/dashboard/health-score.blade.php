@@ -50,7 +50,7 @@ new class extends Component {
         <flux:heading size="lg">{{ __('Portfolio Health Score') }}</flux:heading>
         @if ($hasSnapshot)
             <flux:button size="sm" variant="subtle" icon="arrow-path" wire:click="refresh"
-                wire:loading.attr="disabled" :tooltip="__('Refresh Analysis')" />
+                wire:loading.attr="disabled" :tooltip="__('Refresh Analysis')" :aria-label="__('Refresh Analysis')" />
         @endif
     </div>
 

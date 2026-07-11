@@ -23,6 +23,17 @@ html {
     }
 }
 
+/* Hide-balances mode: the dashboard eye toggles .amounts-hidden on the page
+   root and every money value tagged data-amount blurs out. */
+[data-amount] {
+    transition: filter 150ms ease-out;
+}
+
+.amounts-hidden [data-amount] {
+    filter: blur(10px);
+    user-select: none;
+}
+
 @media (prefers-reduced-motion: no-preference) {
     .page-enter {
         animation: page-enter 180ms ease-out;

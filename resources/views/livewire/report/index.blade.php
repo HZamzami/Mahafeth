@@ -241,7 +241,7 @@ new class extends Component {
                     @endif
                 </div>
                 @if ($components !== null)
-                    <div class="grid grid-cols-2 gap-x-6 gap-y-2">
+                    <div class="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
                         @foreach ([
                             'diversification' => __('Diversification'),
                             'correlation' => __('Correlation'),
@@ -265,7 +265,7 @@ new class extends Component {
             {{-- Key metrics --}}
             <div class="border-b border-neutral-200 py-6 dark:border-neutral-700">
                 <flux:heading size="lg">{{ __('Key Metrics') }}</flux:heading>
-                <div class="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 sm:grid-cols-3">
+                <div class="mt-4 grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-2 md:grid-cols-3">
                     @foreach ([
                         [__('Annualized Return'), $fmt($metrics['expected_return'] ?? null)],
                         [__('Annualized Volatility'), $fmt($metrics['volatility'] ?? null)],
@@ -331,7 +331,7 @@ new class extends Component {
             @if (isset($metrics['shariah']))
                 <div class="border-b border-neutral-200 py-6 dark:border-neutral-700">
                     <flux:heading size="lg">{{ __('Shariah Compliance') }}</flux:heading>
-                    <div class="mt-4 grid grid-cols-3 gap-x-8">
+                    <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-x-8">
                         @foreach ([
                             [__('Shariah Compliant'), $metrics['shariah']['compliant_weight'], '!text-emerald-600 dark:!text-emerald-400'],
                             [__('Compliance Unknown'), $metrics['shariah']['unknown_weight'], '!text-amber-600 dark:!text-amber-400'],

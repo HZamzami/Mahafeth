@@ -54,7 +54,7 @@ new class extends Component {
         @if ($insight !== null)
             <flux:button size="sm" variant="subtle" :icon="$isGenerating ? 'loading' : 'arrow-path'"
                 wire:click="generate" wire:loading.attr="disabled" :disabled="$isGenerating"
-                :tooltip="__('Regenerate')" />
+                :tooltip="__('Regenerate')" :aria-label="__('Regenerate')" />
         @endif
     </div>
 

@@ -30,6 +30,7 @@ class ProfileUpdateTest extends TestCase
             ->call('updateProfileInformation');
 
         $response->assertHasNoErrors();
+        $response->assertDispatched('toast');
 
         $user->refresh();
 

@@ -10,6 +10,8 @@ use App\Models\RiskProfile;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Number;
+use Illuminate\Support\Str;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
 
@@ -30,6 +32,29 @@ class DashboardTest extends TestCase
 
         $response = $this->get('/dashboard');
         $response->assertStatus(200);
+    }
+
+    public function test_the_hero_greets_the_user_and_shows_the_total_value(): void
+    {
+        $user = $this->syncedAndAnalyzedUser();
+        $this->actingAs($user);
+
+        $snapshot = $user->latestSnapshot();
+
+        Volt::test('dashboard.portfolio-hero')
+            ->assertSee(Str::before($user->name, ' '))
+            ->assertSee(__('Total Portfolio'))
+            ->assertSee(Number::format($snapshot->total_value, 0));
+    }
+
+    public function test_the_hero_shows_the_connect_cta_without_a_snapshot(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        Volt::test('dashboard.portfolio-hero')
+            ->assertSee(__('Your unified portfolio starts here'))
+            ->assertSee(__('Connect your accounts'))
+            ->assertDontSee(__('Total Portfolio'));
     }
 
     public function test_onboarding_walks_a_fresh_user_toward_connecting(): void

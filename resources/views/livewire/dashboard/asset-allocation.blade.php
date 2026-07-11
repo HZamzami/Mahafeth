@@ -66,7 +66,7 @@ new class extends Component {
                 @endforeach
             </svg>
             <div class="absolute inset-0 flex flex-col items-center justify-center">
-                <flux:heading size="lg" dir="ltr">⃁ {{ Number::localizedAbbreviate($totalValue, 1) }}</flux:heading>
+                <flux:heading size="lg" dir="ltr" data-amount>⃁ {{ Number::localizedAbbreviate($totalValue, 1) }}</flux:heading>
                 <flux:text class="text-xs">{{ __('Total') }}</flux:text>
             </div>
         </div>
