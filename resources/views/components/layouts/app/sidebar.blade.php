@@ -7,7 +7,7 @@
 
 <body class="min-h-screen bg-sand-50 dark:bg-charcoal-950">
     <flux:sidebar sticky stashable
-        class="border-e border-zinc-200 bg-sand-100 print:hidden dark:border-zinc-700 dark:bg-zinc-900">
+        class="border-e border-zinc-200 bg-sand-100 pt-[env(safe-area-inset-top)] print:hidden dark:border-zinc-700 dark:bg-zinc-900">
         <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2" wire:navigate>
             <x-app-logo class="size-8"></x-app-logo>
         </a>
@@ -97,7 +97,7 @@
     </flux:sidebar>
 
     <!-- Mobile User Menu -->
-    <flux:header class="lg:hidden print:hidden">
+    <flux:header class="pt-[env(safe-area-inset-top)] lg:hidden print:hidden">
         <a href="{{ route('dashboard') }}" class="flex items-center" wire:navigate>
             <x-app-logo class="size-8" />
         </a>

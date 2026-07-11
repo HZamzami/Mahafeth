@@ -868,5 +868,10 @@
     "Tap the Share icon, then choose \"Add to Home Screen\".": "اضغط على أيقونة المشاركة ثم اختر \"إضافة إلى الشاشة الرئيسية\".",
     "Install": "تثبيت",
     "Dismiss": "إغلاق",
-    "More": "المزيد"
+    "More": "المزيد",
+    "Push notifications": "الإشعارات الفورية",
+    "Get portfolio alerts on this device even when the app is closed. On iPhone, install the app to your home screen first.": "استقبل تنبيهات محفظتك على هذا الجهاز حتى عندما يكون التطبيق مغلقا. على الآيفون، ثبت التطبيق على الشاشة الرئيسية أولا.",
+    "Enable on this device": "تفعيل على هذا الجهاز",
+    "Enabled on this device": "مفعلة على هذا الجهاز",
+    "Send test notification": "إرسال إشعار تجريبي"
 }

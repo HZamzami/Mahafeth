@@ -23,6 +23,68 @@ html {
     }
 }
 
+@media (prefers-reduced-motion: no-preference) {
+    .page-enter {
+        animation: page-enter 180ms ease-out;
+    }
+
+    @keyframes page-enter {
+        from {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+}
+
+/* Pull-to-refresh spinner chip (created from app.js in standalone mode). */
+.ptr-indicator {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 0.5rem);
+    inset-inline-start: 50%;
+    margin-inline-start: -1.25rem;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    background-color: white;
+    color: var(--color-teal-600);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 100ms ease-out;
+}
+
+.dark .ptr-indicator {
+    background-color: var(--color-zinc-800);
+    color: var(--color-teal-400);
+}
+
+.ptr-indicator svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.ptr-indicator.ptr-visible {
+    opacity: 1;
+}
+
+.ptr-indicator.ptr-loading svg {
+    animation: ptr-spin 700ms linear infinite;
+}
+
+@keyframes ptr-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 @utility scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: var(--color-zinc-300) transparent;

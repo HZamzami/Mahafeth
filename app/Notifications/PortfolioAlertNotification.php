@@ -5,11 +5,14 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 /**
- * Emailed when the nightly re-analysis surfaces new threshold alerts or a
- * meaningful health-score drop. Renders in the user's preferred locale via
- * the HasLocalePreference contract on the User model.
+ * Sent when the nightly re-analysis surfaces new threshold alerts or a
+ * meaningful health-score drop: email always, web push on devices the user
+ * subscribed. Renders in the user's preferred locale via the
+ * HasLocalePreference contract on the User model.
  */
 class PortfolioAlertNotification extends Notification
 {
@@ -21,14 +24,41 @@ class PortfolioAlertNotification extends Notification
     public function __construct(
         public array $newAlerts,
         public ?int $scoreDrop = null,
+        public bool $pushOnly = false,
     ) {}
 
     /**
-     * @return list<string>
+     * @return list<class-string|string>
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        $channels = $this->pushOnly ? [] : ['mail'];
+
+        if ($notifiable->pushSubscriptions()->exists()) {
+            $channels[] = WebPushChannel::class;
+        }
+
+        return $channels;
+    }
+
+    public function toWebPush(object $notifiable): WebPushMessage
+    {
+        $lines = array_map(
+            fn (array $alert): string => __($alert['key'], $alert['params']),
+            $this->newAlerts,
+        );
+
+        if ($this->scoreDrop !== null) {
+            array_unshift($lines, __('Your Portfolio Health Score dropped by :points points.', ['points' => $this->scoreDrop]));
+        }
+
+        return (new WebPushMessage)
+            ->title(__('Mahafeth: your portfolio needs attention'))
+            ->body(implode("\n", $lines))
+            ->icon('/icons/icon-192.png')
+            ->badge('/icons/icon-192.png')
+            ->tag('portfolio-alert')
+            ->data(['url' => route('dashboard')]);
     }
 
     public function toMail(object $notifiable): MailMessage
