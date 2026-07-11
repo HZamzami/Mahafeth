@@ -91,10 +91,17 @@ new class extends Component {
 
     <div class="grid w-full grid-cols-3 gap-4 border-t border-neutral-200 pt-6 dark:border-neutral-700">
         @foreach ([
-            ['diversification', __('Diversification'), '!text-emerald-600 dark:!text-emerald-400', 'bg-emerald-500 dark:bg-emerald-400', ''],
-            ['concentration', __('Concentration'), '!text-amber-600 dark:!text-amber-400', 'bg-amber-500 dark:bg-amber-400', 'border-x border-neutral-200 px-2 dark:border-neutral-700'],
-            ['risk_alignment', __('Risk Alignment'), '!text-teal-700 dark:!text-teal-300', 'bg-teal-600 dark:bg-teal-400', ''],
-        ] as [$key, $label, $textColor, $barColor, $extra])
+            ['diversification', __('Diversification'), ''],
+            ['concentration', __('Concentration'), 'border-x border-neutral-200 px-2 dark:border-neutral-700'],
+            ['risk_alignment', __('Risk Alignment'), ''],
+        ] as [$key, $label, $extra])
+            {{-- Colors follow the score so a 0 reads as danger, not decoration. --}}
+            @php([$textColor, $barColor] = match (true) {
+                ! isset($components[$key]) => ['', ''],
+                $components[$key] >= 65 => ['!text-emerald-600 dark:!text-emerald-400', 'bg-emerald-500 dark:bg-emerald-400'],
+                $components[$key] >= 40 => ['!text-amber-600 dark:!text-amber-400', 'bg-amber-500 dark:bg-amber-400'],
+                default => ['!text-red-600 dark:!text-red-400', 'bg-red-500 dark:bg-red-400'],
+            })
             <div class="text-center {{ $extra }}">
                 <flux:text class="mb-1 text-xs">{{ $label }}</flux:text>
                 <flux:heading class="{{ $textColor }}" dir="ltr">
@@ -102,7 +109,7 @@ new class extends Component {
                 @if (isset($components[$key]))
                     <div class="mx-auto mt-2 h-1.5 w-full max-w-24 overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
                         <div class="bar-fill h-full rounded-full {{ $barColor }}" style="width: 0%"
-                            data-width="{{ $components[$key] }}" x-data
+                            data-width="{{ max(2, $components[$key]) }}" x-data
                             x-intersect.once="$el.style.width = $el.dataset.width + '%'"></div>
                     </div>
                 @endif
