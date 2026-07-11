@@ -28,7 +28,8 @@ new class extends Component {
 
 <div class="{{ $alerts === [] ? 'hidden' : 'flex flex-col gap-2' }}">
     @foreach ($alerts as $alert)
-        <flux:callout :color="$alert['color']" icon="exclamation-triangle" inline>
+        <flux:callout wire:key="alert-{{ md5($alert['text']) }}" wire:transition
+            :color="$alert['color']" icon="exclamation-triangle" inline>
             <flux:callout.text>{{ $alert['text'] }}</flux:callout.text>
             <x-slot name="actions">
                 <flux:button size="xs" variant="ghost" :href="route('analytics')" wire:navigate>

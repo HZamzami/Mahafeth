@@ -204,14 +204,16 @@ new class extends Component {
                     <flux:callout.text>{{ $insight->summary }}</flux:callout.text>
                 </flux:callout>
 
-                <details class="group">
-                    <summary
-                        class="flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-teal-700 hover:underline dark:text-teal-300">
-                        <flux:icon.chevron-down class="size-4 transition-transform group-open:rotate-180" />
-                        {{ __('View the action plan') }}
-                        <flux:badge size="sm">{{ count($insight->recommendations) }}</flux:badge>
-                    </summary>
+                <flux:accordion transition>
+                    <flux:accordion.item>
+                        <flux:accordion.heading>
+                            <span class="flex items-center gap-2 text-teal-700 dark:text-teal-300">
+                                {{ __('View the action plan') }}
+                                <flux:badge size="sm">{{ count($insight->recommendations) }}</flux:badge>
+                            </span>
+                        </flux:accordion.heading>
 
+                        <flux:accordion.content>
                     <div class="mt-3 space-y-3">
                         @foreach ($insight->recommendations as $index => $recommendation)
                         <div
@@ -225,19 +227,24 @@ new class extends Component {
                             <flux:text class="mt-1 text-sm">{{ $recommendation['body'] }}</flux:text>
 
                             @if (($recommendation['evidence'] ?? []) !== [])
-                                <details class="mt-2">
-                                    <summary
-                                        class="cursor-pointer text-xs font-medium text-teal-700 hover:underline dark:text-teal-300">
-                                        {{ __('Show the math') }}</summary>
-                                    <div class="mt-2 flex flex-wrap gap-1.5">
-                                        @foreach ($recommendation['evidence'] as $evidence)
-                                            {{-- dir=auto keeps Arabic metric names reading right-to-left
-                                                 while the LTR span stops signs and % from shuffling. --}}
-                                            <flux:badge size="sm" dir="auto">
-                                                {{ $evidence['metric'] }}: <span dir="ltr">{{ $evidence['value'] }}</span></flux:badge>
-                                        @endforeach
-                                    </div>
-                                </details>
+                                <flux:accordion class="mt-2" transition>
+                                    <flux:accordion.item>
+                                        <flux:accordion.heading>
+                                            <span class="text-xs font-medium text-teal-700 dark:text-teal-300">
+                                                {{ __('Show the math') }}</span>
+                                        </flux:accordion.heading>
+                                        <flux:accordion.content>
+                                            <div class="mt-2 flex flex-wrap gap-1.5">
+                                                @foreach ($recommendation['evidence'] as $evidence)
+                                                    {{-- dir=auto keeps Arabic metric names reading right-to-left
+                                                         while the LTR span stops signs and % from shuffling. --}}
+                                                    <flux:badge size="sm" dir="auto">
+                                                        {{ $evidence['metric'] }}: <span dir="ltr">{{ $evidence['value'] }}</span></flux:badge>
+                                                @endforeach
+                                            </div>
+                                        </flux:accordion.content>
+                                    </flux:accordion.item>
+                                </flux:accordion>
                             @endif
 
                             <flux:button class="mt-3 self-start" size="sm" icon="chat-bubble-oval-left"
@@ -246,7 +253,9 @@ new class extends Component {
                         </div>
                         @endforeach
                     </div>
-                </details>
+                        </flux:accordion.content>
+                    </flux:accordion.item>
+                </flux:accordion>
             </div>
         @elseif ($isGenerating)
             <div class="flex flex-col items-center gap-3 card p-10 text-center">
@@ -271,7 +280,7 @@ new class extends Component {
                 x-init="$el.scrollTop = $el.scrollHeight"
                 @chat-updated.window="$nextTick(() => $el.scrollTop = $el.scrollHeight)">
                 @forelse ($messages as $chatMessage)
-                    <div @class([
+                    <div wire:key="chat-message-{{ $chatMessage->id }}" wire:transition @class([
                         'w-fit max-w-[85%] rounded-2xl px-4 py-2.5 text-sm',
                         'ms-auto bg-teal-600 text-white dark:bg-teal-500' => $chatMessage->role === 'user',
                         'me-auto bg-neutral-100 text-neutral-800 dark:bg-zinc-800 dark:text-neutral-100' => $chatMessage->role !== 'user',

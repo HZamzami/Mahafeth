@@ -213,6 +213,7 @@ class DashboardTest extends TestCase
         $this->actingAs($user);
 
         Volt::test('dashboard.performance-chart')
-            ->assertViewHas('points', fn (array $points): bool => count($points) > 10);
+            ->assertViewHas('points', fn (array $points): bool => count($points) > 10)
+            ->assertSeeHtml('name="summary"');
     }
 }

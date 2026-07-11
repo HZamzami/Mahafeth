@@ -90,7 +90,8 @@ new class extends Component {
     @else
         <div class="mt-4 space-y-3">
             @foreach ($goals as $goal)
-                <div class="flex items-center justify-between rounded-lg border border-neutral-100 p-3 dark:border-zinc-800">
+                <div wire:key="goal-{{ $goal->id }}" wire:transition
+                    class="flex items-center justify-between rounded-lg border border-neutral-100 p-3 dark:border-zinc-800">
                     <div>
                         <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">{{ $goal->name }}</flux:text>
                         <flux:text class="text-xs">
@@ -118,7 +119,7 @@ new class extends Component {
             <flux:input wire:model="name" :label="__('Goal name')" :placeholder="__('e.g. Retirement')" />
             <flux:input wire:model="targetAmount" type="number" min="1" step="1000"
                 :label="__('Target amount (⃁)')" />
-            <flux:date-picker wire:model="targetDate" :label="__('Target date')" />
+            <flux:date-picker wire:model="targetDate" selectable-header :label="__('Target date')" />
             <flux:input wire:model="monthlyContribution" type="number" min="0" step="100"
                 :label="__('Monthly contribution (⃁, optional)')" />
 

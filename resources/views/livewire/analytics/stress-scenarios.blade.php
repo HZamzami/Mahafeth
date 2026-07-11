@@ -85,7 +85,7 @@ new class extends Component {
                 {{ __('Hardest-Hit Positions') }}</flux:text>
             <div class="space-y-2.5">
                 @foreach ($result['positions'] as $position)
-                    <div wire:key="stress-position-{{ $position['symbol'] }}">
+                    <div wire:key="stress-position-{{ $position['symbol'] }}" wire:transition>
                         <div class="flex items-center justify-between">
                             <flux:text class="text-sm">{{ $position['name'] }}
                                 <span class="text-neutral-400">({{ $position['symbol'] }})</span></flux:text>

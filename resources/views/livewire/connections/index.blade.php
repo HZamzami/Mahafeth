@@ -129,7 +129,7 @@ new class extends Component {
     @endif
 
     @if ($importNotices !== [])
-        <flux:callout color="amber" icon="exclamation-triangle">
+        <flux:callout wire:transition color="amber" icon="exclamation-triangle">
             <flux:callout.heading>{{ __('Some statement lines were skipped') }}</flux:callout.heading>
             <flux:callout.text>
                 @foreach ($importNotices as $notice)

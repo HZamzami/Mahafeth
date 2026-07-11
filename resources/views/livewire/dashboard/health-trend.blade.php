@@ -32,7 +32,15 @@ new class extends Component {
         <div
             class="relative shrink-0 overflow-hidden card p-5">
             <flux:heading class="mb-4" size="lg">{{ __('Health Trend') }}</flux:heading>
-            <flux:chart class="aspect-4/1 relative" dir="ltr" :value="$points">
+            <flux:chart class="relative" dir="ltr" :value="$points">
+                <flux:chart.summary class="mb-3 flex items-baseline gap-3">
+                    <span class="text-2xl font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                        <flux:chart.summary.value field="score" />/100</span>
+                    <flux:chart.summary.value class="text-xs text-zinc-400" field="date"
+                        :format="['month' => 'short', 'day' => 'numeric']" />
+                </flux:chart.summary>
+
+                <div class="aspect-4/1 relative">
                 <flux:chart.svg>
                     <flux:chart.line class="text-emerald-500 dark:text-emerald-400" curve="smooth" field="score" />
                     <flux:chart.point class="text-emerald-500 dark:text-emerald-400" field="score" />
@@ -46,6 +54,7 @@ new class extends Component {
                         <flux:chart.axis.tick />
                     </flux:chart.axis>
                 </flux:chart.svg>
+                </div>
 
                 <flux:chart.tooltip>
                     <flux:chart.tooltip.heading field="date" :format="['month' => 'short', 'day' => 'numeric', 'year' => 'numeric']" />

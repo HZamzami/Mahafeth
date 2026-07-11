@@ -48,6 +48,7 @@ new class extends Component {
                 id="update_password_current_passwordpassword"
                 label="{{ __('Current password') }}"
                 type="password"
+                viewable
                 name="current_password"
                 required
                 autocomplete="current-password"
@@ -57,6 +58,7 @@ new class extends Component {
                 id="update_password_password"
                 label="{{ __('New password') }}"
                 type="password"
+                viewable
                 name="password"
                 required
                 autocomplete="new-password"
@@ -66,6 +68,7 @@ new class extends Component {
                 id="update_password_password_confirmation"
                 label="{{ __('Confirm Password') }}"
                 type="password"
+                viewable
                 name="password_confirmation"
                 required
                 autocomplete="new-password"

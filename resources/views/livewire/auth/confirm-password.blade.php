@@ -49,6 +49,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
                 id="password"
                 label="{{ __('Password') }}"
                 type="password"
+                viewable
                 name="password"
                 required
                 autocomplete="new-password"

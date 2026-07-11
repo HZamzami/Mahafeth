@@ -54,13 +54,17 @@ new class extends Component {
     <div
         class="flex flex-col justify-between card p-5">
         <div>
-            <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Annualized Volatility') }}
+            <flux:text class="mb-1 flex items-center gap-1 text-xs font-medium uppercase tracking-widest">
+                {{ __('Annualized Volatility') }}
+                <flux:tooltip toggleable :content="__('Bar fills at twice your target volatility')">
+                    <flux:button size="xs" variant="ghost" icon="information-circle"
+                        :aria-label="__('How is this calculated?')" />
+                </flux:tooltip>
             </flux:text>
             <flux:heading class="!text-amber-600 dark:!text-amber-400" size="xl" dir="ltr">
                 {{ $volatility !== null ? Number::percentage($volatility * 100, 1) : '—' }}</flux:heading>
         </div>
-        <div class="mt-4 h-1 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800"
-            title="{{ __('Bar fills at twice your target volatility') }}">
+        <div class="mt-4 h-1 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
             <div class="bar-fill h-full bg-amber-500 dark:bg-amber-400" style="width: 0%"
                 data-width="{{ min(100, round(($volatility ?? 0) / $volatilityScale * 100)) }}" x-data
                 x-intersect.once="$el.style.width = $el.dataset.width + '%'"></div>

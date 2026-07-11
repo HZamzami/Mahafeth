@@ -87,7 +87,17 @@ new class extends Component {
     <flux:heading class="mb-4" size="lg">{{ __('Total Return') }}</flux:heading>
 
     @if ($points !== [])
-        <flux:chart class="aspect-3/1 relative" dir="ltr" :value="$points">
+        <flux:chart class="relative" dir="ltr" :value="$points">
+            {{-- Live readout: follows the cursor/finger, falls back to the latest point. --}}
+            <flux:chart.summary class="mb-3 flex items-baseline gap-3">
+                <span class="text-2xl font-semibold tabular-nums text-teal-700 dark:text-teal-300">
+                    <flux:chart.summary.value field="portfolio"
+                        :format="['maximumFractionDigits' => 1, 'signDisplay' => 'always']" />%</span>
+                <flux:chart.summary.value class="text-xs text-zinc-400" field="date"
+                    :format="['month' => 'short', 'year' => 'numeric']" />
+            </flux:chart.summary>
+
+            <div class="aspect-3/1 relative">
             <flux:chart.svg>
                 @foreach ($benchmarkSymbols as $symbol)
                     <flux:chart.line class="{{ $symbol === 'TASI' ? 'text-amber-400/70 dark:text-amber-300/60' : 'text-zinc-400/70 dark:text-zinc-500/70' }}"
@@ -110,6 +120,7 @@ new class extends Component {
                     <flux:chart.axis.tick />
                 </flux:chart.axis>
             </flux:chart.svg>
+            </div>
 
             <flux:chart.tooltip>
                 <flux:chart.tooltip.heading field="date" :format="['month' => 'short', 'year' => 'numeric']" />
