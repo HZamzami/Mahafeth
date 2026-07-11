@@ -76,7 +76,12 @@ new class extends Component {
         <div>
             <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Largest Holding') }}</flux:text>
             <flux:heading size="xl">
-                {{ $largestPosition !== null ? $largestPosition['name'].' ('.$largestPosition['symbol'].')' : '—' }}
+                @if ($largestPosition !== null)
+                    <a class="hover:underline" href="{{ route('holdings.detail', $largestPosition['symbol']) }}"
+                        wire:navigate>{{ $largestPosition['name'] }} ({{ $largestPosition['symbol'] }})</a>
+                @else
+                    —
+                @endif
             </flux:heading>
         </div>
         @if ($largestPosition !== null)

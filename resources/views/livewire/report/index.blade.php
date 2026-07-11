@@ -384,7 +384,8 @@ new class extends Component {
                                 @foreach ($holdings['rows'] as $row)
                                     <tr class="border-t border-neutral-100 dark:border-zinc-800">
                                         <td class="py-1.5">
-                                            <span class="font-medium text-zinc-800 dark:text-white">{{ $row['symbol'] }}</span>
+                                            <a class="font-medium text-zinc-800 hover:underline dark:text-white"
+                                                href="{{ route('holdings.detail', $row['symbol']) }}" wire:navigate>{{ $row['symbol'] }}</a>
                                             <span class="hidden text-neutral-400 sm:inline"> · {{ $row['name'] }}</span>
                                             @if ($row['shariah'] === ShariahStatus::NonCompliant)
                                                 <flux:badge color="red" size="sm">{{ $row['shariah']->label() }}</flux:badge>

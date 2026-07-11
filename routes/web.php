@@ -37,6 +37,10 @@ Volt::route('analytics', 'analytics.index')
     ->middleware(['auth', 'verified'])
     ->name('analytics');
 
+Volt::route('holdings/{asset:symbol}', 'holdings.detail')
+    ->middleware(['auth', 'verified'])
+    ->name('holdings.detail');
+
 Volt::route('investor-profile', 'investor-profile.index')
     ->middleware(['auth', 'verified'])
     ->name('investor-profile');

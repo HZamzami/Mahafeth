@@ -87,8 +87,10 @@ new class extends Component {
                 @foreach ($result['positions'] as $position)
                     <div wire:key="stress-position-{{ $position['symbol'] }}" wire:transition>
                         <div class="flex items-center justify-between">
-                            <flux:text class="text-sm">{{ $position['name'] }}
-                                <span class="text-neutral-400">({{ $position['symbol'] }})</span></flux:text>
+                            <flux:text class="text-sm">
+                                <a class="hover:underline" href="{{ route('holdings.detail', $position['symbol']) }}"
+                                    wire:navigate>{{ $position['name'] }}
+                                    <span class="text-neutral-400">({{ $position['symbol'] }})</span></a></flux:text>
                             <span class="flex items-center gap-2">
                                 <flux:text class="text-xs" dir="ltr">
                                     {{ __(':weight of portfolio', ['weight' => Number::percentage($position['weight'] * 100, 1)]) }}

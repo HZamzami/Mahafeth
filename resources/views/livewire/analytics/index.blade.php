@@ -428,7 +428,8 @@ new class extends Component {
                             @foreach ($rebalanceOrders as $order)
                                 <tr class="border-t border-neutral-100 dark:border-zinc-800">
                                     <td class="py-1.5">
-                                        <span class="font-medium text-zinc-800 dark:text-white">{{ $order['symbol'] }}</span>
+                                        <a class="font-medium text-zinc-800 hover:underline dark:text-white"
+                                            href="{{ route('holdings.detail', $order['symbol']) }}" wire:navigate>{{ $order['symbol'] }}</a>
                                         <span class="hidden text-neutral-400 sm:inline"> · {{ $order['name'] }}</span>
                                     </td>
                                     <td class="py-1.5 ps-4 text-center">
