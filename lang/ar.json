@@ -887,5 +887,6 @@
     "Test notification sent.": "تم إرسال الإشعار التجريبي.",
     "Your portfolio already sits close to the optimal allocation — no orders needed.": "محفظتك قريبة بالفعل من التوزيع الأمثل، لا حاجة لأي أوامر.",
     "Drop your CSV here or click to browse": "أسقط ملف CSV هنا أو اضغط للاختيار",
-    "Up to 1 MB": "حتى 1 ميجابايت"
+    "Up to 1 MB": "حتى 1 ميجابايت",
+    "Health Score": "مؤشر الصحة"
 }

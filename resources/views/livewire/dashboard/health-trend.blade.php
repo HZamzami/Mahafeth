@@ -56,9 +56,9 @@ new class extends Component {
                 </flux:chart.svg>
                 </div>
 
-                <flux:chart.tooltip>
+                <flux:chart.tooltip class="max-w-44">
                     <flux:chart.tooltip.heading field="date" :format="['month' => 'short', 'day' => 'numeric', 'year' => 'numeric']" />
-                    <flux:chart.tooltip.value :label="__('Portfolio Health Score')" field="score" suffix="/100" />
+                    <flux:chart.tooltip.value :label="__('Health Score')" field="score" suffix="/100" />
                 </flux:chart.tooltip>
             </flux:chart>
         </div>

@@ -106,11 +106,9 @@ new class extends Component {
                         <flux:chart.cursor />
                     </flux:chart.svg>
 
-                    <flux:chart.tooltip>
+                    <flux:chart.tooltip class="max-w-44">
                         <flux:chart.tooltip.heading field="date" :format="['month' => 'short', 'year' => 'numeric']" />
                         <flux:chart.tooltip.value :label="__('Most likely path')" field="p50"
-                            :format="['notation' => 'compact']" />
-                        <flux:chart.tooltip.value :label="__('Better / worse cases')" field="p90"
                             :format="['notation' => 'compact']" />
                         <flux:chart.tooltip.value :label="__('Your goal')" field="target"
                             :format="['notation' => 'compact']" />

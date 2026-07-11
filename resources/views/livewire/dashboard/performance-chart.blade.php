@@ -122,14 +122,15 @@ new class extends Component {
             </flux:chart.svg>
             </div>
 
-            <flux:chart.tooltip>
+            {{-- Short labels and a width cap keep the tooltip inside the chart
+                 when the edge-flip logic runs out of room. --}}
+            <flux:chart.tooltip class="max-w-44">
                 <flux:chart.tooltip.heading field="date" :format="['month' => 'short', 'year' => 'numeric']" />
                 <flux:chart.tooltip.value :label="__('Your portfolio')" field="portfolio"
                     :format="['maximumFractionDigits' => 1]" suffix="%" />
                 @foreach ($benchmarkSymbols as $symbol)
-                    <flux:chart.tooltip.value
-                        :label="$symbol === 'TASI' ? __('Saudi market (TASI)') : __('US market (SPY)')"
-                        field="{{ $symbol }}" :format="['maximumFractionDigits' => 1]" suffix="%" />
+                    <flux:chart.tooltip.value :label="$symbol" field="{{ $symbol }}"
+                        :format="['maximumFractionDigits' => 1]" suffix="%" />
                 @endforeach
             </flux:chart.tooltip>
         </flux:chart>
