@@ -30,12 +30,14 @@
 
         <flux:dropdown position="top" align="end">
             <button type="button"
-                class="flex w-full flex-col items-center gap-1 py-2 text-[10px] font-medium {{ request()->routeIs(['report', 'investor-profile']) ? $active : $inactive }}">
+                class="flex w-full flex-col items-center gap-1 py-2 text-[10px] font-medium {{ request()->routeIs(['report', 'investor-profile', 'holdings.*']) ? $active : $inactive }}">
                 <flux:icon.ellipsis-horizontal class="size-6" />
                 <span class="max-w-full truncate px-1">{{ __('More') }}</span>
             </button>
 
             <flux:menu>
+                <flux:menu.item icon="briefcase" :href="route('holdings.index')" wire:navigate>
+                    {{ __('Holdings') }}</flux:menu.item>
                 <flux:menu.item icon="document-text" :href="route('report')" wire:navigate>
                     {{ __('Report') }}</flux:menu.item>
                 <flux:menu.item icon="clipboard-document-check" :href="route('investor-profile')" wire:navigate>

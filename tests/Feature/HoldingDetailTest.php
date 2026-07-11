@@ -84,6 +84,25 @@ class HoldingDetailTest extends TestCase
             ->assertSee('TADAWUL%3A2222', false);
     }
 
+    public function test_the_holdings_index_lists_every_position_with_detail_links(): void
+    {
+        $this->actingAs($this->syncedUser())
+            ->get('/holdings')
+            ->assertOk()
+            ->assertSee(__('Holdings'))
+            ->assertSee(__('Total Portfolio'))
+            ->assertSee('AAPL')
+            ->assertSee(route('holdings.detail', 'AAPL'));
+    }
+
+    public function test_the_holdings_index_shows_the_connect_prompt_without_holdings(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get('/holdings')
+            ->assertOk()
+            ->assertSee(__('No sources connected yet'));
+    }
+
     public function test_the_report_links_holdings_to_the_detail_page(): void
     {
         $this->actingAs($this->syncedUser())

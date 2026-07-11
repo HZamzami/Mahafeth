@@ -902,5 +902,6 @@
     "Tell me about my :symbol position: how it affects my portfolio risk, and whether I should trim, hold, or add.": "حدثني عن مركزي في :symbol: كيف يؤثر على مخاطر محفظتي، وهل الأفضل أن أقلص أو أحتفظ أو أزيد.",
     "Refresh": "تحديث",
     "News refreshed.": "تم تحديث الأخبار.",
-    "Please wait a few minutes between refreshes.": "يرجى الانتظار بضع دقائق بين التحديثات."
+    "Please wait a few minutes between refreshes.": "يرجى الانتظار بضع دقائق بين التحديثات.",
+    "Every position across your connected accounts. Tap one for its market chart and details.": "كل مراكزك عبر حساباتك المتصلة. اضغط على أي منها لعرض الرسم البياني والتفاصيل."
 }

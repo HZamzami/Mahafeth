@@ -43,9 +43,12 @@ new class extends Component {
             @if ($totalValue !== null)
                 <flux:text class="mt-3 text-xs font-medium uppercase tracking-widest">
                     {{ __('Total Portfolio') }}</flux:text>
-                <p class="mt-1 text-4xl font-semibold tabular-nums text-zinc-900 dark:text-white" dir="ltr"
-                    data-amount>
-                    ⃁ {{ Number::format($totalValue, 0) }}</p>
+                <a class="group mt-1 flex items-center gap-2" href="{{ route('holdings.index') }}" wire:navigate>
+                    <span class="text-4xl font-semibold tabular-nums text-zinc-900 dark:text-white" dir="ltr"
+                        data-amount>⃁ {{ Number::format($totalValue, 0) }}</span>
+                    <flux:icon.chevron-right
+                        class="size-5 text-zinc-400 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
+                </a>
 
                 @if ($change !== null)
                     <p class="mt-1 flex items-center gap-1 text-sm font-medium {{ $change >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}"

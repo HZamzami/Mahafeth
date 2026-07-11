@@ -6,6 +6,7 @@ use App\Enums\ShariahStatus;
 use App\Models\AiInsight;
 use App\Models\Holding;
 use App\Services\Analytics\GoalForecaster;
+use App\Services\Analytics\HoldingsSummarizer;
 use App\Services\Analytics\PortfolioDataAssembler;
 use App\Services\Analytics\RebalancePlanner;
 use App\Services\Fx\FxRateService;
@@ -26,7 +27,7 @@ new class extends Component {
             'metrics' => $snapshot?->metrics ?? [],
             'components' => $snapshot?->component_scores,
             'profile' => $user->riskProfile,
-            'holdings' => $this->holdingRows(),
+            'holdings' => app(HoldingsSummarizer::class)->rows($user),
             'insight' => $snapshot === null ? null : AiInsight::query()
                 ->where('portfolio_snapshot_id', $snapshot->id)
                 ->where('locale', app()->getLocale())
@@ -114,72 +115,6 @@ new class extends Component {
         return $rows;
     }
 
-    /**
-     * Per-symbol holdings with cost basis and unrealized P&L, all in base
-     * currency, sorted by value.
-     *
-     * @return array{rows: list<array>, totalValue: float, totalCost: float}
-     */
-    private function holdingRows(): array
-    {
-        $user = Auth::user();
-
-        $windowYears = $user->riskProfile?->time_horizon->analysisWindowYears()
-            ?? (int) config('mahafeth.analysis_window_years');
-
-        $data = app(PortfolioDataAssembler::class)->forUser($user, now()->subYears($windowYears));
-        $fxRates = app(FxRateService::class)->all();
-
-        $costs = [];
-        $names = [];
-        $statuses = [];
-
-        $dbHoldings = Holding::with('asset')
-            ->whereHas('account.connection', fn ($query) => $query
-                ->whereBelongsTo($user)
-                ->where('status', ConnectionStatus::Connected))
-            ->get();
-
-        foreach ($dbHoldings as $holding) {
-            $symbol = $holding->asset->symbol;
-            $rate = $fxRates[$holding->asset->currency] ?? 1.0;
-            $costs[$symbol] = ($costs[$symbol] ?? 0.0) + $holding->quantity * $holding->avg_cost * $rate;
-            $names[$symbol] = $holding->asset->localizedName();
-            $statuses[$symbol] = $holding->asset->shariah_status;
-        }
-
-        $rows = [];
-
-        foreach ($data['quantities'] as $symbol => $quantity) {
-            $series = $data['priceSeries'][$symbol] ?? [];
-
-            if ($series === []) {
-                continue;
-            }
-
-            $value = $quantity * end($series);
-            $cost = $costs[$symbol] ?? 0.0;
-
-            $rows[] = [
-                'symbol' => $symbol,
-                'name' => $names[$symbol] ?? $symbol,
-                'quantity' => $quantity,
-                'value' => $value,
-                'cost' => $cost,
-                'pl' => $value - $cost,
-                'plPct' => $cost > 0 ? ($value - $cost) / $cost : 0.0,
-                'shariah' => $statuses[$symbol] ?? ShariahStatus::Unknown,
-            ];
-        }
-
-        usort($rows, fn (array $a, array $b): int => $b['value'] <=> $a['value']);
-
-        return [
-            'rows' => $rows,
-            'totalValue' => array_sum(array_column($rows, 'value')),
-            'totalCost' => array_sum(array_column($rows, 'cost')),
-        ];
-    }
 }; ?>
 
 <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">

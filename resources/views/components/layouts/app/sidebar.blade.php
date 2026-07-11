@@ -16,6 +16,9 @@
             <flux:navlist.group :heading="__('Platform')" class="grid">
                 <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
                     wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+                <flux:navlist.item icon="briefcase" :href="route('holdings.index')"
+                    :current="request()->routeIs('holdings.*')" wire:navigate>{{ __('Holdings') }}
+                </flux:navlist.item>
                 <flux:navlist.item icon="chat-bubble-left-right" :href="route('advisor')"
                     :current="request()->routeIs('advisor')" wire:navigate>{{ __('AI Advisor') }}
                 </flux:navlist.item>
@@ -106,6 +109,7 @@
         </div>
 
         @php($pageTitle = match (true) {
+            request()->routeIs('holdings.*') => __('Holdings'),
             request()->routeIs('analytics') => __('Analytics'),
             request()->routeIs('advisor') => __('AI Advisor'),
             request()->routeIs('connections*') => __('Connections'),
