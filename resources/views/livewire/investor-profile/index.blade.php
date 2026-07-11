@@ -240,7 +240,7 @@ new class extends Component {
         <flux:heading class="mb-4" size="lg">{{ $current['question'] }}</flux:heading>
 
         <flux:radio.group wire:model="answers.{{ $currentKey }}" variant="cards" :indicator="false"
-            class="flex-col">
+            class="flex-col" x-data x-on:change="window.haptic?.(5)">
             @foreach ($current['options'] as $index => $option)
                 <flux:radio :value="$index + 1" :label="$option" />
             @endforeach

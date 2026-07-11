@@ -92,7 +92,7 @@ new class extends Component {
         <div class="mt-4 space-y-1">
             @foreach ($segments as $index => $segment)
                 <button type="button"
-                    class="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-start transition-colors"
+                    class="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-start transition-colors hover:bg-neutral-50 dark:hover:bg-zinc-800/60"
                     x-on:click="active = active === {{ $index }} ? null : {{ $index }}"
                     x-bind:class="active === {{ $index }} && 'bg-neutral-100 dark:bg-zinc-800'"
                     x-bind:aria-pressed="(active === {{ $index }}).toString()">

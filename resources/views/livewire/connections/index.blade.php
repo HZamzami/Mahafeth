@@ -216,8 +216,21 @@ new class extends Component {
                             </flux:text>
                         </div>
 
-                        <flux:input type="file" wire:model="statement" accept=".csv,text/csv"
-                            :label="__('Holdings statement (CSV)')" />
+                        <flux:file-upload wire:model="statement" accept=".csv,text/csv"
+                            :label="__('Holdings statement (CSV)')">
+                            <flux:file-upload.dropzone icon="document-arrow-up"
+                                :heading="__('Drop your CSV here or click to browse')"
+                                :text="__('Up to 1 MB')" />
+                        </flux:file-upload>
+                        @if ($statement)
+                            <flux:file-item icon="document-text" :heading="$statement->getClientOriginalName()"
+                                :size="$statement->getSize()">
+                                <x-slot:actions>
+                                    <flux:button size="xs" variant="subtle" icon="x-mark"
+                                        wire:click="$set('statement', null)" :aria-label="__('Dismiss')" />
+                                </x-slot:actions>
+                            </flux:file-item>
+                        @endif
                         <flux:error name="statement" />
 
                         <flux:text class="text-xs">

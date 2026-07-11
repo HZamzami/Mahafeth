@@ -45,7 +45,8 @@ class AnalyticsPageTest extends TestCase
             ->assertSee('Correlation Matrix')
             ->assertSee('AAPL')
             ->assertSee('MSFT')
-            ->assertSee('Average Correlation');
+            ->assertSee('Average Correlation')
+            ->assertSeeHtml('data-flux-tabs');
     }
 
     public function test_the_efficient_frontier_and_risk_sections_are_rendered(): void

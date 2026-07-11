@@ -48,6 +48,14 @@ document.addEventListener('alpine:init', () => {
     }));
 });
 
+// Short confirmation buzz on key moments (Android; iOS Safari has no
+// Vibration API). Kept rare on purpose: feedback, not decoration.
+window.haptic = (ms = 8) => {
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        navigator.vibrate?.(ms);
+    }
+};
+
 const navigateTo = (url) => {
     if (window.Livewire?.navigate) {
         window.Livewire.navigate(url);
@@ -134,6 +142,7 @@ const navigateTo = (url) => {
                 return;
             }
 
+            window.haptic(15);
             indicator.classList.add('ptr-loading');
             indicator.style.transform = `translateY(${THRESHOLD}px)`;
 

@@ -318,11 +318,15 @@ new class extends Component {
                 </div>
             @endif
 
-            <div class="flex items-center gap-2 border-t border-neutral-200 p-3 dark:border-neutral-700">
-                <flux:input class="grow" wire:model="message" wire:keydown.enter="send"
-                    :placeholder="__('Ask about your portfolio…')" maxlength="1000" />
-                <flux:button variant="primary" icon="paper-airplane" wire:click="send"
-                    wire:loading.attr="disabled" :aria-label="__('Send')" />
+            <div class="border-t border-neutral-200 p-3 dark:border-neutral-700">
+                {{-- Enter sends, Shift+Enter adds a newline. --}}
+                <flux:composer wire:model="message" :placeholder="__('Ask about your portfolio…')" maxlength="1000"
+                    x-on:keydown.enter="if (! $event.shiftKey) { $event.preventDefault(); $wire.send(); }">
+                    <x-slot:actionsTrailing>
+                        <flux:button variant="primary" size="sm" icon="paper-airplane" wire:click="send"
+                            wire:loading.attr="disabled" :aria-label="__('Send')" />
+                    </x-slot:actionsTrailing>
+                </flux:composer>
             </div>
         </div>
     @endif

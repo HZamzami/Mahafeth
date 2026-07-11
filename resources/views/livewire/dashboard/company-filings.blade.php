@@ -49,31 +49,37 @@ new class extends Component {
         {{ __('Company Disclosures') }}
     </flux:heading>
 
-    @forelse ($entries as $entry)
-        <div
-            class="rounded-lg border border-neutral-200/60 bg-neutral-50 p-4 dark:border-neutral-700/60 dark:bg-zinc-800/50">
-            <div class="flex items-center gap-2">
-                <flux:badge size="sm">{{ $entry['filing']->typeLabel() }}</flux:badge>
-                <flux:text class="text-xs">
-                    {{ $entry['filing']->source }} &bull; {{ $entry['filing']->published_at->diffForHumans() }}
-                </flux:text>
-            </div>
-            <flux:heading class="mt-2 leading-snug" size="sm">
-                @if ($entry['filing']->url)
-                    <a class="hover:underline" href="{{ $entry['filing']->url }}" target="_blank"
-                        rel="noopener noreferrer">{{ $entry['filing']->localizedHeadline() }}</a>
-                @else
-                    {{ $entry['filing']->localizedHeadline() }}
-                @endif
-            </flux:heading>
-            <flux:text class="mt-1.5 flex items-center gap-1 text-xs !text-teal-700 dark:!text-teal-300">
-                <flux:icon.sparkles class="size-3.5 shrink-0" /> {{ $entry['why'] }}
-            </flux:text>
-            <flux:button class="mt-2" size="xs" icon="chat-bubble-left-right"
-                :href="route('advisor', ['ask' => $entry['ask']])" wire:navigate>
-                {{ __('Ask Mahafeth AI') }}</flux:button>
-        </div>
-    @empty
+    @if ($entries !== [])
+        <flux:timeline>
+            @foreach ($entries as $entry)
+                <flux:timeline.item>
+                    <flux:timeline.indicator />
+                    <flux:timeline.content>
+                        <div class="flex items-center gap-2">
+                            <flux:badge size="sm">{{ $entry['filing']->typeLabel() }}</flux:badge>
+                            <flux:text class="text-xs">
+                                {{ $entry['filing']->source }} &bull; {{ $entry['filing']->published_at->diffForHumans() }}
+                            </flux:text>
+                        </div>
+                        <flux:heading class="mt-2 leading-snug" size="sm">
+                            @if ($entry['filing']->url)
+                                <a class="hover:underline" href="{{ $entry['filing']->url }}" target="_blank"
+                                    rel="noopener noreferrer">{{ $entry['filing']->localizedHeadline() }}</a>
+                            @else
+                                {{ $entry['filing']->localizedHeadline() }}
+                            @endif
+                        </flux:heading>
+                        <flux:text class="mt-1.5 flex items-center gap-1 text-xs !text-teal-700 dark:!text-teal-300">
+                            <flux:icon.sparkles class="size-3.5 shrink-0" /> {{ $entry['why'] }}
+                        </flux:text>
+                        <flux:button class="mt-2" size="xs" icon="chat-bubble-left-right"
+                            :href="route('advisor', ['ask' => $entry['ask']])" wire:navigate>
+                            {{ __('Ask Mahafeth AI') }}</flux:button>
+                    </flux:timeline.content>
+                </flux:timeline.item>
+            @endforeach
+        </flux:timeline>
+    @else
         <flux:text class="text-sm">{{ __('No recent disclosures from companies you hold.') }}</flux:text>
-    @endforelse
+    @endif
 </div>

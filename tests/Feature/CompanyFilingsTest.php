@@ -71,6 +71,7 @@ class CompanyFilingsTest extends TestCase
             ->assertSee(__('Company Disclosures'))
             ->assertSee('Apple Inc. files Form 10-Q')
             ->assertSee(__('Ask Mahafeth AI'))
+            ->assertSeeHtml('data-flux-timeline')
             ->assertDontSee('Unrelated company');
     }
 

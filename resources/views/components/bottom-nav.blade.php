@@ -4,21 +4,25 @@
 <nav class="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden print:hidden dark:border-zinc-700 dark:bg-zinc-900">
     <div class="grid grid-cols-5">
         <a href="{{ route('dashboard') }}" wire:navigate
+            x-data x-on:click="window.haptic?.(5)"
             class="flex flex-col items-center gap-1 py-2 text-[10px] font-medium transition-transform active:scale-95 {{ request()->routeIs('dashboard') ? $active : $inactive }}">
             <flux:icon.home class="size-6" />
             <span class="max-w-full truncate px-1">{{ __('Dashboard') }}</span>
         </a>
         <a href="{{ route('analytics') }}" wire:navigate
+            x-data x-on:click="window.haptic?.(5)"
             class="flex flex-col items-center gap-1 py-2 text-[10px] font-medium transition-transform active:scale-95 {{ request()->routeIs('analytics') ? $active : $inactive }}">
             <flux:icon.chart-bar class="size-6" />
             <span class="max-w-full truncate px-1">{{ __('Analytics') }}</span>
         </a>
         <a href="{{ route('advisor') }}" wire:navigate
+            x-data x-on:click="window.haptic?.(5)"
             class="flex flex-col items-center gap-1 py-2 text-[10px] font-medium transition-transform active:scale-95 {{ request()->routeIs('advisor') ? $active : $inactive }}">
             <flux:icon.chat-bubble-left-right class="size-6" />
             <span class="max-w-full truncate px-1">{{ __('AI Advisor') }}</span>
         </a>
         <a href="{{ route('connections') }}" wire:navigate
+            x-data x-on:click="window.haptic?.(5)"
             class="flex flex-col items-center gap-1 py-2 text-[10px] font-medium transition-transform active:scale-95 {{ request()->routeIs('connections*') ? $active : $inactive }}">
             <flux:icon.building-library class="size-6" />
             <span class="max-w-full truncate px-1">{{ __('Connections') }}</span>

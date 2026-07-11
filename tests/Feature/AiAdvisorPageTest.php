@@ -69,7 +69,8 @@ class AiAdvisorPageTest extends TestCase
             ->assertSee(__('View the action plan'))
             ->assertSee(__('Discuss this'))
             ->assertSee(__('Show the math'))
-            ->assertSee(__('Start with one of these, or ask your own question.'));
+            ->assertSee(__('Start with one of these, or ask your own question.'))
+            ->assertSeeHtml('data-flux-composer');
     }
 
     public function test_sending_a_message_persists_the_exchange_and_shows_the_answer(): void

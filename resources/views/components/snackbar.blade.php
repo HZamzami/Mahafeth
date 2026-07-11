@@ -5,6 +5,7 @@
         timer: null,
         show(text) {
             this.message = text;
+            window.haptic?.(10);
             clearTimeout(this.timer);
             this.timer = setTimeout(() => (this.message = null), 2500);
         },

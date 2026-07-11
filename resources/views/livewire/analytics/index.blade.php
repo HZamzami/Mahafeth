@@ -239,6 +239,15 @@ new class extends Component {
                 {{ __('Connect accounts') }}</flux:button>
         </div>
     @else
+        <flux:tabs scrollable>
+            <flux:tab name="frontier" selected icon="chart-bar">{{ __('Efficient Frontier') }}</flux:tab>
+            <flux:tab name="rebalancing" icon="scale">{{ __('Rebalancing Plan') }}</flux:tab>
+            <flux:tab name="risk" icon="shield-exclamation">{{ __('Risk') }}</flux:tab>
+            <flux:tab name="correlation" icon="arrows-pointing-in">{{ __('Correlation') }}</flux:tab>
+        </flux:tabs>
+
+        <flux:tab.group>
+        <flux:tab.panel name="frontier" selected class="flex flex-col gap-4">
         {{-- Efficient Frontier --}}
         <div class="grid gap-4 lg:grid-cols-3">
             <div
@@ -386,7 +395,9 @@ new class extends Component {
                 </div>
             </div>
         </div>
+        </flux:tab.panel>
 
+        <flux:tab.panel name="rebalancing" class="flex flex-col gap-4">
         {{-- Rebalancing Plan --}}
         @if ($rebalanceOrders !== [])
             <div class="card p-5">
@@ -437,8 +448,16 @@ new class extends Component {
                     </flux:text>
                 @endif
             </div>
+        @else
+            <div class="flex flex-col items-center gap-2 card p-10 text-center">
+                <flux:icon.check-badge class="size-6 text-emerald-600 dark:text-emerald-400" />
+                <flux:text class="text-sm">
+                    {{ __('Your portfolio already sits close to the optimal allocation — no orders needed.') }}</flux:text>
+            </div>
         @endif
+        </flux:tab.panel>
 
+        <flux:tab.panel name="risk" class="flex flex-col gap-4">
         {{-- Risk Decomposition --}}
         <div class="grid gap-4 md:grid-cols-2">
             @if ($decomposition !== null)
@@ -494,6 +513,11 @@ new class extends Component {
             </div>
         </div>
 
+        {{-- Stress Test --}}
+        <livewire:analytics.stress-scenarios />
+        </flux:tab.panel>
+
+        <flux:tab.panel name="correlation" class="flex flex-col gap-4">
         {{-- Correlation stats --}}
         <div class="grid gap-4 md:grid-cols-3">
             <div class="card p-5">
@@ -520,9 +544,6 @@ new class extends Component {
                 </flux:text>
             </div>
         </div>
-
-        {{-- Stress Test --}}
-        <livewire:analytics.stress-scenarios />
 
         {{-- Correlation Matrix --}}
         <div class="card p-5">
@@ -559,5 +580,7 @@ new class extends Component {
                 </table>
             </div>
         </div>
+        </flux:tab.panel>
+        </flux:tab.group>
     @endif
 </div>
