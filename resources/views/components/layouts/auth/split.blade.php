@@ -38,6 +38,8 @@
                 </div>
             </div>
         </div>
+        @include('partials.pwa-install-banner')
+
         @fluxScripts
     </body>
 </html>

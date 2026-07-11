@@ -862,5 +862,10 @@
     "Units": "الوحدات",
     "Est. Value": "القيمة التقديرية",
     "Weight Change": "تغير الوزن",
-    "Buys of non-compliant assets are excluded and their budget reallocated to compliant holdings.": "تستبعد أوامر شراء الأصول غير المتوافقة ويعاد توجيه مبالغها إلى الأصول المتوافقة."
+    "Buys of non-compliant assets are excluded and their budget reallocated to compliant holdings.": "تستبعد أوامر شراء الأصول غير المتوافقة ويعاد توجيه مبالغها إلى الأصول المتوافقة.",
+    "Install Mahafeth": "ثبت تطبيق محافظ",
+    "Add the app to your home screen for quick access.": "أضف التطبيق إلى شاشتك الرئيسية للوصول السريع.",
+    "Tap the Share icon, then choose \"Add to Home Screen\".": "اضغط على أيقونة المشاركة ثم اختر \"إضافة إلى الشاشة الرئيسية\".",
+    "Install": "تثبيت",
+    "Dismiss": "إغلاق"
 }

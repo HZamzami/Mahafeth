@@ -153,6 +153,8 @@
 
     {{ $slot }}
 
+    @include('partials.pwa-install-banner')
+
     @fluxScripts
 </body>
 

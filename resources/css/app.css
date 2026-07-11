@@ -8,6 +8,10 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+[x-cloak] {
+    display: none !important;
+}
+
 /*
  * Official Saudi Riyal sign (U+20C1, approved Feb 2025). Most system
  * fonts lack the glyph, so this tiny webfont serves it; unicode-range
