@@ -393,11 +393,11 @@ new class extends Component {
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="text-xs uppercase tracking-wide text-neutral-400">
-                                <th class="pb-2 text-start font-medium">{{ __('Asset') }}</th>
-                                <th class="pb-2 text-center font-medium">{{ __('Action') }}</th>
-                                <th class="pb-2 text-end font-medium">{{ __('Units') }}</th>
-                                <th class="pb-2 text-end font-medium">{{ __('Est. Value') }} (⃁)</th>
-                                <th class="pb-2 text-end font-medium">{{ __('Weight Change') }}</th>
+                                <th class="w-full pb-2 text-start font-medium">{{ __('Asset') }}</th>
+                                <th class="whitespace-nowrap pb-2 ps-4 text-center font-medium">{{ __('Action') }}</th>
+                                <th class="whitespace-nowrap pb-2 ps-4 text-end font-medium">{{ __('Units') }}</th>
+                                <th class="whitespace-nowrap pb-2 ps-4 text-end font-medium">{{ __('Est. Value') }} (⃁)</th>
+                                <th class="hidden whitespace-nowrap pb-2 ps-4 text-end font-medium sm:table-cell">{{ __('Weight Change') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -405,15 +405,15 @@ new class extends Component {
                                 <tr class="border-t border-neutral-100 dark:border-zinc-800">
                                     <td class="py-1.5">
                                         <span class="font-medium text-zinc-800 dark:text-white">{{ $order['symbol'] }}</span>
-                                        <span class="text-neutral-400"> · {{ $order['name'] }}</span>
+                                        <span class="hidden text-neutral-400 sm:inline"> · {{ $order['name'] }}</span>
                                     </td>
-                                    <td class="py-1.5 text-center">
+                                    <td class="py-1.5 ps-4 text-center">
                                         <flux:badge size="sm" :color="$order['side'] === 'buy' ? 'emerald' : 'red'">
                                             {{ $order['side'] === 'buy' ? __('Buy') : __('Sell') }}</flux:badge>
                                     </td>
-                                    <td class="py-1.5 text-end tabular-nums" dir="ltr">{{ number_format($order['quantity'], 2) }}</td>
-                                    <td class="py-1.5 text-end tabular-nums" dir="ltr">{{ number_format($order['value'], 0) }}</td>
-                                    <td class="py-1.5 text-end tabular-nums" dir="ltr">
+                                    <td class="whitespace-nowrap py-1.5 ps-4 text-end tabular-nums" dir="ltr">{{ number_format($order['quantity'], 2) }}</td>
+                                    <td class="whitespace-nowrap py-1.5 ps-4 text-end tabular-nums" dir="ltr">{{ number_format($order['value'], 0) }}</td>
+                                    <td class="hidden whitespace-nowrap py-1.5 ps-4 text-end tabular-nums sm:table-cell" dir="ltr">
                                         {{ number_format($order['current_weight'] * 100, 1) }}% → {{ number_format($order['target_weight'] * 100, 1) }}%</td>
                                 </tr>
                             @endforeach

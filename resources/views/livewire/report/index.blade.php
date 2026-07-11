@@ -302,10 +302,10 @@ new class extends Component {
                                      columns hug their headers instead of scattering. --}}
                                 <tr class="text-xs uppercase tracking-wide text-neutral-400">
                                     <th class="w-full pb-2 text-start font-medium">{{ __('Goal') }}</th>
-                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Target') }} (⃁)</th>
-                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Horizon') }}</th>
-                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Success odds') }}</th>
-                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('At optimal mix') }}</th>
+                                    <th class="whitespace-nowrap pb-2 ps-4 text-end font-medium sm:ps-8">{{ __('Target') }} (⃁)</th>
+                                    <th class="whitespace-nowrap pb-2 ps-4 text-end font-medium sm:ps-8">{{ __('Horizon') }}</th>
+                                    <th class="whitespace-nowrap pb-2 ps-4 text-end font-medium sm:ps-8">{{ __('Success odds') }}</th>
+                                    <th class="hidden whitespace-nowrap pb-2 ps-4 text-end font-medium sm:table-cell sm:ps-8">{{ __('At optimal mix') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -314,10 +314,10 @@ new class extends Component {
                                         <td class="py-1.5 font-medium text-zinc-800 dark:text-white">{{ $row['name'] }}</td>
                                         {{-- dir=ltr lives on an inner span: on the cell itself it flips
                                              what text-end means and detaches values from their headers in RTL. --}}
-                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums"><span dir="ltr">{{ number_format($row['target'], 0) }}</span></td>
-                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">{{ __(':months mo', ['months' => $row['months']]) }}</td>
-                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums"><span dir="ltr">{{ Number::percentage($row['probability'] * 100, 0) }}</span></td>
-                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">
+                                        <td class="whitespace-nowrap py-1.5 ps-4 text-end tabular-nums sm:ps-8"><span dir="ltr">{{ number_format($row['target'], 0) }}</span></td>
+                                        <td class="whitespace-nowrap py-1.5 ps-4 text-end tabular-nums sm:ps-8">{{ __(':months mo', ['months' => $row['months']]) }}</td>
+                                        <td class="whitespace-nowrap py-1.5 ps-4 text-end tabular-nums sm:ps-8"><span dir="ltr">{{ Number::percentage($row['probability'] * 100, 0) }}</span></td>
+                                        <td class="hidden whitespace-nowrap py-1.5 ps-4 text-end tabular-nums sm:table-cell sm:ps-8">
                                             <span dir="ltr">{{ $row['probabilityOptimal'] !== null ? Number::percentage($row['probabilityOptimal'] * 100, 0) : '—' }}</span></td>
                                     </tr>
                                 @endforeach
@@ -374,10 +374,10 @@ new class extends Component {
                             <thead>
                                 <tr class="text-start text-xs uppercase tracking-wide text-neutral-400">
                                     <th class="w-full pb-2 text-start font-medium">{{ __('Asset') }}</th>
-                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Quantity') }}</th>
-                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Value') }} (⃁)</th>
-                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Cost Basis') }} (⃁)</th>
-                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Unrealized P/L') }}</th>
+                                    <th class="whitespace-nowrap pb-2 ps-4 text-end font-medium sm:ps-8">{{ __('Quantity') }}</th>
+                                    <th class="whitespace-nowrap pb-2 ps-4 text-end font-medium sm:ps-8">{{ __('Value') }} (⃁)</th>
+                                    <th class="hidden whitespace-nowrap pb-2 ps-4 text-end font-medium sm:table-cell sm:ps-8">{{ __('Cost Basis') }} (⃁)</th>
+                                    <th class="whitespace-nowrap pb-2 ps-4 text-end font-medium sm:ps-8">{{ __('Unrealized P/L') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -385,19 +385,19 @@ new class extends Component {
                                     <tr class="border-t border-neutral-100 dark:border-zinc-800">
                                         <td class="py-1.5">
                                             <span class="font-medium text-zinc-800 dark:text-white">{{ $row['symbol'] }}</span>
-                                            <span class="text-neutral-400"> · {{ $row['name'] }}</span>
+                                            <span class="hidden text-neutral-400 sm:inline"> · {{ $row['name'] }}</span>
                                             @if ($row['shariah'] === ShariahStatus::NonCompliant)
                                                 <flux:badge color="red" size="sm">{{ $row['shariah']->label() }}</flux:badge>
                                             @endif
                                         </td>
-                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">
+                                        <td class="whitespace-nowrap py-1.5 ps-4 text-end tabular-nums sm:ps-8">
                                             <span dir="ltr">{{ number_format($row['quantity'], 2) }}</span></td>
-                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">
+                                        <td class="whitespace-nowrap py-1.5 ps-4 text-end tabular-nums sm:ps-8">
                                             <span dir="ltr">{{ number_format($row['value'], 0) }}</span></td>
-                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums">
+                                        <td class="hidden whitespace-nowrap py-1.5 ps-4 text-end tabular-nums sm:table-cell sm:ps-8">
                                             <span dir="ltr">{{ number_format($row['cost'], 0) }}</span></td>
                                         <td
-                                            class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums {{ $row['pl'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+                                            class="whitespace-nowrap py-1.5 ps-4 text-end tabular-nums sm:ps-8 {{ $row['pl'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
                                             <span dir="ltr">{{ $row['pl'] >= 0 ? '+' : '−' }}{{ number_format(abs($row['pl']), 0) }}
                                                 ({{ number_format($row['plPct'] * 100, 1) }}%)</span></td>
                                     </tr>
@@ -417,18 +417,18 @@ new class extends Component {
                             <thead>
                                 <tr class="text-xs uppercase tracking-wide text-neutral-400">
                                     <th class="w-full pb-2 text-start font-medium">{{ __('Asset') }}</th>
-                                    <th class="whitespace-nowrap pb-2 ps-8 text-center font-medium">{{ __('Action') }}</th>
-                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Units') }}</th>
-                                    <th class="whitespace-nowrap pb-2 ps-8 text-end font-medium">{{ __('Est. Value') }} (⃁)</th>
+                                    <th class="whitespace-nowrap pb-2 ps-4 text-center font-medium sm:ps-8">{{ __('Action') }}</th>
+                                    <th class="whitespace-nowrap pb-2 ps-4 text-end font-medium sm:ps-8">{{ __('Units') }}</th>
+                                    <th class="whitespace-nowrap pb-2 ps-4 text-end font-medium sm:ps-8">{{ __('Est. Value') }} (⃁)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($rebalanceOrders as $order)
                                     <tr class="border-t border-neutral-100 dark:border-zinc-800">
                                         <td class="py-1.5 font-medium text-zinc-800 dark:text-white">{{ $order['symbol'] }}</td>
-                                        <td class="whitespace-nowrap py-1.5 ps-8 text-center">{{ $order['side'] === 'buy' ? __('Buy') : __('Sell') }}</td>
-                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums"><span dir="ltr">{{ number_format($order['quantity'], 2) }}</span></td>
-                                        <td class="whitespace-nowrap py-1.5 ps-8 text-end tabular-nums"><span dir="ltr">{{ number_format($order['value'], 0) }}</span></td>
+                                        <td class="whitespace-nowrap py-1.5 ps-4 text-center sm:ps-8">{{ $order['side'] === 'buy' ? __('Buy') : __('Sell') }}</td>
+                                        <td class="whitespace-nowrap py-1.5 ps-4 text-end tabular-nums sm:ps-8"><span dir="ltr">{{ number_format($order['quantity'], 2) }}</span></td>
+                                        <td class="whitespace-nowrap py-1.5 ps-4 text-end tabular-nums sm:ps-8"><span dir="ltr">{{ number_format($order['value'], 0) }}</span></td>
                                     </tr>
                                 @endforeach
                             </tbody>
