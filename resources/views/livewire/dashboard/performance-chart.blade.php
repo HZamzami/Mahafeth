@@ -96,6 +96,8 @@ new class extends Component {
 
                 <flux:chart.line class="text-teal-600 dark:text-teal-400" curve="smooth" field="portfolio" />
                 <flux:chart.area class="text-teal-600/10 dark:text-teal-400/10" curve="smooth" field="portfolio" />
+                <flux:chart.point class="text-teal-600 dark:text-teal-400" field="portfolio" />
+                <flux:chart.cursor />
 
                 {{-- The window spans years, so ticks carry the year; "Jan 1"
                      three times in a row hid every year change. --}}
@@ -108,6 +110,17 @@ new class extends Component {
                     <flux:chart.axis.tick />
                 </flux:chart.axis>
             </flux:chart.svg>
+
+            <flux:chart.tooltip>
+                <flux:chart.tooltip.heading field="date" :format="['month' => 'short', 'year' => 'numeric']" />
+                <flux:chart.tooltip.value :label="__('Your portfolio')" field="portfolio"
+                    :format="['maximumFractionDigits' => 1]" suffix="%" />
+                @foreach ($benchmarkSymbols as $symbol)
+                    <flux:chart.tooltip.value
+                        :label="$symbol === 'TASI' ? __('Saudi market (TASI)') : __('US market (SPY)')"
+                        field="{{ $symbol }}" :format="['maximumFractionDigits' => 1]" suffix="%" />
+                @endforeach
+            </flux:chart.tooltip>
         </flux:chart>
 
         <div class="mt-2 flex flex-wrap items-center justify-center gap-x-5 gap-y-1">

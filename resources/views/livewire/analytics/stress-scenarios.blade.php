@@ -83,18 +83,25 @@ new class extends Component {
         <div class="mt-4 border-t border-neutral-200 pt-3 dark:border-neutral-700">
             <flux:text class="mb-2 text-xs font-medium uppercase tracking-widest">
                 {{ __('Hardest-Hit Positions') }}</flux:text>
-            <div class="space-y-1.5">
+            <div class="space-y-2.5">
                 @foreach ($result['positions'] as $position)
-                    <div class="flex items-center justify-between">
-                        <flux:text class="text-sm">{{ $position['name'] }}
-                            <span class="text-neutral-400">({{ $position['symbol'] }})</span></flux:text>
-                        <span class="flex items-center gap-2">
-                            <flux:text class="text-xs" dir="ltr">
-                                {{ __(':weight of portfolio', ['weight' => Number::percentage($position['weight'] * 100, 1)]) }}
-                            </flux:text>
-                            <flux:badge color="red" size="sm" dir="ltr">
-                                {{ Number::percentage($position['shock'] * 100, 0) }}</flux:badge>
-                        </span>
+                    <div wire:key="stress-position-{{ $position['symbol'] }}">
+                        <div class="flex items-center justify-between">
+                            <flux:text class="text-sm">{{ $position['name'] }}
+                                <span class="text-neutral-400">({{ $position['symbol'] }})</span></flux:text>
+                            <span class="flex items-center gap-2">
+                                <flux:text class="text-xs" dir="ltr">
+                                    {{ __(':weight of portfolio', ['weight' => Number::percentage($position['weight'] * 100, 1)]) }}
+                                </flux:text>
+                                <flux:badge color="red" size="sm" dir="ltr">
+                                    {{ Number::percentage($position['shock'] * 100, 0) }}</flux:badge>
+                            </span>
+                        </div>
+                        {{-- Slides to its new level when the scenario changes. --}}
+                        <div class="mt-1 h-1 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
+                            <div class="bar-fill h-full bg-red-500 dark:bg-red-400"
+                                style="width: {{ min(100, round(abs($position['shock']) * 100)) }}%"></div>
+                        </div>
                     </div>
                 @endforeach
             </div>

@@ -35,6 +35,7 @@ new class extends Component {
             $segments[] = [
                 'label' => AssetClass::tryFrom($class)?->label() ?? $class,
                 'weight' => $weight,
+                'value' => $weight * (float) $snapshot->total_value,
                 'stroke' => self::COLORS[$index][0],
                 'dot' => self::COLORS[$index][1],
                 'dasharray' => round($length, 2).' '.round(self::CIRCUMFERENCE - $length, 2),
@@ -57,30 +58,53 @@ new class extends Component {
     <flux:heading size="lg">{{ __('Asset Allocation') }}</flux:heading>
 
     @if ($segments !== [])
+        <div x-data="{ active: null }" class="contents">
         <div class="relative flex grow items-center justify-center py-6">
+            {{-- Segments draw in on first view; tapping one dims the rest and
+                 swaps the center readout to that asset class. --}}
             <svg class="aspect-square w-full max-w-64 -rotate-90" viewBox="0 0 100 100">
-                @foreach ($segments as $segment)
+                @foreach ($segments as $index => $segment)
                     <circle cx="50" cy="50" r="40" fill="transparent" stroke-width="12"
-                        class="{{ $segment['stroke'] }}" stroke-dasharray="{{ $segment['dasharray'] }}"
-                        stroke-dashoffset="{{ $segment['dashoffset'] }}" />
+                        class="donut-fill cursor-pointer transition-opacity {{ $segment['stroke'] }}"
+                        stroke-dasharray="0 251.33" data-dasharray="{{ $segment['dasharray'] }}"
+                        stroke-dashoffset="{{ $segment['dashoffset'] }}"
+                        x-intersect.once="$el.style.strokeDasharray = $el.dataset.dasharray"
+                        x-on:click="active = active === {{ $index }} ? null : {{ $index }}"
+                        x-bind:class="active !== null && active !== {{ $index }} && 'opacity-30'" />
                 @endforeach
             </svg>
             <div class="absolute inset-0 flex flex-col items-center justify-center">
-                <flux:heading size="lg" dir="ltr" data-amount>⃁ {{ Number::localizedAbbreviate($totalValue, 1) }}</flux:heading>
-                <flux:text class="text-xs">{{ __('Total') }}</flux:text>
+                <div x-show="active === null" class="flex flex-col items-center">
+                    <flux:heading size="lg" dir="ltr" data-amount>⃁ {{ Number::localizedAbbreviate($totalValue, 1) }}</flux:heading>
+                    <flux:text class="text-xs">{{ __('Total') }}</flux:text>
+                </div>
+                @foreach ($segments as $index => $segment)
+                    <div x-show="active === {{ $index }}" x-cloak class="flex flex-col items-center">
+                        <flux:heading size="lg" dir="ltr" data-amount>
+                            ⃁ {{ Number::localizedAbbreviate($segment['value'], 1) }}</flux:heading>
+                        <flux:text class="max-w-24 truncate text-xs">
+                            {{ $segment['label'] }} &bull; {{ Number::percentage($segment['weight'] * 100, 1) }}
+                        </flux:text>
+                    </div>
+                @endforeach
             </div>
         </div>
-        <div class="mt-4 space-y-2">
-            @foreach ($segments as $segment)
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
+        <div class="mt-4 space-y-1">
+            @foreach ($segments as $index => $segment)
+                <button type="button"
+                    class="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-start transition-colors"
+                    x-on:click="active = active === {{ $index }} ? null : {{ $index }}"
+                    x-bind:class="active === {{ $index }} && 'bg-neutral-100 dark:bg-zinc-800'"
+                    x-bind:aria-pressed="(active === {{ $index }}).toString()">
+                    <span class="flex items-center gap-2">
                         <span class="size-2 rounded-full {{ $segment['dot'] }}"></span>
                         <flux:text class="text-sm">{{ $segment['label'] }}</flux:text>
-                    </div>
+                    </span>
                     <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white" dir="ltr">
                         {{ Number::percentage($segment['weight'] * 100, 1) }}</flux:text>
-                </div>
+                </button>
             @endforeach
+        </div>
         </div>
     @else
         <div class="flex grow flex-col items-center justify-center gap-3 py-12">

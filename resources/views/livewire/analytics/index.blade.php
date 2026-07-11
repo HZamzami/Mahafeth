@@ -8,6 +8,7 @@ use App\Services\Analytics\RebalancePlanner;
 use App\Services\Analytics\ReturnCalculator;
 use App\Services\Analytics\RiskDecomposer;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Number;
 use Livewire\Volt\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -295,17 +296,27 @@ new class extends Component {
                             class="stroke-teal-500 dark:stroke-teal-300" />
                     @endif
 
-                    {{-- Frontier --}}
+                    {{-- Frontier; draws itself in on first view --}}
                     <path d="{{ $frontierPlot['path'] }}" fill="none" stroke-width="2.5" stroke-linecap="round"
-                        class="stroke-emerald-500 dark:stroke-emerald-400" />
+                        pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"
+                        x-data x-intersect.once="$el.style.strokeDashoffset = 0"
+                        class="draw-path stroke-emerald-500 dark:stroke-emerald-400" />
 
                     {{-- Current portfolio --}}
                     <circle cx="{{ $frontierPlot['current']['x'] }}" cy="{{ $frontierPlot['current']['y'] }}" r="5.5"
                         class="fill-red-500 stroke-white dark:stroke-zinc-900" stroke-width="2" />
+                    <circle cx="{{ $frontierPlot['current']['x'] }}" cy="{{ $frontierPlot['current']['y'] }}" r="14"
+                        fill="transparent" class="cursor-help">
+                        <title>{{ __('Your portfolio') }} — {{ __('Annualized Volatility') }} {{ Number::percentage($frontier['current']['risk'] * 100, 1) }}, {{ __('Annualized Return') }} {{ Number::percentage($frontier['current']['return'] * 100, 1) }}</title>
+                    </circle>
 
                     {{-- Tangency portfolio --}}
                     <circle cx="{{ $frontierPlot['tangency']['x'] }}" cy="{{ $frontierPlot['tangency']['y'] }}"
                         r="5.5" class="fill-emerald-500 stroke-white dark:stroke-zinc-900" stroke-width="2" />
+                    <circle cx="{{ $frontierPlot['tangency']['x'] }}" cy="{{ $frontierPlot['tangency']['y'] }}" r="14"
+                        fill="transparent" class="cursor-help">
+                        <title>{{ __('Optimal (max Sharpe)') }} — {{ __('Annualized Volatility') }} {{ Number::percentage($frontier['tangency']['risk'] * 100, 1) }}, {{ __('Annualized Return') }} {{ Number::percentage($frontier['tangency']['return'] * 100, 1) }}</title>
+                    </circle>
                 </svg>
 
                 <div class="mt-2 flex items-center justify-center gap-6">
@@ -436,11 +447,12 @@ new class extends Component {
                     <flux:text class="mb-4 mt-1 text-sm">
                         {{ __('Systematic risk follows the market and cannot be diversified away; unsystematic risk can.') }}
                     </flux:text>
-                    <div class="flex h-3 w-full overflow-hidden rounded-full" dir="ltr">
-                        <div class="bg-teal-600 dark:bg-teal-400"
-                            style="width: {{ round($decomposition['systematic_share'] * 100) }}%"></div>
-                        <div class="bg-amber-500 dark:bg-amber-400"
-                            style="width: {{ round($decomposition['unsystematic_share'] * 100) }}%"></div>
+                    <div class="flex h-3 w-full overflow-hidden rounded-full" dir="ltr" x-data
+                        x-intersect.once="[...$el.children].forEach((bar) => bar.style.width = bar.dataset.width + '%')">
+                        <div class="bar-fill bg-teal-600 dark:bg-teal-400" style="width: 0%"
+                            data-width="{{ round($decomposition['systematic_share'] * 100) }}"></div>
+                        <div class="bar-fill bg-amber-500 dark:bg-amber-400" style="width: 0%"
+                            data-width="{{ round($decomposition['unsystematic_share'] * 100) }}"></div>
                     </div>
                     <div class="mt-3 flex justify-between">
                         <span class="flex items-center gap-2">
@@ -472,8 +484,9 @@ new class extends Component {
                                     {{ number_format($share * 100, 1) }}%</flux:text>
                             </div>
                             <div class="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
-                                <div class="h-full bg-teal-600 dark:bg-teal-400"
-                                    style="width: {{ min(100, round($share * 100)) }}%"></div>
+                                <div class="bar-fill h-full bg-teal-600 dark:bg-teal-400" style="width: 0%"
+                                    data-width="{{ min(100, round($share * 100)) }}" x-data
+                                    x-intersect.once="$el.style.width = $el.dataset.width + '%'"></div>
                             </div>
                         </div>
                     @endforeach

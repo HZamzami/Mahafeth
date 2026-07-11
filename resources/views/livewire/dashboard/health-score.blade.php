@@ -58,9 +58,11 @@ new class extends Component {
         <svg class="size-56 -rotate-90" viewBox="0 0 224 224">
             <circle cx="112" cy="112" r="100" fill="transparent" stroke-width="16" stroke-linecap="round"
                 class="stroke-neutral-100 dark:stroke-zinc-800" />
+            {{-- Starts empty (offset 628) and sweeps to the score on first view. --}}
             <circle cx="112" cy="112" r="100" fill="transparent" stroke-width="16" stroke-linecap="round"
-                stroke="url(#healthGradient)" stroke-dasharray="628" stroke-dashoffset="{{ $dashoffset }}"
-                class="drop-shadow-[0_0_8px_rgba(15,118,110,0.35)]" />
+                stroke="url(#healthGradient)" stroke-dasharray="628" stroke-dashoffset="628"
+                x-data x-intersect.once="$el.style.strokeDashoffset = '{{ $dashoffset }}'"
+                class="gauge-fill drop-shadow-[0_0_8px_rgba(15,118,110,0.35)]" />
             <defs>
                 <linearGradient id="healthGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stop-color="#5eead4" />
@@ -70,7 +72,8 @@ new class extends Component {
         </svg>
         <div class="absolute inset-0 flex flex-col items-center justify-center">
             @if ($score !== null)
-                <span class="text-6xl font-bold text-teal-700 dark:text-teal-300">{{ $score }}</span>
+                <span class="text-6xl font-bold tabular-nums text-teal-700 dark:text-teal-300"
+                    x-data="countUp({{ $score }})" x-intersect.once="start()" x-text="shown">{{ $score }}</span>
                 <flux:text class="text-sm uppercase tracking-widest">{{ $scoreLabel }}</flux:text>
             @elseif (! $hasProfile)
                 <span class="text-4xl font-bold text-neutral-300 dark:text-zinc-600">—</span>
@@ -87,21 +90,24 @@ new class extends Component {
     </div>
 
     <div class="grid w-full grid-cols-3 gap-4 border-t border-neutral-200 pt-6 dark:border-neutral-700">
-        <div class="text-center">
-            <flux:text class="mb-1 text-xs">{{ __('Diversification') }}</flux:text>
-            <flux:heading class="!text-emerald-600 dark:!text-emerald-400" dir="ltr">
-                {{ isset($components['diversification']) ? $components['diversification'].'/100' : '—' }}</flux:heading>
-        </div>
-        <div class="border-x border-neutral-200 text-center dark:border-neutral-700">
-            <flux:text class="mb-1 text-xs">{{ __('Concentration') }}</flux:text>
-            <flux:heading class="!text-amber-600 dark:!text-amber-400" dir="ltr">
-                {{ isset($components['concentration']) ? $components['concentration'].'/100' : '—' }}</flux:heading>
-        </div>
-        <div class="text-center">
-            <flux:text class="mb-1 text-xs">{{ __('Risk Alignment') }}</flux:text>
-            <flux:heading class="!text-teal-700 dark:!text-teal-300" dir="ltr">
-                {{ isset($components['risk_alignment']) ? $components['risk_alignment'].'/100' : '—' }}</flux:heading>
-        </div>
+        @foreach ([
+            ['diversification', __('Diversification'), '!text-emerald-600 dark:!text-emerald-400', 'bg-emerald-500 dark:bg-emerald-400', ''],
+            ['concentration', __('Concentration'), '!text-amber-600 dark:!text-amber-400', 'bg-amber-500 dark:bg-amber-400', 'border-x border-neutral-200 px-2 dark:border-neutral-700'],
+            ['risk_alignment', __('Risk Alignment'), '!text-teal-700 dark:!text-teal-300', 'bg-teal-600 dark:bg-teal-400', ''],
+        ] as [$key, $label, $textColor, $barColor, $extra])
+            <div class="text-center {{ $extra }}">
+                <flux:text class="mb-1 text-xs">{{ $label }}</flux:text>
+                <flux:heading class="{{ $textColor }}" dir="ltr">
+                    {{ isset($components[$key]) ? $components[$key].'/100' : '—' }}</flux:heading>
+                @if (isset($components[$key]))
+                    <div class="mx-auto mt-2 h-1.5 w-full max-w-24 overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
+                        <div class="bar-fill h-full rounded-full {{ $barColor }}" style="width: 0%"
+                            data-width="{{ $components[$key] }}" x-data
+                            x-intersect.once="$el.style.width = $el.dataset.width + '%'"></div>
+                    </div>
+                @endif
+            </div>
+        @endforeach
     </div>
 
     <flux:modal.trigger name="health-methodology">

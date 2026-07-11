@@ -136,19 +136,23 @@ class DashboardTest extends TestCase
 
         Volt::test('dashboard.asset-allocation')
             ->assertSee(__('Equities'))
-            ->assertSee('100.0%');
+            ->assertSee('100.0%')
+            ->assertSeeHtml('data-dasharray');
     }
 
     public function test_the_health_card_shows_risk_metrics_and_can_refresh(): void
     {
         $user = $this->syncedAndAnalyzedUser();
+        RiskProfile::factory()->balanced()->create(['user_id' => $user->id]);
         $this->actingAs($user);
 
         $user->portfolioSnapshots()->delete();
 
         Volt::test('dashboard.health-score')
             ->call('refresh')
-            ->assertSee(__('Diversification'));
+            ->assertSee(__('Diversification'))
+            ->assertSeeHtml('gauge-fill')
+            ->assertSeeHtml('data-width');
 
         $this->assertSame(1, $user->portfolioSnapshots()->count());
     }
@@ -176,7 +180,8 @@ class DashboardTest extends TestCase
 
         Volt::test('dashboard.health-trend')
             ->assertSee(__('Health Trend'))
-            ->assertDontSeeHtml('class="hidden"');
+            ->assertDontSeeHtml('class="hidden"')
+            ->assertSeeHtml('name="cursor"');
     }
 
     private function syncedAndAnalyzedUser(): User

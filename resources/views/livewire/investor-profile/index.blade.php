@@ -232,7 +232,7 @@ new class extends Component {
             <div class="flex w-full max-w-80 gap-1" dir="ltr">
                 @for ($i = 1; $i <= $totalSteps; $i++)
                     <span
-                        class="h-1 flex-1 rounded-full {{ $i <= $step ? 'bg-teal-600 dark:bg-teal-400' : 'bg-neutral-200 dark:bg-zinc-700' }}"></span>
+                        class="h-1 flex-1 rounded-full transition-colors duration-300 {{ $i <= $step ? 'bg-teal-600 dark:bg-teal-400' : 'bg-neutral-200 dark:bg-zinc-700' }}"></span>
                 @endfor
             </div>
         </div>

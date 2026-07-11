@@ -61,8 +61,9 @@ new class extends Component {
         </div>
         <div class="mt-4 h-1 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800"
             title="{{ __('Bar fills at twice your target volatility') }}">
-            <div class="h-full bg-amber-500 dark:bg-amber-400"
-                style="width: {{ min(100, round(($volatility ?? 0) / $volatilityScale * 100)) }}%"></div>
+            <div class="bar-fill h-full bg-amber-500 dark:bg-amber-400" style="width: 0%"
+                data-width="{{ min(100, round(($volatility ?? 0) / $volatilityScale * 100)) }}" x-data
+                x-intersect.once="$el.style.width = $el.dataset.width + '%'"></div>
         </div>
     </div>
 
@@ -89,8 +90,9 @@ new class extends Component {
             </flux:heading>
         </div>
         <div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
-            <div class="h-full bg-teal-600 dark:bg-teal-400" style="width: {{ round($largestSectorWeight * 100) }}%">
-            </div>
+            <div class="bar-fill h-full bg-teal-600 dark:bg-teal-400" style="width: 0%"
+                data-width="{{ round($largestSectorWeight * 100) }}" x-data
+                x-intersect.once="$el.style.width = $el.dataset.width + '%'"></div>
         </div>
     </div>
 </div>

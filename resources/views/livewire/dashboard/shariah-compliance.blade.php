@@ -40,10 +40,14 @@ new class extends Component {
             <flux:text class="text-xs">{{ __('of portfolio value in Shariah-compliant assets') }}</flux:text>
         </div>
 
-        <div class="mt-4 flex h-2 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
-            <div class="h-full bg-emerald-500 dark:bg-emerald-400" style="width: {{ round($compliantPct) }}%"></div>
-            <div class="h-full bg-amber-400 dark:bg-amber-500" style="width: {{ round($unknownPct) }}%"></div>
-            <div class="h-full bg-red-500 dark:bg-red-400" style="width: {{ round($nonCompliantPct) }}%"></div>
+        <div class="mt-4 flex h-2 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800" x-data
+            x-intersect.once="[...$el.children].forEach((bar) => bar.style.width = bar.dataset.width + '%')">
+            <div class="bar-fill h-full bg-emerald-500 dark:bg-emerald-400" style="width: 0%"
+                data-width="{{ round($compliantPct) }}"></div>
+            <div class="bar-fill h-full bg-amber-400 dark:bg-amber-500" style="width: 0%"
+                data-width="{{ round($unknownPct) }}"></div>
+            <div class="bar-fill h-full bg-red-500 dark:bg-red-400" style="width: 0%"
+                data-width="{{ round($nonCompliantPct) }}"></div>
         </div>
 
         <div class="mt-3 space-y-1">

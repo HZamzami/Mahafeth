@@ -102,7 +102,19 @@ new class extends Component {
                             <flux:chart.axis.grid />
                             <flux:chart.axis.tick />
                         </flux:chart.axis>
+                        <flux:chart.point class="text-teal-600 dark:text-teal-400" field="p50" />
+                        <flux:chart.cursor />
                     </flux:chart.svg>
+
+                    <flux:chart.tooltip>
+                        <flux:chart.tooltip.heading field="date" :format="['month' => 'short', 'year' => 'numeric']" />
+                        <flux:chart.tooltip.value :label="__('Most likely path')" field="p50"
+                            :format="['notation' => 'compact']" />
+                        <flux:chart.tooltip.value :label="__('Better / worse cases')" field="p90"
+                            :format="['notation' => 'compact']" />
+                        <flux:chart.tooltip.value :label="__('Your goal')" field="target"
+                            :format="['notation' => 'compact']" />
+                    </flux:chart.tooltip>
                 </flux:chart>
 
                 <div class="mt-2 flex flex-wrap items-center justify-center gap-x-5 gap-y-1">

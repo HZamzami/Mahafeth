@@ -92,7 +92,8 @@ class AnalyticsPageTest extends TestCase
             ->assertSee('AAPL')
             ->assertSee('%')
             ->assertSeeHtml('sm:hidden')
-            ->assertSeeHtml('hidden sm:block');
+            ->assertSeeHtml('hidden sm:block')
+            ->assertSeeHtml('bar-fill');
     }
 
     public function test_the_stress_panel_asks_for_analysis_without_a_snapshot(): void

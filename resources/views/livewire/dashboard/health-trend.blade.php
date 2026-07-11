@@ -35,6 +35,8 @@ new class extends Component {
             <flux:chart class="aspect-4/1 relative" dir="ltr" :value="$points">
                 <flux:chart.svg>
                     <flux:chart.line class="text-emerald-500 dark:text-emerald-400" curve="smooth" field="score" />
+                    <flux:chart.point class="text-emerald-500 dark:text-emerald-400" field="score" />
+                    <flux:chart.cursor />
                     <flux:chart.axis axis="x" field="date" tick-count="5"
                         :format="['month' => 'short', 'day' => 'numeric']">
                         <flux:chart.axis.tick />
@@ -44,6 +46,11 @@ new class extends Component {
                         <flux:chart.axis.tick />
                     </flux:chart.axis>
                 </flux:chart.svg>
+
+                <flux:chart.tooltip>
+                    <flux:chart.tooltip.heading field="date" :format="['month' => 'short', 'day' => 'numeric', 'year' => 'numeric']" />
+                    <flux:chart.tooltip.value :label="__('Portfolio Health Score')" field="score" suffix="/100" />
+                </flux:chart.tooltip>
             </flux:chart>
         </div>
     @endif

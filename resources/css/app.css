@@ -35,6 +35,25 @@ html {
 }
 
 @media (prefers-reduced-motion: no-preference) {
+    /* Data-reveal transitions: bars fill, the health gauge sweeps, donut
+       segments draw in. Targets are set from data attributes via
+       x-intersect, so without these rules everything appears instantly. */
+    .bar-fill {
+        transition: width 800ms ease-out;
+    }
+
+    .gauge-fill {
+        transition: stroke-dashoffset 1.2s cubic-bezier(0.33, 1, 0.68, 1);
+    }
+
+    .donut-fill {
+        transition: stroke-dasharray 900ms ease-out;
+    }
+
+    .draw-path {
+        transition: stroke-dashoffset 1s ease-out;
+    }
+
     .page-enter {
         animation: page-enter 180ms ease-out;
     }
