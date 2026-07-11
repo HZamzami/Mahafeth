@@ -3,12 +3,15 @@
 namespace Tests\Feature;
 
 use App\Actions\SyncConnection;
+use App\Enums\AssetClass;
+use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Asset;
 use App\Models\Connection;
 use App\Models\Holding;
 use App\Models\Institution;
 use App\Models\PriceHistory;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -82,6 +85,65 @@ class HoldingDetailTest extends TestCase
             ->get('/holdings/2222.SR')
             ->assertOk()
             ->assertSee('TADAWUL%3A2222', false);
+    }
+
+    public function test_the_page_shows_performance_stats_from_stored_closes(): void
+    {
+        $this->actingAs($this->syncedUser())
+            ->get('/holdings/AAPL')
+            ->assertOk()
+            ->assertSee(__('Performance'))
+            ->assertSee(__('52-Week Range'))
+            ->assertSee(__('In Your Portfolio'));
+    }
+
+    public function test_equities_get_the_financials_and_technicals_widgets(): void
+    {
+        $this->actingAs($this->syncedUser())
+            ->get('/holdings/AAPL')
+            ->assertOk()
+            ->assertSee(__('Financials'))
+            ->assertSee(__('Technical Signal'))
+            ->assertSee('embed-widget/technical-analysis', false)
+            ->assertSee('embed-widget/financials', false);
+    }
+
+    public function test_crypto_gets_technicals_but_not_financials(): void
+    {
+        $user = $this->syncedUser();
+
+        $asset = Asset::factory()->create(['symbol' => 'BTC', 'asset_class' => AssetClass::Crypto]);
+        $account = Account::factory()->create(['connection_id' => $user->connections()->first()->id]);
+        Holding::factory()->create(['account_id' => $account->id, 'asset_id' => $asset->id]);
+        PriceHistory::factory()->create(['asset_id' => $asset->id]);
+
+        $this->actingAs($user)
+            ->get('/holdings/BTC')
+            ->assertOk()
+            ->assertSee('embed-widget/technical-analysis', false)
+            ->assertDontSee('embed-widget/financials', false);
+    }
+
+    public function test_the_page_lists_the_users_transactions_for_the_asset(): void
+    {
+        $user = $this->syncedUser();
+        $asset = Asset::where('symbol', 'AAPL')->firstOrFail();
+
+        Transaction::create([
+            'account_id' => $user->connections()->first()->accounts()->first()->id,
+            'asset_id' => $asset->id,
+            'type' => TransactionType::Buy,
+            'quantity' => 10,
+            'price' => 180.5,
+            'amount' => 1805.0,
+            'executed_at' => now()->subDays(3),
+        ]);
+
+        $this->actingAs($user)
+            ->get('/holdings/AAPL')
+            ->assertOk()
+            ->assertSee(__('Recent Transactions'))
+            ->assertSee(__('Buy'));
     }
 
     public function test_the_holdings_index_lists_every_position_with_detail_links(): void

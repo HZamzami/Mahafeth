@@ -903,5 +903,17 @@
     "Refresh": "تحديث",
     "News refreshed.": "تم تحديث الأخبار.",
     "Please wait a few minutes between refreshes.": "يرجى الانتظار بضع دقائق بين التحديثات.",
-    "Every position across your connected accounts. Tap one for its market chart and details.": "كل مراكزك عبر حساباتك المتصلة. اضغط على أي منها لعرض الرسم البياني والتفاصيل."
+    "Every position across your connected accounts. Tap one for its market chart and details.": "كل مراكزك عبر حساباتك المتصلة. اضغط على أي منها لعرض الرسم البياني والتفاصيل.",
+    "Performance": "الأداء",
+    "52-Week Range": "نطاق 52 أسبوعا",
+    "In Your Portfolio": "في محفظتك",
+    "Recent Transactions": "آخر العمليات",
+    "Technical Signal": "الإشارة الفنية",
+    "Financials": "البيانات المالية",
+    "About the Company": "عن الشركة",
+    "Signals by TradingView — not investment advice.": "الإشارات من TradingView، وليست نصيحة استثمارية.",
+    "This holding is flagged as non-compliant in your Shariah screening.": "هذا الأصل مصنف غير متوافق في فحص التوافق الشرعي لمحفظتك.",
+    "Dividend": "توزيعات أرباح",
+    "Deposit": "إيداع",
+    "Withdrawal": "سحب"
 }
