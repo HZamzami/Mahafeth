@@ -915,5 +915,14 @@
     "This holding is flagged as non-compliant in your Shariah screening.": "هذا الأصل مصنف غير متوافق في فحص التوافق الشرعي لمحفظتك.",
     "Dividend": "توزيعات أرباح",
     "Deposit": "إيداع",
-    "Withdrawal": "سحب"
+    "Withdrawal": "سحب",
+    "Search Stocks": "استكشاف الأسهم",
+    "Search any stock, fund, or crypto…": "ابحث عن أي سهم أو صندوق أو عملة رقمية…",
+    "Type a ticker or company name — Apple, 2222.SR, BTC…": "اكتب رمز السهم أو اسم الشركة — أرامكو، 2222.SR، BTC…",
+    "Your Holdings": "أصولك",
+    "Markets": "الأسواق",
+    "No instruments found for :query.": "لم يتم العثور على أدوات مالية تطابق :query.",
+    "You don't hold this asset — data below comes from the market, not your accounts.": "لا تملك هذا الأصل — البيانات أدناه من السوق وليست من حساباتك.",
+    "Watching": "استكشاف",
+    "I am considering :symbol. How would adding it affect my portfolio diversification and risk?": "أفكر في الاستثمار في :symbol. كيف ستؤثر إضافته على تنويع محفظتي ومستوى المخاطر؟"
 }

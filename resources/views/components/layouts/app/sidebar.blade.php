@@ -16,6 +16,10 @@
             <flux:navlist.group :heading="__('Platform')" class="grid">
                 <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
                     wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+                <flux:modal.trigger name="instrument-search">
+                    <flux:navlist.item icon="magnifying-glass" as="button" class="w-full">
+                        {{ __('Search Stocks') }}</flux:navlist.item>
+                </flux:modal.trigger>
                 <flux:navlist.item icon="briefcase" :href="route('holdings.index')"
                     :current="request()->routeIs('holdings.*')" wire:navigate>{{ __('Holdings') }}
                 </flux:navlist.item>
@@ -172,6 +176,8 @@
     </flux:header>
 
     {{ $slot }}
+
+    <livewire:explore.search />
 
     <x-bottom-nav />
 

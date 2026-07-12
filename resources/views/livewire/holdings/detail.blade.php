@@ -9,9 +9,9 @@ use App\Models\Holding;
 use App\Models\NewsItem;
 use App\Models\Transaction;
 use App\Services\Fx\FxRateService;
+use App\Services\Markets\TradingViewSymbol;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Number;
-use Illuminate\Support\Str;
 use Livewire\Volt\Component;
 
 new class extends Component {
@@ -56,7 +56,7 @@ new class extends Component {
                 ->latest('executed_at')
                 ->limit(6)
                 ->get(),
-            'tradingViewSymbol' => $this->tradingViewSymbol(),
+            'tradingViewSymbol' => TradingViewSymbol::for($this->asset->symbol, $this->asset->asset_class),
             'showChart' => $this->asset->asset_class !== AssetClass::Cash,
             'showTechnicals' => in_array($this->asset->asset_class, [AssetClass::Equity, AssetClass::Crypto], true),
             'showFundamentals' => $this->asset->asset_class === AssetClass::Equity,
@@ -135,19 +135,6 @@ new class extends Component {
             ->whereHas('account.connection', fn ($query) => $query
                 ->whereBelongsTo(Auth::user())
                 ->where('status', ConnectionStatus::Connected));
-    }
-
-    /**
-     * Map our symbols onto TradingView's: Tadawul tickers carry a .SR
-     * suffix, crypto trades against USD, US tickers resolve as-is.
-     */
-    private function tradingViewSymbol(): string
-    {
-        return match (true) {
-            str_ends_with($this->asset->symbol, '.SR') => 'TADAWUL:'.Str::before($this->asset->symbol, '.SR'),
-            $this->asset->asset_class === AssetClass::Crypto => Str::before($this->asset->symbol, '-').'USD',
-            default => $this->asset->symbol,
-        };
     }
 }; ?>
 

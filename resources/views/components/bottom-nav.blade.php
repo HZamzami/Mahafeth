@@ -36,6 +36,10 @@
             </button>
 
             <flux:menu>
+                <flux:modal.trigger name="instrument-search">
+                    <flux:menu.item icon="magnifying-glass" as="button">
+                        {{ __('Search Stocks') }}</flux:menu.item>
+                </flux:modal.trigger>
                 <flux:menu.item icon="briefcase" :href="route('holdings.index')" wire:navigate>
                     {{ __('Holdings') }}</flux:menu.item>
                 <flux:menu.item icon="document-text" :href="route('report')" wire:navigate>
