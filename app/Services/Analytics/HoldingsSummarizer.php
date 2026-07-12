@@ -21,7 +21,7 @@ class HoldingsSummarizer
     ) {}
 
     /**
-     * @return array{rows: list<array{symbol: string, name: string, quantity: float, value: float, cost: float, pl: float, plPct: float, weight: float, shariah: ShariahStatus}>, totalValue: float, totalCost: float}
+     * @return array{rows: list<array{symbol: string, name: string, quantity: float, value: float, cost: float, avgCost: ?float, pl: float, plPct: float, weight: float, shariah: ShariahStatus}>, totalValue: float, totalCost: float}
      */
     public function rows(User $user): array
     {
@@ -67,6 +67,9 @@ class HoldingsSummarizer
                 'quantity' => $quantity,
                 'value' => $value,
                 'cost' => $cost,
+                // Per-share purchase average: the number investors compare
+                // against the current price to see if they are up or down.
+                'avgCost' => $quantity > 0 ? $cost / $quantity : null,
                 'pl' => $value - $cost,
                 'plPct' => $cost > 0 ? ($value - $cost) / $cost : 0.0,
                 'shariah' => $statuses[$symbol] ?? ShariahStatus::Unknown,

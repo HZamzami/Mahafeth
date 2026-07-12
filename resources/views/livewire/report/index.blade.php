@@ -311,7 +311,7 @@ new class extends Component {
                                     <th class="w-full pb-2 text-start font-medium">{{ __('Asset') }}</th>
                                     <th class="whitespace-nowrap pb-2 ps-4 text-end font-medium sm:ps-8">{{ __('Quantity') }}</th>
                                     <th class="whitespace-nowrap pb-2 ps-4 text-end font-medium sm:ps-8">{{ __('Value') }} (⃁)</th>
-                                    <th class="hidden whitespace-nowrap pb-2 ps-4 text-end font-medium sm:table-cell sm:ps-8">{{ __('Cost Basis') }} (⃁)</th>
+                                    <th class="hidden whitespace-nowrap pb-2 ps-4 text-end font-medium sm:table-cell sm:ps-8">{{ __('Avg Cost') }} (⃁)</th>
                                     <th class="whitespace-nowrap pb-2 ps-4 text-end font-medium sm:ps-8">{{ __('Unrealized P/L') }}</th>
                                 </tr>
                             </thead>
@@ -331,7 +331,7 @@ new class extends Component {
                                         <td class="whitespace-nowrap py-1.5 ps-4 text-end tabular-nums sm:ps-8">
                                             <span dir="ltr">{{ number_format($row['value'], 0) }}</span></td>
                                         <td class="hidden whitespace-nowrap py-1.5 ps-4 text-end tabular-nums sm:table-cell sm:ps-8">
-                                            <span dir="ltr">{{ number_format($row['cost'], 0) }}</span></td>
+                                            <span dir="ltr">{{ $row['avgCost'] !== null ? number_format($row['avgCost'], 2) : '—' }}</span></td>
                                         <td
                                             class="whitespace-nowrap py-1.5 ps-4 text-end tabular-nums sm:ps-8 {{ $row['pl'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
                                             <span dir="ltr">{{ $row['pl'] >= 0 ? '+' : '−' }}{{ number_format(abs($row['pl']), 0) }}
