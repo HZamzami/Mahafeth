@@ -3,6 +3,8 @@
 namespace App\Actions;
 
 use App\Contracts\InsightGenerator;
+use App\Enums\ActivityType;
+use App\Models\ActivityEvent;
 use App\Models\AiInsight;
 use App\Models\User;
 use App\Services\Insights\PortfolioContext;
@@ -42,6 +44,8 @@ class GenerateInsights
         // identical text, so staleness checks against the snapshot's
         // updated_at stay truthful.
         $insight->touch();
+
+        ActivityEvent::record($user, ActivityType::InsightGenerated);
 
         return $insight;
     }

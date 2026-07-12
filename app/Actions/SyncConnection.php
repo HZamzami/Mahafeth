@@ -3,9 +3,11 @@
 namespace App\Actions;
 
 use App\Contracts\OpenBankingProvider;
+use App\Enums\ActivityType;
 use App\Enums\ConnectionStatus;
 use App\Enums\ShariahStatus;
 use App\Models\Account;
+use App\Models\ActivityEvent;
 use App\Models\Asset;
 use App\Models\Connection;
 use App\Models\Institution;
@@ -28,8 +30,9 @@ class SyncConnection
         $institution = $connection->institution;
         $provider = $this->providers->forInstitution($institution);
         $symbols = [];
+        $holdingsCount = 0;
 
-        DB::transaction(function () use ($connection, $institution, $provider, &$symbols): void {
+        DB::transaction(function () use ($connection, $institution, $provider, &$symbols, &$holdingsCount): void {
             foreach ($provider->fetchAccounts($institution) as $accountData) {
                 $account = $connection->accounts()->updateOrCreate(
                     ['external_id' => $accountData['external_id']],
@@ -40,7 +43,9 @@ class SyncConnection
                     ],
                 );
 
-                $symbols = array_merge($symbols, $this->syncHoldings($provider, $institution, $account));
+                $held = $this->syncHoldings($provider, $institution, $account);
+                $holdingsCount += count($held);
+                $symbols = array_merge($symbols, $held);
                 $this->syncTransactions($provider, $institution, $account);
             }
 
@@ -54,6 +59,11 @@ class SyncConnection
                 'last_synced_at' => now(),
             ]);
         });
+
+        ActivityEvent::record($connection->user, ActivityType::ConnectionSynced, [
+            'institution' => $institution->localizedName(),
+            'count' => $holdingsCount,
+        ]);
 
         $this->syncPrices->handle(array_values(array_unique($symbols)));
     }

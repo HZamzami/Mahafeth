@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\ActivityType;
+use App\Models\ActivityEvent;
 use App\Models\Goal;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Number;
@@ -57,13 +59,18 @@ new class extends Component {
             ],
         );
 
+        ActivityEvent::record(Auth::user(), ActivityType::GoalSaved, ['name' => $this->name]);
+
         $this->modal('goal-form')->close();
         $this->reset('editingId', 'name', 'targetAmount', 'targetDate', 'monthlyContribution');
     }
 
     public function delete(int $goalId): void
     {
-        Auth::user()->goals()->findOrFail($goalId)->delete();
+        $goal = Auth::user()->goals()->findOrFail($goalId);
+        $goal->delete();
+
+        ActivityEvent::record(Auth::user(), ActivityType::GoalDeleted, ['name' => $goal->name]);
     }
 
     public function with(): array

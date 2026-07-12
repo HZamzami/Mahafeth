@@ -38,6 +38,9 @@
                 <flux:navlist.item icon="document-text" :href="route('report')"
                     :current="request()->routeIs('report')" wire:navigate>{{ __('Report') }}
                 </flux:navlist.item>
+                <flux:navlist.item icon="bell-alert" :href="route('activity')"
+                    :current="request()->routeIs('activity')" wire:navigate>{{ __('Activity') }}
+                </flux:navlist.item>
             </flux:navlist.group>
         </flux:navlist>
 
@@ -119,6 +122,7 @@
             request()->routeIs('connections*') => __('Connections'),
             request()->routeIs('investor-profile') => __('Investor Profile'),
             request()->routeIs('report') => __('Report'),
+            request()->routeIs('activity') => __('Activity'),
             request()->routeIs('settings.*') => __('Settings'),
             default => null,
         })

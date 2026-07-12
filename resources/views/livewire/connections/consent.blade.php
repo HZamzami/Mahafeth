@@ -1,7 +1,9 @@
 <?php
 
 use App\Actions\SyncConnection;
+use App\Enums\ActivityType;
 use App\Enums\ConsentStatus;
+use App\Models\ActivityEvent;
 use App\Models\Institution;
 use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +36,11 @@ new class extends Component {
             'status' => ConsentStatus::Active,
             'granted_at' => now(),
             'expires_at' => now()->addDays((int) config('mahafeth.consent_ttl_days')),
+        ]);
+
+        ActivityEvent::record(Auth::user(), ActivityType::ConsentGranted, [
+            'institution' => $this->institution->localizedName(),
+            'expires' => now()->addDays((int) config('mahafeth.consent_ttl_days'))->toDateString(),
         ]);
 
         $syncConnection->handle($connection);

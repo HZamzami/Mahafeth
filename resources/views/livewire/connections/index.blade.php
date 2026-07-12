@@ -2,8 +2,10 @@
 
 use App\Actions\ImportHoldings;
 use App\Actions\SyncConnection;
+use App\Enums\ActivityType;
 use App\Enums\ConnectionStatus;
 use App\Enums\ConsentStatus;
+use App\Models\ActivityEvent;
 use App\Models\Institution;
 use App\Services\Analytics\PortfolioAnalyzer;
 use App\Services\Imports\AlinmaCapitalStatementParser;
@@ -93,6 +95,10 @@ new class extends Component {
             ->where('connection_id', $connection->id)
             ->where('status', ConsentStatus::Active)
             ->update(['status' => ConsentStatus::Revoked, 'revoked_at' => now()]);
+
+        ActivityEvent::record(Auth::user(), ActivityType::ConnectionDisconnected, [
+            'institution' => $connection->institution->localizedName(),
+        ]);
 
         $analyzer->analyze(Auth::user());
 

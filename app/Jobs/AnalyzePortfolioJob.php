@@ -2,6 +2,8 @@
 
 namespace App\Jobs;
 
+use App\Enums\ActivityType;
+use App\Models\ActivityEvent;
 use App\Models\User;
 use App\Notifications\PortfolioAlertNotification;
 use App\Services\Analytics\AlertEvaluator;
@@ -31,9 +33,7 @@ class AnalyzePortfolioJob implements ShouldBeUnique, ShouldQueue
 
         $snapshot = $analyzer->analyze($this->user);
 
-        // Interactive flows call the analyzer directly; only this background
-        // path notifies, and never on the very first analysis.
-        if ($snapshot === null || $previous === null || ! $this->user->notify_alerts) {
+        if ($snapshot === null) {
             return;
         }
 
@@ -43,10 +43,32 @@ class AnalyzePortfolioJob implements ShouldBeUnique, ShouldQueue
             fn (array $alert): bool => ! in_array($alert['key'], array_column($previousAlerts, 'key'), true),
         ));
 
-        $drop = $previous->health_score !== null && $snapshot->health_score !== null
+        // The activity feed logs every raised alert and score drop, even
+        // when the user opted out of the emails.
+        foreach ($newAlerts as $alert) {
+            ActivityEvent::record($this->user, ActivityType::AlertRaised, [
+                'key' => $alert['key'],
+                'params' => $alert['params'],
+            ]);
+        }
+
+        $drop = $previous !== null && $previous->health_score !== null && $snapshot->health_score !== null
             ? $previous->health_score - $snapshot->health_score
             : 0;
         $threshold = (int) config('mahafeth.alert_score_drop_threshold');
+
+        if ($drop >= $threshold) {
+            ActivityEvent::record($this->user, ActivityType::ScoreDropAlerted, [
+                'from' => $previous->health_score,
+                'to' => $snapshot->health_score,
+            ]);
+        }
+
+        // Interactive flows call the analyzer directly; only this background
+        // path notifies, and never on the very first analysis.
+        if ($previous === null || ! $this->user->notify_alerts) {
+            return;
+        }
 
         if ($newAlerts !== [] || $drop >= $threshold) {
             $this->user->notify(new PortfolioAlertNotification(

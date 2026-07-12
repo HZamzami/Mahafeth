@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\ActivityType;
+use App\Models\ActivityEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -30,6 +32,8 @@ new class extends Component {
         Auth::user()->update([
             'password' => Hash::make($validated['password']),
         ]);
+
+        ActivityEvent::record(Auth::user(), ActivityType::PasswordChanged);
 
         $this->reset('current_password', 'password', 'password_confirmation');
 

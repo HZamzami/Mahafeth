@@ -37,6 +37,10 @@ Volt::route('analytics', 'analytics.index')
     ->middleware(['auth', 'verified'])
     ->name('analytics');
 
+Volt::route('activity', 'activity.index')
+    ->middleware(['auth', 'verified'])
+    ->name('activity');
+
 Volt::route('holdings', 'holdings.index')
     ->middleware(['auth', 'verified'])
     ->name('holdings.index');

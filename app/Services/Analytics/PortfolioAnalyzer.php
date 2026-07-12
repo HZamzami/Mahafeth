@@ -2,6 +2,8 @@
 
 namespace App\Services\Analytics;
 
+use App\Enums\ActivityType;
+use App\Models\ActivityEvent;
 use App\Models\PortfolioSnapshot;
 use App\Models\User;
 use Carbon\CarbonInterface;
@@ -151,10 +153,23 @@ class PortfolioAnalyzer
             $attributes['health_score'] = $health['overall'];
         }
 
-        return $user->portfolioSnapshots()->updateOrCreate(
+        $previousScore = $user->latestSnapshot()?->health_score;
+
+        $snapshot = $user->portfolioSnapshots()->updateOrCreate(
             ['as_of' => today()->toDateString()],
             $attributes,
         );
+
+        // Every analysis path (dashboard refresh, consent flow, background
+        // job) logs score movements to the activity feed.
+        if ($previousScore !== null && $snapshot->health_score !== null && $previousScore !== $snapshot->health_score) {
+            ActivityEvent::record($user, ActivityType::ScoreChanged, [
+                'from' => $previousScore,
+                'to' => $snapshot->health_score,
+            ]);
+        }
+
+        return $snapshot;
     }
 
     /**
