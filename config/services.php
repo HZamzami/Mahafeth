@@ -45,6 +45,11 @@ return [
         'key' => env('TWELVEDATA_KEY'),
     ],
 
+    'yahoo_finance' => [
+        // Keyless chart API; covers Tadawul symbols the Twelve Data free tier cannot.
+        'base_url' => env('YAHOO_FINANCE_BASE_URL', 'https://query1.finance.yahoo.com'),
+    ],
+
     'marketaux' => [
         'base_url' => env('MARKETAUX_BASE_URL', 'https://api.marketaux.com'),
         'token' => env('MARKETAUX_TOKEN'),

@@ -11,12 +11,12 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Sleep;
 
 /**
- * End-of-day closes from the Twelve Data API. Tadawul symbols use the
- * exchange code XSAU (2222.SR maps to symbol 2222 on XSAU), crypto maps
- * to USD pairs (BTC to BTC/USD), and US symbols pass through unchanged.
- * Cash needs no market series, so it skips the API entirely. Symbols the
- * API cannot serve fall back to the simulated series so analysis never
- * loses an asset.
+ * End-of-day closes from the Twelve Data API. Crypto maps to USD pairs
+ * (BTC to BTC/USD) and US symbols pass through unchanged. Tadawul symbols
+ * (.SR and the TASI benchmark) are locked behind Twelve Data's paid plans,
+ * so they route to Yahoo Finance instead. Cash needs no market series, so
+ * it skips the APIs entirely. Symbols neither API can serve fall back to
+ * the simulated series so analysis never loses an asset.
  */
 class TwelveDataPriceProvider implements PriceProvider
 {
@@ -26,7 +26,10 @@ class TwelveDataPriceProvider implements PriceProvider
      */
     private const SECONDS_BETWEEN_REQUESTS = 8;
 
-    public function __construct(private SimulatedPriceProvider $fallback) {}
+    public function __construct(
+        private YahooFinancePriceProvider $tadawul,
+        private SimulatedPriceProvider $fallback,
+    ) {}
 
     public function fetchDailyCloses(array $symbols, CarbonInterface $from, CarbonInterface $to): array
     {
@@ -39,7 +42,10 @@ class TwelveDataPriceProvider implements PriceProvider
             $assetClass = $assetClasses[$symbol] ?? null;
             $fetched = null;
 
-            if ($assetClass !== AssetClass::Cash) {
+            if ($this->isTadawul($symbol)) {
+                // Yahoo has its own budget, so it never counts against ours.
+                $fetched = $this->tadawul->fetchDailyCloses([$symbol], $from, $to)[$symbol] ?? null;
+            } elseif ($assetClass !== AssetClass::Cash) {
                 if ($requested) {
                     Sleep::for(self::SECONDS_BETWEEN_REQUESTS)->seconds();
                 }
@@ -60,6 +66,11 @@ class TwelveDataPriceProvider implements PriceProvider
         return $series;
     }
 
+    private function isTadawul(string $symbol): bool
+    {
+        return str_ends_with($symbol, '.SR') || $symbol === 'TASI';
+    }
+
     /**
      * @return ?array<string, float> [Y-m-d => close], null on failure
      */
@@ -73,10 +84,7 @@ class TwelveDataPriceProvider implements PriceProvider
             'apikey' => config('services.twelvedata.key'),
         ];
 
-        if (str_ends_with($symbol, '.SR')) {
-            $query['symbol'] = substr($symbol, 0, -3);
-            $query['mic_code'] = 'XSAU';
-        } elseif ($assetClass === AssetClass::Crypto) {
+        if ($assetClass === AssetClass::Crypto) {
             $query['symbol'] = $symbol.'/USD';
         } else {
             $query['symbol'] = $symbol;
