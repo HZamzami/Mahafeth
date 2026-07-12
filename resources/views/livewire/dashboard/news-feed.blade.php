@@ -21,6 +21,13 @@ new class extends Component {
      */
     public function refreshNews(): void
     {
+        // Relevance filtering needs portfolio weights, so a refresh before
+        // the first analysis would spend the news API budget on a feed
+        // that stays empty.
+        if (Auth::user()->latestSnapshot() === null) {
+            return;
+        }
+
         if (! RateLimiter::attempt('refresh-news:'.Auth::id(), maxAttempts: 3, callback: fn () => true, decaySeconds: 300)) {
             $this->dispatch('toast', message: __('Please wait a few minutes between refreshes.'));
 
@@ -38,7 +45,8 @@ new class extends Component {
      */
     public function with(): array
     {
-        $metrics = Auth::user()->latestSnapshot()?->metrics;
+        $snapshot = Auth::user()->latestSnapshot();
+        $metrics = $snapshot?->metrics;
 
         $weights = $metrics['weights'] ?? [];
         $sectorWeights = $metrics['allocations']['sector'] ?? [];
@@ -62,7 +70,10 @@ new class extends Component {
             ->values()
             ->all();
 
-        return ['entries' => $items];
+        return [
+            'entries' => $items,
+            'hasSnapshot' => $snapshot !== null,
+        ];
     }
 
     /**
@@ -102,8 +113,10 @@ new class extends Component {
         <flux:heading class="uppercase tracking-widest !text-neutral-500 dark:!text-neutral-400" size="sm">
             {{ __('Market Context') }}
         </flux:heading>
-        <flux:button size="sm" variant="subtle" icon="arrow-path" wire:click="refreshNews"
-            wire:loading.attr="disabled" :tooltip="__('Refresh')" :aria-label="__('Refresh')" />
+        @if ($hasSnapshot)
+            <flux:button size="sm" variant="subtle" icon="arrow-path" wire:click="refreshNews"
+                wire:loading.attr="disabled" :tooltip="__('Refresh')" :aria-label="__('Refresh')" />
+        @endif
     </div>
 
     @forelse ($entries as $entry)

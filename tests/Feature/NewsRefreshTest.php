@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Contracts\NewsProvider;
 use App\Models\Asset;
 use App\Models\NewsItem;
+use App\Models\PortfolioSnapshot;
 use App\Models\User;
 use App\Services\News\CuratedNewsProvider;
 use App\Services\News\MarketauxNewsProvider;
@@ -49,13 +50,27 @@ class NewsRefreshTest extends TestCase
 
     public function test_the_news_card_refresh_button_pulls_fresh_items(): void
     {
-        $this->actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        PortfolioSnapshot::factory()->for($user)->create();
+        $this->actingAs($user);
 
         Volt::test('dashboard.news-feed')
             ->call('refreshNews')
             ->assertDispatched('toast');
 
         $this->assertGreaterThan(0, NewsItem::count());
+    }
+
+    public function test_users_without_a_snapshot_cannot_refresh_and_see_no_refresh_button(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        Volt::test('dashboard.news-feed')
+            ->assertDontSeeHtml('wire:click="refreshNews"')
+            ->call('refreshNews')
+            ->assertNotDispatched('toast');
+
+        $this->assertSame(0, NewsItem::count());
     }
 
     public function test_the_seeder_skips_synthetic_headlines_when_a_live_api_is_configured(): void
