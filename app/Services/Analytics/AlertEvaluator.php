@@ -20,7 +20,7 @@ class AlertEvaluator
 
     /**
      * @param  ?array<string, mixed>  $metrics  a portfolio snapshot's metrics payload
-     * @return list<array{key: string, color: string, params: array<string, string>}>
+     * @return list<array{key: string, color: string, fingerprint: string, params: array<string, string>}>
      */
     public function evaluate(?array $metrics, ?RiskProfile $riskProfile): array
     {
@@ -35,6 +35,7 @@ class AlertEvaluator
             $alerts[] = [
                 'key' => 'Concentration alert: :name is :weight of your portfolio — above the :threshold threshold.',
                 'color' => 'red',
+                'fingerprint' => $this->fingerprint('concentration', $largest['name'], round($largest['weight'], 3)),
                 'params' => [
                     'name' => $largest['name'],
                     'weight' => Number::percentage($largest['weight'] * 100, 1),
@@ -48,6 +49,7 @@ class AlertEvaluator
             $alerts[] = [
                 'key' => 'Risk alert: portfolio volatility of :volatility is well above your :target target.',
                 'color' => 'amber',
+                'fingerprint' => $this->fingerprint('volatility', round($metrics['volatility'], 3), round($target, 3)),
                 'params' => [
                     'volatility' => Number::percentage($metrics['volatility'] * 100, 1),
                     'target' => Number::percentage($target * 100, 1),
@@ -59,6 +61,7 @@ class AlertEvaluator
             $alerts[] = [
                 'key' => 'Correlation alert: in a market crisis your assets would move together with an estimated correlation of :correlation.',
                 'color' => 'amber',
+                'fingerprint' => $this->fingerprint('correlation', round($metrics['stress_correlation'], 2)),
                 'params' => [
                     'correlation' => number_format($metrics['stress_correlation'], 2),
                 ],
@@ -66,5 +69,16 @@ class AlertEvaluator
         }
 
         return $alerts;
+    }
+
+    /**
+     * Locale-independent identity for a dismissed alert, built from the
+     * alert type and its raw values rounded to display precision: the
+     * alert only resurfaces once the metric moves enough to change what
+     * the user would actually read.
+     */
+    private function fingerprint(string $type, string|float ...$values): string
+    {
+        return md5($type.'|'.implode('|', $values));
     }
 }

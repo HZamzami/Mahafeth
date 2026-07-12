@@ -49,6 +49,7 @@ class User extends Authenticatable implements HasLocalePreference // implements 
     protected function casts(): array
     {
         return [
+            'dismissed_alerts' => 'array',
             'email_verified_at' => 'datetime',
             'notify_alerts' => 'boolean',
             'password' => 'hashed',
