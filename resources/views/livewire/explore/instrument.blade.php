@@ -105,10 +105,10 @@ new class extends Component {
                 </div>
                 <div class="mt-4" wire:ignore>
                     <iframe
-                        src="https://s.tradingview.com/widgetembed/?symbol={{ urlencode($tradingViewSymbol) }}&interval=D&theme=dark&style=1&locale={{ app()->getLocale() === 'ar' ? 'ar_AE' : 'en' }}&hide_side_toolbar=1&allow_symbol_change=0&withdateranges=1&hide_volume=0"
+                        data-src="https://s.tradingview.com/widgetembed/?symbol={{ urlencode($tradingViewSymbol) }}&interval=D&theme=__THEME__&style=1&locale={{ app()->getLocale() === 'ar' ? 'ar_AE' : 'en' }}&hide_side_toolbar=1&allow_symbol_change=0&withdateranges=1&hide_volume=0"
                         class="h-[26rem] w-full rounded-lg border-0 sm:h-[30rem]" loading="lazy" title="TradingView"
                         x-data
-                        x-init="if (! document.documentElement.classList.contains('dark')) $el.src = $el.src.replace('theme=dark', 'theme=light')"></iframe>
+                        x-effect="$el.src = $el.dataset.src.replace('__THEME__', $flux.dark ? 'dark' : 'light')"></iframe>
                 </div>
             </div>
 

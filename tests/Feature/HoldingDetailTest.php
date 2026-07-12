@@ -15,6 +15,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Volt\Volt;
 use Tests\TestCase;
 
 class HoldingDetailTest extends TestCase
@@ -85,6 +86,74 @@ class HoldingDetailTest extends TestCase
             ->get('/holdings/2222.SR')
             ->assertOk()
             ->assertSee('TADAWUL%3A2222', false);
+    }
+
+    public function test_saudi_equities_get_the_same_sections_as_us_equities(): void
+    {
+        $user = $this->syncedUser();
+
+        $asset = Asset::factory()->create(['symbol' => '2222.SR', 'currency' => 'SAR', 'asset_class' => AssetClass::Equity]);
+        $account = Account::factory()->create(['connection_id' => $user->connections()->first()->id]);
+        Holding::factory()->create(['account_id' => $account->id, 'asset_id' => $asset->id]);
+        PriceHistory::factory()->create(['asset_id' => $asset->id]);
+
+        foreach (['2222.SR', 'AAPL'] as $symbol) {
+            $this->actingAs($user)
+                ->get("/holdings/{$symbol}")
+                ->assertOk()
+                ->assertSee(__('Market Chart'))
+                ->assertSee(__('Financials'))
+                ->assertSee(__('About the Company'))
+                ->assertSee(__('Technical Signal'))
+                // Theme placeholder resolved client-side by the reactive
+                // $flux.dark effect on every TradingView iframe.
+                ->assertSee('theme=__THEME__', false)
+                ->assertSee('%22__THEME__%22', false);
+        }
+    }
+
+    public function test_prices_default_to_the_native_currency_with_a_persistent_toggle_to_base(): void
+    {
+        $user = $this->syncedUser();
+
+        $asset = Asset::factory()->create(['symbol' => 'TSTX', 'currency' => 'USD']);
+        $account = Account::factory()->create(['connection_id' => $user->connections()->first()->id]);
+        Holding::factory()->create(['account_id' => $account->id, 'asset_id' => $asset->id, 'quantity' => 10, 'avg_cost' => 90.0]);
+        PriceHistory::factory()->create(['asset_id' => $asset->id, 'date' => now()->subDay()->toDateString(), 'close' => 100.0]);
+        PriceHistory::factory()->create(['asset_id' => $asset->id, 'date' => now()->toDateString(), 'close' => 110.0]);
+
+        $this->actingAs($user);
+
+        Volt::test('holdings.detail', ['asset' => $asset])
+            ->assertSee('$ 110.00')
+            // Config FX rate: 110 USD × 3.75 = 412.50 SAR.
+            ->call('setCurrency', true)
+            ->assertSee('⃁ 412.50')
+            ->assertDontSee('$ 110.00');
+
+        // The choice sticks for the next instrument visit.
+        Volt::test('holdings.detail', ['asset' => $asset])
+            ->assertSee('⃁ 412.50');
+    }
+
+    public function test_base_currency_assets_have_no_currency_toggle(): void
+    {
+        $user = $this->syncedUser();
+
+        $asset = Asset::factory()->create(['symbol' => '2222.SR', 'currency' => 'SAR']);
+        $account = Account::factory()->create(['connection_id' => $user->connections()->first()->id]);
+        Holding::factory()->create(['account_id' => $account->id, 'asset_id' => $asset->id]);
+        PriceHistory::factory()->create(['asset_id' => $asset->id]);
+
+        $this->actingAs($user)
+            ->get('/holdings/2222.SR')
+            ->assertOk()
+            ->assertDontSee('setCurrency');
+
+        $this->actingAs($user)
+            ->get('/holdings/AAPL')
+            ->assertOk()
+            ->assertSee('setCurrency');
     }
 
     public function test_the_page_shows_performance_stats_from_stored_closes(): void

@@ -17,17 +17,32 @@ use Livewire\Volt\Component;
 new class extends Component {
     public Asset $asset;
 
+    /**
+     * Prices default to the asset's native currency, the way brokers and
+     * market apps quote them; the toggle converts to the base currency.
+     */
+    public bool $showBaseCurrency = false;
+
     public function mount(Asset $asset): void
     {
         abort_unless($this->userHoldings($asset)->exists(), 404);
 
         $this->asset = $asset;
+        $this->showBaseCurrency = (bool) session('holdings.show_base_currency', false);
+    }
+
+    public function setCurrency(bool $base): void
+    {
+        $this->showBaseCurrency = $base;
+        session(['holdings.show_base_currency' => $base]);
     }
 
     public function with(): array
     {
         $holdings = $this->userHoldings($this->asset)->get();
-        $rate = app(FxRateService::class)->all()[$this->asset->currency] ?? 1.0;
+        $rate = $this->showBaseCurrency
+            ? (app(FxRateService::class)->all()[$this->asset->currency] ?? 1.0)
+            : 1.0;
 
         $quantity = $holdings->sum(fn (Holding $holding): float => (float) $holding->quantity);
         $cost = $holdings->sum(fn (Holding $holding): float => $holding->quantity * $holding->avg_cost * $rate);
@@ -67,6 +82,8 @@ new class extends Component {
             'askPrompt' => __('Tell me about my :symbol position: how it affects my portfolio risk, and whether I should trim, hold, or add.', [
                 'symbol' => $this->asset->symbol,
             ]),
+            'currencySymbol' => $this->showBaseCurrency ? '⃁' : $this->asset->currencySymbol(),
+            'canToggleCurrency' => $this->asset->currency !== config('mahafeth.base_currency'),
         ];
     }
 
@@ -166,7 +183,7 @@ new class extends Component {
             @if ($price !== null)
                 <div class="text-end">
                     <p class="text-3xl font-semibold tabular-nums text-zinc-900 dark:text-white" dir="ltr">
-                        ⃁ {{ number_format($price, 2) }}</p>
+                        {{ $currencySymbol }} {{ number_format($price, 2) }}</p>
                     @if ($dayChangePct !== null)
                         <p class="mt-0.5 flex items-center justify-end gap-1 text-sm font-medium {{ $dayChange >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
                             @if ($dayChange >= 0)
@@ -177,6 +194,18 @@ new class extends Component {
                             <span dir="ltr">{{ $dayChange >= 0 ? '+' : '−' }}{{ number_format(abs($dayChange), 2) }}
                                 ({{ number_format(abs($dayChangePct) * 100, 2) }}%)</span>
                         </p>
+                    @endif
+                    @if ($canToggleCurrency)
+                        <div class="mt-2 flex justify-end" dir="ltr">
+                            <flux:button.group>
+                                <flux:button size="xs" :variant="$showBaseCurrency ? 'outline' : 'primary'"
+                                    wire:click="setCurrency(false)" :aria-label="__('Show prices in :currency', ['currency' => $asset->currency])">
+                                    {{ $asset->currency }}</flux:button>
+                                <flux:button size="xs" :variant="$showBaseCurrency ? 'primary' : 'outline'"
+                                    wire:click="setCurrency(true)" :aria-label="__('Show prices in :currency', ['currency' => config('mahafeth.base_currency')])">
+                                    {{ config('mahafeth.base_currency') }}</flux:button>
+                            </flux:button.group>
+                        </div>
                     @endif
                 </div>
             @endif
@@ -196,10 +225,10 @@ new class extends Component {
                     </div>
                     <div class="mt-4" wire:ignore>
                         <iframe
-                            src="https://s.tradingview.com/widgetembed/?symbol={{ urlencode($tradingViewSymbol) }}&interval=D&theme=dark&style=1&locale={{ app()->getLocale() === 'ar' ? 'ar_AE' : 'en' }}&hide_side_toolbar=1&allow_symbol_change=0&withdateranges=1&hide_volume=0"
+                            data-src="https://s.tradingview.com/widgetembed/?symbol={{ urlencode($tradingViewSymbol) }}&interval=D&theme=__THEME__&style=1&locale={{ app()->getLocale() === 'ar' ? 'ar_AE' : 'en' }}&hide_side_toolbar=1&allow_symbol_change=0&withdateranges=1&hide_volume=0"
                             class="h-[26rem] w-full rounded-lg border-0 sm:h-[30rem]" loading="lazy" title="TradingView"
                             x-data
-                            x-init="if (! document.documentElement.classList.contains('dark')) $el.src = $el.src.replace('theme=dark', 'theme=light')"></iframe>
+                            x-effect="$el.src = $el.dataset.src.replace('__THEME__', $flux.dark ? 'dark' : 'light')"></iframe>
                     </div>
                 </div>
             @endif
@@ -235,8 +264,8 @@ new class extends Component {
                                     style="left: calc({{ round($week52Position * 100) }}% - 6px)"></span>
                             </div>
                             <div class="mt-1.5 flex justify-between" dir="ltr">
-                                <flux:text class="text-xs tabular-nums">⃁ {{ number_format($week52Low, 2) }}</flux:text>
-                                <flux:text class="text-xs tabular-nums">⃁ {{ number_format($week52High, 2) }}</flux:text>
+                                <flux:text class="text-xs tabular-nums">{{ $currencySymbol }} {{ number_format($week52Low, 2) }}</flux:text>
+                                <flux:text class="text-xs tabular-nums">{{ $currencySymbol }} {{ number_format($week52High, 2) }}</flux:text>
                             </div>
                         </div>
                     @endif
@@ -329,18 +358,18 @@ new class extends Component {
                     </div>
                     <div>
                         <flux:text class="text-xs">{{ __('Avg Cost') }}</flux:text>
-                        <flux:heading dir="ltr">{{ $avgCost !== null ? '⃁ '.number_format($avgCost, 2) : '—' }}</flux:heading>
+                        <flux:heading dir="ltr">{{ $avgCost !== null ? $currencySymbol.' '.number_format($avgCost, 2) : '—' }}</flux:heading>
                     </div>
                     <div>
                         <flux:text class="text-xs">{{ __('Value') }}</flux:text>
-                        <flux:heading dir="ltr">{{ $value !== null ? '⃁ '.number_format($value, 0) : '—' }}</flux:heading>
+                        <flux:heading dir="ltr">{{ $value !== null ? $currencySymbol.' '.number_format($value, 0) : '—' }}</flux:heading>
                     </div>
                     <div>
                         <flux:text class="text-xs">{{ __('Unrealized P/L') }}</flux:text>
                         <flux:heading
                             class="{{ ($pl ?? 0) >= 0 ? '!text-emerald-600 dark:!text-emerald-400' : '!text-red-600 dark:!text-red-400' }}"
                             dir="ltr">
-                            {{ $pl !== null ? ($pl >= 0 ? '+' : '−').'⃁ '.number_format(abs($pl), 0).' ('.number_format(($plPct ?? 0) * 100, 1).'%)' : '—' }}
+                            {{ $pl !== null ? ($pl >= 0 ? '+' : '−').$currencySymbol.' '.number_format(abs($pl), 0).' ('.number_format(($plPct ?? 0) * 100, 1).'%)' : '—' }}
                         </flux:heading>
                     </div>
                 </div>

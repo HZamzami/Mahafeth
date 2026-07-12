@@ -62,4 +62,18 @@ class Asset extends Model
     {
         return app()->getLocale() === 'ar' && $this->name_ar !== null ? $this->name_ar : $this->name;
     }
+
+    /**
+     * Get the display symbol for the asset's native currency.
+     */
+    public function currencySymbol(): string
+    {
+        return match ($this->currency) {
+            'SAR' => '⃁',
+            'USD' => '$',
+            'EUR' => '€',
+            'GBP' => '£',
+            default => $this->currency.' ',
+        };
+    }
 }

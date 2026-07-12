@@ -926,5 +926,6 @@
     "Watching": "استكشاف",
     "I am considering :symbol. How would adding it affect my portfolio diversification and risk?": "أفكر في الاستثمار في :symbol. كيف ستؤثر إضافته على تنويع محفظتي ومستوى المخاطر؟",
     "Insight generation failed — please try again.": "تعذر توليد الرؤى، يرجى المحاولة مرة أخرى.",
-    "AI-generated analysis can be inaccurate — not licensed financial advice.": "التحليل مولد بالذكاء الاصطناعي وقد يخطئ أحيانًا، وهو ليس استشارة مالية مرخصة."
+    "AI-generated analysis can be inaccurate — not licensed financial advice.": "التحليل مولد بالذكاء الاصطناعي وقد يخطئ أحيانًا، وهو ليس استشارة مالية مرخصة.",
+    "Show prices in :currency": "عرض الأسعار بعملة :currency"
 }
