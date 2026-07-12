@@ -120,6 +120,20 @@ class AiInsightTest extends TestCase
         $this->assertSame('high', $insight['recommendations'][0]['priority']);
     }
 
+    public function test_generate_is_a_no_op_for_users_without_a_snapshot(): void
+    {
+        Queue::fake();
+
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        Volt::test('dashboard.ai-summary')->call('generate');
+        Volt::test('advisor.index')->call('generate');
+
+        Queue::assertNothingPushed();
+        $this->assertFalse(Cache::has(GenerateInsightsJob::cacheKey($user, 'en')));
+    }
+
     public function test_generate_dispatches_a_unique_job_and_flags_the_generation_as_in_flight(): void
     {
         Queue::fake();
@@ -155,7 +169,7 @@ class AiInsightTest extends TestCase
             ->assertDontSee(__('Analyzing your portfolio…'));
     }
 
-    public function test_a_failed_job_clears_the_in_flight_flag(): void
+    public function test_a_failed_job_clears_the_in_flight_flag_and_flags_the_failure(): void
     {
         $user = User::factory()->create();
 
@@ -164,6 +178,29 @@ class AiInsightTest extends TestCase
         (new GenerateInsightsJob($user, 'en'))->failed();
 
         $this->assertFalse(Cache::has(GenerateInsightsJob::cacheKey($user, 'en')));
+        $this->assertTrue(Cache::has(GenerateInsightsJob::failedCacheKey($user, 'en')));
+    }
+
+    public function test_a_failed_generation_shows_a_retry_message_that_regenerating_clears(): void
+    {
+        Queue::fake();
+
+        $user = $this->analyzedUser();
+        $this->actingAs($user);
+
+        Cache::put(GenerateInsightsJob::failedCacheKey($user, 'en'), true, now()->addMinutes(10));
+
+        Volt::test('dashboard.ai-summary')
+            ->assertSee(__('Insight generation failed — please try again.'));
+
+        Volt::test('advisor.index')
+            ->assertSee(__('Insight generation failed — please try again.'));
+
+        Volt::test('dashboard.ai-summary')
+            ->call('generate')
+            ->assertDontSee(__('Insight generation failed — please try again.'));
+
+        $this->assertFalse(Cache::has(GenerateInsightsJob::failedCacheKey($user, 'en')));
     }
 
     public function test_a_same_day_reanalysis_marks_the_insight_as_stale(): void

@@ -36,10 +36,24 @@ class GenerateInsightsJob implements ShouldBeUnique, ShouldQueue
         return "insights:generating:{$user->id}:{$locale}";
     }
 
+    /**
+     * Cache flag the UI reads to show a "generation failed, try again"
+     * state instead of a spinner that silently gives up. Cleared when the
+     * user retries; the TTL keeps a stale failure from lingering.
+     */
+    public static function failedCacheKey(User $user, string $locale): string
+    {
+        return "insights:failed:{$user->id}:{$locale}";
+    }
+
     public function handle(GenerateInsights $generateInsights): void
     {
         try {
             $generateInsights->handle($this->user, $this->locale);
+        } catch (\Throwable $exception) {
+            Cache::put(self::failedCacheKey($this->user, $this->locale), true, now()->addMinutes(10));
+
+            throw $exception;
         } finally {
             Cache::forget(self::cacheKey($this->user, $this->locale));
         }
@@ -47,6 +61,7 @@ class GenerateInsightsJob implements ShouldBeUnique, ShouldQueue
 
     public function failed(): void
     {
+        Cache::put(self::failedCacheKey($this->user, $this->locale), true, now()->addMinutes(10));
         Cache::forget(self::cacheKey($this->user, $this->locale));
     }
 }

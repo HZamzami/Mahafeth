@@ -17,6 +17,14 @@ new class extends Component {
         $user = Auth::user();
         $locale = app()->getLocale();
 
+        // Nothing to explain before the first analysis; without this a
+        // crafted request pins the card in the analyzing state for the
+        // flag's whole TTL.
+        if ($user->latestSnapshot() === null) {
+            return;
+        }
+
+        Cache::forget(GenerateInsightsJob::failedCacheKey($user, $locale));
         Cache::put(GenerateInsightsJob::cacheKey($user, $locale), true, now()->addMinutes(5));
         GenerateInsightsJob::dispatch($user, $locale);
     }
@@ -30,10 +38,13 @@ new class extends Component {
             ->where('locale', app()->getLocale())
             ->first();
 
+        $isGenerating = Cache::has(GenerateInsightsJob::cacheKey(Auth::user(), app()->getLocale()));
+
         return [
             'hasSnapshot' => $snapshot !== null,
             'insight' => $insight,
-            'isGenerating' => Cache::has(GenerateInsightsJob::cacheKey(Auth::user(), app()->getLocale())),
+            'isGenerating' => $isGenerating,
+            'hasFailed' => ! $isGenerating && Cache::has(GenerateInsightsJob::failedCacheKey(Auth::user(), app()->getLocale())),
             // Same-day re-analysis updates the snapshot row in place, so an
             // insight older than its snapshot explains numbers that changed.
             'isStale' => $insight !== null && $insight->updated_at->lt($snapshot->updated_at),
@@ -57,6 +68,15 @@ new class extends Component {
                 :tooltip="__('Regenerate')" :aria-label="__('Regenerate')" />
         @endif
     </div>
+
+    @if ($hasFailed)
+        <flux:callout class="mb-4" color="red" icon="exclamation-triangle" inline>
+            <flux:callout.text>
+                {{ __('Insight generation failed — please try again.') }}
+                <flux:link class="cursor-pointer" wire:click="generate">{{ __('Regenerate') }}</flux:link>
+            </flux:callout.text>
+        </flux:callout>
+    @endif
 
     @if ($insight !== null)
         @if ($isStale && ! $isGenerating)
@@ -93,6 +113,8 @@ new class extends Component {
             <flux:button class="w-full" variant="primary" icon="chat-bubble-left-right" :href="route('advisor')"
                 wire:navigate>
                 {{ __('Ask Mahafeth AI') }}</flux:button>
+            <flux:text class="mt-2 text-center text-xs">
+                {{ __('AI-generated analysis can be inaccurate — not licensed financial advice.') }}</flux:text>
         </div>
     @elseif ($isGenerating)
         <div class="flex grow flex-col items-center justify-center gap-3 py-10 text-center">

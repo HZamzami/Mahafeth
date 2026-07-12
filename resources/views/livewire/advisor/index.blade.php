@@ -47,6 +47,12 @@ new class extends Component {
         $user = Auth::user();
         $locale = app()->getLocale();
 
+        // Nothing to explain before the first analysis.
+        if ($user->latestSnapshot() === null) {
+            return;
+        }
+
+        Cache::forget(GenerateInsightsJob::failedCacheKey($user, $locale));
         Cache::put(GenerateInsightsJob::cacheKey($user, $locale), true, now()->addMinutes(5));
         GenerateInsightsJob::dispatch($user, $locale);
     }
@@ -146,11 +152,13 @@ new class extends Component {
     {
         $snapshot = Auth::user()->latestSnapshot();
         $insight = $this->latestInsight();
+        $isGenerating = Cache::has(GenerateInsightsJob::cacheKey(Auth::user(), app()->getLocale()));
 
         return [
             'hasSnapshot' => $snapshot !== null,
             'insight' => $insight,
-            'isGenerating' => Cache::has(GenerateInsightsJob::cacheKey(Auth::user(), app()->getLocale())),
+            'isGenerating' => $isGenerating,
+            'hasFailed' => ! $isGenerating && Cache::has(GenerateInsightsJob::failedCacheKey(Auth::user(), app()->getLocale())),
             // Same-day re-analysis updates the snapshot row in place, so an
             // insight older than its snapshot explains numbers that changed.
             'isStale' => $insight !== null && $insight->updated_at->lt($snapshot->updated_at),
@@ -188,6 +196,15 @@ new class extends Component {
         </div>
     @else
         {{-- Insight entry point: summary and recommendations to discuss --}}
+        @if ($hasFailed)
+            <flux:callout color="red" icon="exclamation-triangle" inline>
+                <flux:callout.text>
+                    {{ __('Insight generation failed — please try again.') }}
+                    <flux:link class="cursor-pointer" wire:click="generate">{{ __('Regenerate') }}</flux:link>
+                </flux:callout.text>
+            </flux:callout>
+        @endif
+
         @if ($insight !== null)
             <div class="card space-y-4 p-5">
                 @if ($isStale && ! $isGenerating)
@@ -344,6 +361,8 @@ new class extends Component {
                             wire:loading.attr="disabled" :aria-label="__('Send')" />
                     </x-slot:actionsTrailing>
                 </flux:composer>
+                <flux:text class="mt-2 text-center text-xs">
+                    {{ __('AI-generated analysis can be inaccurate — not licensed financial advice.') }}</flux:text>
             </div>
         </div>
     @endif

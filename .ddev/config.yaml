@@ -18,6 +18,10 @@ web_extra_exposed_ports:
       container_port: 5173
       http_port: 5172
       https_port: 5173
+web_extra_daemons:
+    - name: queue-worker
+      command: php artisan queue:listen --tries=1 --timeout=200
+      directory: /var/www/html
 hooks:
     post-start:
         - exec: PGPASSWORD=db psql -h db -U db -tc "SELECT 1 FROM pg_database WHERE datname = 'testing'" | grep -q 1 || PGPASSWORD=db psql -h db -U db -c "CREATE DATABASE testing"

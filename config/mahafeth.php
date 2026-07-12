@@ -138,8 +138,10 @@ return [
         'model' => env('MAHAFETH_AI_MODEL', 'claude-opus-4-8'),
         'max_tokens' => 8192,
         'timeout' => 120,
-        'chat_model' => env('MAHAFETH_AI_CHAT_MODEL', 'claude-haiku-4-5'),
-        'chat_max_tokens' => 1024,
+        'chat_model' => env('MAHAFETH_AI_CHAT_MODEL', 'claude-sonnet-4-6'),
+        // Adaptive-thinking tokens count against max_tokens, so the cap
+        // leaves room to think and still answer.
+        'chat_max_tokens' => 4096,
         'chat_timeout' => 60,
     ],
 

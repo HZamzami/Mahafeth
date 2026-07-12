@@ -67,7 +67,7 @@ class ClaudeChatResponderTest extends TestCase
 
         $this->assertSame('Your volatility is 26.1%.', $reply);
 
-        Http::assertSent(function (Request $request): bool {
+        Http::assertSent(function (Request $request) use ($snapshot): bool {
             $body = $request->data();
             $system = collect($body['system']);
 
@@ -75,13 +75,40 @@ class ClaudeChatResponderTest extends TestCase
                 && $request->hasHeader('anthropic-version')
                 && $body['model'] === config('mahafeth.ai.chat_model')
                 && $body['max_tokens'] === (int) config('mahafeth.ai.chat_max_tokens')
-                // Haiku rejects adaptive thinking; the chat must not send it.
-                && ! isset($body['thinking'])
+                && $body['thinking'] === ['type' => 'adaptive']
+                && ($body['tools'][0]['type'] ?? null) === 'web_search_20260209'
+                && ($body['tools'][0]['max_uses'] ?? null) === 3
                 && $body['messages'] === [['role' => 'user', 'content' => 'What is my risk?']]
                 && str_contains($system->first()['text'], 'Arabic')
+                && str_contains($system->first()['text'], $snapshot->as_of->toDateString())
                 && str_contains($system->last()['text'], '0.261')
                 && ($system->last()['cache_control']['type'] ?? null) === 'ephemeral';
         });
+    }
+
+    public function test_web_search_replies_concatenate_every_text_block(): void
+    {
+        [$snapshot, $profile] = $this->snapshotAndProfile();
+
+        config(['mahafeth.ai.api_key' => 'test-key']);
+        Http::preventStrayRequests();
+        Http::fake([
+            'api.anthropic.com/*' => Http::response([
+                'content' => [
+                    ['type' => 'thinking', 'thinking' => ''],
+                    ['type' => 'text', 'text' => 'Let me check the latest close. '],
+                    ['type' => 'server_tool_use', 'id' => 'srvtoolu_1', 'name' => 'web_search', 'input' => ['query' => 'Aramco price']],
+                    ['type' => 'web_search_tool_result', 'tool_use_id' => 'srvtoolu_1', 'content' => []],
+                    ['type' => 'text', 'text' => 'Aramco closed at 26.78 SAR.'],
+                ],
+            ]),
+        ]);
+
+        $reply = app(ClaudeChatResponder::class)->respond($snapshot, $profile, 'en', [], [
+            ['role' => 'user', 'content' => 'What is Aramco trading at today?'],
+        ]);
+
+        $this->assertSame('Let me check the latest close. Aramco closed at 26.78 SAR.', $reply);
     }
 
     public function test_an_unexpected_response_shape_throws(): void
