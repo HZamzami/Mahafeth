@@ -150,7 +150,7 @@ new class extends Component {
             @endforeach
         </div>
         <flux:text class="mt-1.5 text-center text-xs">
-            {{ __('Growth in % since the start of the window — above the market lines means your portfolio beat them.') }}
+            {{ __('Growth in % since the start of the window.') }}
         </flux:text>
     @else
         <div class="flex aspect-3/1 flex-col items-center justify-center gap-3">
