@@ -53,12 +53,10 @@ new class extends Component {
                                     <a class="flex items-center justify-between gap-3 py-2.5 transition-transform active:scale-[0.99]"
                                         href="{{ route('explore.instrument', $mover['symbol']) }}" wire:navigate
                                         wire:key="mover-{{ $key }}-{{ $mover['symbol'] }}">
-                                        <span class="min-w-0">
-                                            <span class="block text-sm font-medium text-zinc-800 dark:text-white" dir="ltr">
-                                                {{ $mover['symbol'] }}</span>
-                                            <span class="block truncate text-xs text-zinc-500 dark:text-zinc-400">
-                                                {{ $mover['name'] }}</span>
-                                        </span>
+                                        {{-- Ticker only: company names vary wildly in length and
+                                             wreck the column rhythm; the detail page has the rest. --}}
+                                        <span class="text-sm font-medium text-zinc-800 dark:text-white" dir="ltr">
+                                            {{ $mover['symbol'] }}</span>
                                         <span class="shrink-0 text-end">
                                             @if ($mover['price'] !== null)
                                                 <span class="block text-sm tabular-nums text-zinc-800 dark:text-white" dir="ltr">

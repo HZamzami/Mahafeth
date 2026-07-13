@@ -8,37 +8,37 @@
 <body class="min-h-screen bg-surface-50 dark:bg-charcoal-950">
     <flux:sidebar sticky stashable
         class="border-e border-zinc-200 bg-surface-100 pt-[env(safe-area-inset-top)] print:hidden dark:border-zinc-700 dark:bg-zinc-900">
-        <a href="{{ route('dashboard') }}" class="me-5 mb-2 mt-3 flex items-center space-x-2" wire:navigate>
+        <a href="{{ route('dashboard') }}" class="me-5 mb-2 mt-3 flex items-center space-x-2" wire:navigate.hover>
             <x-app-logo class="size-8"></x-app-logo>
         </a>
 
         <flux:navlist variant="outline">
             <flux:navlist.group :heading="__('Platform')" class="grid">
                 <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
-                    wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+                    wire:navigate.hover>{{ __('Dashboard') }}</flux:navlist.item>
                 <flux:navlist.item icon="magnifying-glass" :href="route('explore.index')"
-                    :current="request()->routeIs('explore.*')" wire:navigate>{{ __('Explore') }}
+                    :current="request()->routeIs('explore.*')" wire:navigate.hover>{{ __('Explore') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="briefcase" :href="route('holdings.index')"
-                    :current="request()->routeIs('holdings.*')" wire:navigate>{{ __('Holdings') }}
+                    :current="request()->routeIs('holdings.*')" wire:navigate.hover>{{ __('Holdings') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="chat-bubble-left-right" :href="route('advisor')"
-                    :current="request()->routeIs('advisor')" wire:navigate>{{ __('AI Advisor') }}
+                    :current="request()->routeIs('advisor')" wire:navigate.hover>{{ __('AI Advisor') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="chart-bar" :href="route('analytics')"
-                    :current="request()->routeIs('analytics')" wire:navigate>{{ __('Analytics') }}
+                    :current="request()->routeIs('analytics')" wire:navigate.hover>{{ __('Analytics') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="building-library" :href="route('connections')"
-                    :current="request()->routeIs('connections')" wire:navigate>{{ __('Connections') }}
+                    :current="request()->routeIs('connections')" wire:navigate.hover>{{ __('Connections') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="clipboard-document-check" :href="route('investor-profile')"
-                    :current="request()->routeIs('investor-profile')" wire:navigate>{{ __('Investor Profile') }}
+                    :current="request()->routeIs('investor-profile')" wire:navigate.hover>{{ __('Investor Profile') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="document-text" :href="route('report')"
-                    :current="request()->routeIs('report')" wire:navigate>{{ __('Report') }}
+                    :current="request()->routeIs('report')" wire:navigate.hover>{{ __('Report') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="bell-alert" :href="route('activity')"
-                    :current="request()->routeIs('activity')" wire:navigate>{{ __('Activity') }}
+                    :current="request()->routeIs('activity')" wire:navigate.hover>{{ __('Activity') }}
                 </flux:navlist.item>
             </flux:navlist.group>
         </flux:navlist>
@@ -107,28 +107,11 @@
 
     <!-- Mobile User Menu -->
     <flux:header class="pt-[env(safe-area-inset-top)] lg:hidden print:hidden">
-        {{-- Equal flex-1 side zones keep the page title truly centered. --}}
         <div class="flex flex-1 items-center">
             <a href="{{ route('dashboard') }}" class="flex items-center" wire:navigate>
                 <x-app-logo class="size-8" />
             </a>
         </div>
-
-        @php($pageTitle = match (true) {
-            request()->routeIs('explore.index') => __('Explore'),
-            request()->routeIs('holdings.*') => __('Holdings'),
-            request()->routeIs('analytics') => __('Analytics'),
-            request()->routeIs('advisor') => __('AI Advisor'),
-            request()->routeIs('connections*') => __('Connections'),
-            request()->routeIs('investor-profile') => __('Investor Profile'),
-            request()->routeIs('report') => __('Report'),
-            request()->routeIs('activity') => __('Activity'),
-            request()->routeIs('settings.*') => __('Settings'),
-            default => null,
-        })
-        @if ($pageTitle !== null)
-            <flux:heading class="shrink-0 truncate" size="lg">{{ $pageTitle }}</flux:heading>
-        @endif
 
         <div class="flex flex-1 items-center justify-end">
         <flux:dropdown position="top" align="end">

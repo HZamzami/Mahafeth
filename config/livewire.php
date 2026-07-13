@@ -194,7 +194,7 @@ return [
 
     'navigate' => [
         'show_progress_bar' => true,
-        'progress_bar_color' => '#2299dd',
+        'progress_bar_color' => '#0d9488', // brand teal so slow navigations are visibly in flight
     ],
 
     /*

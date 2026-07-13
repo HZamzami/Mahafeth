@@ -5,6 +5,7 @@ namespace App\Services\Analytics;
 use App\Enums\ConnectionStatus;
 use App\Enums\ShariahStatus;
 use App\Models\Holding;
+use App\Models\PriceHistory;
 use App\Models\User;
 use App\Services\Fx\FxRateService;
 
@@ -12,67 +13,75 @@ use App\Services\Fx\FxRateService;
  * The user's holdings as display rows: quantity and cost aggregated across
  * accounts, valued at the latest close in base currency. Shared by the
  * report's holdings table and the holdings list page.
+ *
+ * Deliberately reads only the latest close per asset instead of going
+ * through PortfolioDataAssembler, which loads a full year of history the
+ * list never uses — that was most of the holdings page's render time.
  */
 class HoldingsSummarizer
 {
-    public function __construct(
-        private PortfolioDataAssembler $assembler,
-        private FxRateService $fxRates,
-    ) {}
+    public function __construct(private FxRateService $fxRates) {}
 
     /**
      * @return array{rows: list<array{symbol: string, name: string, quantity: float, value: float, cost: float, avgCost: ?float, pl: float, plPct: float, weight: float, shariah: ShariahStatus}>, totalValue: float, totalCost: float}
      */
     public function rows(User $user): array
     {
-        $windowYears = $user->riskProfile?->time_horizon->analysisWindowYears()
-            ?? (int) config('mahafeth.analysis_window_years');
-
-        $data = $this->assembler->forUser($user, now()->subYears($windowYears));
         $fxRates = $this->fxRates->all();
 
-        $costs = [];
-        $names = [];
-        $statuses = [];
-
-        $dbHoldings = Holding::with('asset')
+        $holdings = Holding::with('asset')
             ->whereHas('account.connection', fn ($query) => $query
                 ->whereBelongsTo($user)
                 ->where('status', ConnectionStatus::Connected))
             ->get();
 
-        foreach ($dbHoldings as $holding) {
+        /** @var array<string, array{assetId: int, rate: float, quantity: float, cost: float, name: string, shariah: ShariahStatus}> $positions */
+        $positions = [];
+
+        foreach ($holdings as $holding) {
             $symbol = $holding->asset->symbol;
             $rate = $fxRates[$holding->asset->currency] ?? 1.0;
-            $costs[$symbol] = ($costs[$symbol] ?? 0.0) + $holding->quantity * $holding->avg_cost * $rate;
-            $names[$symbol] = $holding->asset->localizedName();
-            $statuses[$symbol] = $holding->asset->shariah_status;
+
+            $positions[$symbol] ??= [
+                'assetId' => $holding->asset_id,
+                'rate' => $rate,
+                'quantity' => 0.0,
+                'cost' => 0.0,
+                'name' => $holding->asset->localizedName(),
+                'shariah' => $holding->asset->shariah_status,
+            ];
+            $positions[$symbol]['quantity'] += (float) $holding->quantity;
+            $positions[$symbol]['cost'] += $holding->quantity * $holding->avg_cost * $rate;
         }
+
+        $closes = $this->latestCloses(array_column($positions, 'assetId'));
 
         $rows = [];
 
-        foreach ($data['quantities'] as $symbol => $quantity) {
-            $series = $data['priceSeries'][$symbol] ?? [];
+        foreach ($positions as $symbol => $position) {
+            $close = $closes[$position['assetId']] ?? null;
 
-            if ($series === []) {
+            // No stored price yet: same as before, the position stays off
+            // the list until the first sync lands a close.
+            if ($close === null) {
                 continue;
             }
 
-            $value = $quantity * end($series);
-            $cost = $costs[$symbol] ?? 0.0;
+            $value = $position['quantity'] * $close * $position['rate'];
+            $cost = $position['cost'];
 
             $rows[] = [
                 'symbol' => $symbol,
-                'name' => $names[$symbol] ?? $symbol,
-                'quantity' => $quantity,
+                'name' => $position['name'],
+                'quantity' => $position['quantity'],
                 'value' => $value,
                 'cost' => $cost,
                 // Per-share purchase average: the number investors compare
                 // against the current price to see if they are up or down.
-                'avgCost' => $quantity > 0 ? $cost / $quantity : null,
+                'avgCost' => $position['quantity'] > 0 ? $cost / $position['quantity'] : null,
                 'pl' => $value - $cost,
                 'plPct' => $cost > 0 ? ($value - $cost) / $cost : 0.0,
-                'shariah' => $statuses[$symbol] ?? ShariahStatus::Unknown,
+                'shariah' => $position['shariah'],
             ];
         }
 
@@ -91,5 +100,31 @@ class HoldingsSummarizer
             'totalValue' => $totalValue,
             'totalCost' => array_sum(array_column($rows, 'cost')),
         ];
+    }
+
+    /**
+     * The most recent stored close per asset, in native currency.
+     *
+     * @param  list<int>  $assetIds
+     * @return array<int, float> asset id => close
+     */
+    private function latestCloses(array $assetIds): array
+    {
+        if ($assetIds === []) {
+            return [];
+        }
+
+        $latestDates = PriceHistory::query()
+            ->selectRaw('asset_id, MAX(date) AS max_date')
+            ->whereIn('asset_id', $assetIds)
+            ->groupBy('asset_id');
+
+        return PriceHistory::query()
+            ->joinSub($latestDates, 'latest', fn ($join) => $join
+                ->on('price_histories.asset_id', '=', 'latest.asset_id')
+                ->on('price_histories.date', '=', 'latest.max_date'))
+            ->pluck('price_histories.close', 'price_histories.asset_id')
+            ->map(fn ($close): float => (float) $close)
+            ->all();
     }
 }

@@ -6,25 +6,25 @@
      and everything occasional stashed under More. --}}
 <nav class="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden print:hidden dark:border-zinc-700 dark:bg-zinc-900">
     <div class="grid grid-cols-5">
-        <a href="{{ route('dashboard') }}" wire:navigate
+        <a href="{{ route('dashboard') }}" wire:navigate.hover
             x-data x-on:click="window.haptic?.(5)"
             class="flex flex-col items-center gap-1 py-2 text-[10px] font-medium transition-transform active:scale-95 {{ request()->routeIs('dashboard') ? $active : $inactive }}">
             <flux:icon.home class="size-6" />
             <span class="max-w-full truncate px-1">{{ __('Dashboard') }}</span>
         </a>
-        <a href="{{ route('holdings.index') }}" wire:navigate
+        <a href="{{ route('holdings.index') }}" wire:navigate.hover
             x-data x-on:click="window.haptic?.(5)"
             class="flex flex-col items-center gap-1 py-2 text-[10px] font-medium transition-transform active:scale-95 {{ request()->routeIs('holdings.*') ? $active : $inactive }}">
             <flux:icon.briefcase class="size-6" />
             <span class="max-w-full truncate px-1">{{ __('Holdings') }}</span>
         </a>
-        <a href="{{ route('advisor') }}" wire:navigate
+        <a href="{{ route('advisor') }}" wire:navigate.hover
             x-data x-on:click="window.haptic?.(5)"
             class="flex flex-col items-center gap-1 py-2 text-[10px] font-medium transition-transform active:scale-95 {{ request()->routeIs('advisor') ? $active : $inactive }}">
             <flux:icon.chat-bubble-left-right class="size-6" />
             <span class="max-w-full truncate px-1">{{ __('AI Advisor') }}</span>
         </a>
-        <a href="{{ route('explore.index') }}" wire:navigate
+        <a href="{{ route('explore.index') }}" wire:navigate.hover
             x-data x-on:click="window.haptic?.(5)"
             class="flex flex-col items-center gap-1 py-2 text-[10px] font-medium transition-transform active:scale-95 {{ request()->routeIs('explore.*') ? $active : $inactive }}">
             <flux:icon.magnifying-glass class="size-6" />
@@ -39,15 +39,15 @@
             </button>
 
             <flux:menu>
-                <flux:menu.item icon="chart-bar" :href="route('analytics')" wire:navigate>
+                <flux:menu.item icon="chart-bar" :href="route('analytics')" wire:navigate.hover>
                     {{ __('Analytics') }}</flux:menu.item>
-                <flux:menu.item icon="bell-alert" :href="route('activity')" wire:navigate>
+                <flux:menu.item icon="bell-alert" :href="route('activity')" wire:navigate.hover>
                     {{ __('Activity') }}</flux:menu.item>
-                <flux:menu.item icon="document-text" :href="route('report')" wire:navigate>
+                <flux:menu.item icon="document-text" :href="route('report')" wire:navigate.hover>
                     {{ __('Report') }}</flux:menu.item>
-                <flux:menu.item icon="building-library" :href="route('connections')" wire:navigate>
+                <flux:menu.item icon="building-library" :href="route('connections')" wire:navigate.hover>
                     {{ __('Connections') }}</flux:menu.item>
-                <flux:menu.item icon="clipboard-document-check" :href="route('investor-profile')" wire:navigate>
+                <flux:menu.item icon="clipboard-document-check" :href="route('investor-profile')" wire:navigate.hover>
                     {{ __('Investor Profile') }}</flux:menu.item>
             </flux:menu>
         </flux:dropdown>
