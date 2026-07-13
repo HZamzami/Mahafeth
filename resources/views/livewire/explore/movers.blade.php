@@ -36,14 +36,21 @@ new class extends Component {
                 <flux:text class="text-xs !text-neutral-400">{{ __('Data by Yahoo Finance') }}</flux:text>
             </div>
 
-            <div class="mt-4 grid gap-6 sm:grid-cols-3">
+            {{-- One full-width list at a time: segmented tabs keep every
+                 row aligned instead of squeezing three narrow columns. --}}
+            <flux:tab.group class="mt-4">
+                <flux:tabs variant="segmented" size="sm">
+                    @foreach ($sections as $key => $label)
+                        <flux:tab :name="$key" wire:key="movers-tab-{{ $key }}">{{ $label }}</flux:tab>
+                    @endforeach
+                </flux:tabs>
+
                 @foreach ($sections as $key => $label)
-                    @if (($movers[$key] ?? []) !== [])
-                        <div wire:key="movers-{{ $key }}">
-                            <flux:text class="text-xs font-medium uppercase tracking-widest">{{ $label }}</flux:text>
-                            <div class="mt-2 divide-y divide-zinc-100 dark:divide-zinc-800">
+                    <flux:tab.panel :name="$key" class="!pt-2" wire:key="movers-panel-{{ $key }}">
+                        @if (($movers[$key] ?? []) !== [])
+                            <div class="divide-y divide-zinc-100 dark:divide-zinc-800">
                                 @foreach ($movers[$key] as $mover)
-                                    <a class="flex items-center justify-between gap-3 py-2 transition-transform active:scale-[0.99]"
+                                    <a class="flex items-center justify-between gap-3 py-2.5 transition-transform active:scale-[0.99]"
                                         href="{{ route('explore.instrument', $mover['symbol']) }}" wire:navigate
                                         wire:key="mover-{{ $key }}-{{ $mover['symbol'] }}">
                                         <span class="min-w-0">
@@ -66,10 +73,12 @@ new class extends Component {
                                     </a>
                                 @endforeach
                             </div>
-                        </div>
-                    @endif
+                        @else
+                            <flux:text class="py-4 text-center text-sm">{{ __('Nothing to show right now.') }}</flux:text>
+                        @endif
+                    </flux:tab.panel>
                 @endforeach
-            </div>
+            </flux:tab.group>
         </div>
     @endif
 </div>
