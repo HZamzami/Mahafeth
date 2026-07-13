@@ -135,14 +135,14 @@ new class extends Component {
             </div>
 
             @if ($showFundamentals)
-                <livewire:instruments.fundamentals :symbol="$symbol" lazy />
+                <livewire:instruments.fundamentals :symbol="$symbol" lazy.bundle />
             @endif
         </div>
 
         {{-- Side column --}}
         <div class="flex flex-col gap-6">
             @if ($showFundamentals)
-                <livewire:instruments.analyst-panel :symbol="$symbol" lazy />
+                <livewire:instruments.analyst-panel :symbol="$symbol" lazy.bundle />
             @endif
         </div>
     </div>

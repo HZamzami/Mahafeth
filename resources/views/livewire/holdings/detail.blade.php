@@ -277,7 +277,7 @@ new class extends Component {
             @endif
 
             @if ($showFundamentals)
-                <livewire:instruments.fundamentals :symbol="$asset->symbol" lazy />
+                <livewire:instruments.fundamentals :symbol="$asset->symbol" lazy.bundle />
             @endif
 
             {{-- Related disclosures --}}
@@ -397,7 +397,7 @@ new class extends Component {
             @endif
 
             @if ($showFundamentals)
-                <livewire:instruments.analyst-panel :symbol="$asset->symbol" lazy />
+                <livewire:instruments.analyst-panel :symbol="$asset->symbol" lazy.bundle />
             @endif
 
             {{-- Transactions from the user's synced accounts --}}
