@@ -86,6 +86,14 @@
                 <flux:menu.separator />
 
                 <flux:menu.radio.group>
+                    <flux:menu.item :href="route('whats-new')" icon="sparkles" wire:navigate>
+                        <span class="flex items-center gap-1.5">{{ __("What's New") }}
+                            {{-- Unseen dot: cleared when the page stamps localStorage. --}}
+                            <span x-data
+                                x-show="(localStorage.getItem('mahafeth-changelog-seen') ?? '') < '{{ \App\Support\Changelog::latestDate() }}'"
+                                x-cloak class="size-1.5 rounded-full bg-teal-500"></span>
+                        </span>
+                    </flux:menu.item>
                     <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
                     <flux:menu.item as="button" type="button" x-data icon="moon"
                         @click.prevent.stop="$flux.dark = ! $flux.dark">
@@ -142,6 +150,14 @@
                 <flux:menu.separator />
 
                 <flux:menu.radio.group>
+                    <flux:menu.item :href="route('whats-new')" icon="sparkles" wire:navigate>
+                        <span class="flex items-center gap-1.5">{{ __("What's New") }}
+                            {{-- Unseen dot: cleared when the page stamps localStorage. --}}
+                            <span x-data
+                                x-show="(localStorage.getItem('mahafeth-changelog-seen') ?? '') < '{{ \App\Support\Changelog::latestDate() }}'"
+                                x-cloak class="size-1.5 rounded-full bg-teal-500"></span>
+                        </span>
+                    </flux:menu.item>
                     <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
                     <flux:menu.item as="button" type="button" x-data icon="moon"
                         @click.prevent.stop="$flux.dark = ! $flux.dark">

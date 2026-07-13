@@ -66,6 +66,10 @@ Volt::route('plan', 'investment-plan.index')
     ->middleware(['auth', 'verified'])
     ->name('plan');
 
+Volt::route('whats-new', 'changelog.index')
+    ->middleware(['auth'])
+    ->name('whats-new');
+
 Volt::route('report', 'report.index')
     ->middleware(['auth', 'verified'])
     ->name('report');
