@@ -48,6 +48,9 @@ return [
     'yahoo_finance' => [
         // Keyless chart API; covers Tadawul symbols the Twelve Data free tier cannot.
         'base_url' => env('YAHOO_FINANCE_BASE_URL', 'https://query1.finance.yahoo.com'),
+        // Hitting this host sets the session cookie the quoteSummary
+        // (fundamentals) API requires alongside its crumb token.
+        'cookie_url' => env('YAHOO_FINANCE_COOKIE_URL', 'https://fc.yahoo.com'),
     ],
 
     'marketaux' => [

@@ -34,9 +34,8 @@ new class extends Component {
 
         return [
             'tradingViewSymbol' => TradingViewSymbol::for($this->symbol, $assetClass),
-            // Unknown symbols get the full equity treatment; the widgets
-            // degrade gracefully when a pane has no data for them.
-            'showTechnicals' => $assetClass === null || in_array($assetClass, [AssetClass::Equity, AssetClass::Crypto], true),
+            // Unknown symbols get the full equity treatment; the cards
+            // hide themselves when the API has no data for them.
             'showFundamentals' => $assetClass === null || $assetClass === AssetClass::Equity,
             'askPrompt' => __('I am considering :symbol. How would adding it affect my portfolio diversification and risk?', [
                 'symbol' => $this->symbol,
@@ -113,41 +112,14 @@ new class extends Component {
             </div>
 
             @if ($showFundamentals)
-                <div class="card p-5">
-                    <div class="flex items-center justify-between">
-                        <flux:heading class="uppercase tracking-widest !text-neutral-500 dark:!text-neutral-400" size="sm">
-                            {{ __('Financials') }}</flux:heading>
-                        <flux:text class="text-xs !text-neutral-400">TradingView</flux:text>
-                    </div>
-                    <x-tv-widget class="mt-4 h-96" name="financials"
-                        :config="['symbol' => $tradingViewSymbol, 'displayMode' => 'regular']" />
-                </div>
-
-                <div class="card p-5">
-                    <div class="flex items-center justify-between">
-                        <flux:heading class="uppercase tracking-widest !text-neutral-500 dark:!text-neutral-400" size="sm">
-                            {{ __('About the Company') }}</flux:heading>
-                        <flux:text class="text-xs !text-neutral-400">TradingView</flux:text>
-                    </div>
-                    <x-tv-widget class="mt-4 h-64" name="symbol-profile" :config="['symbol' => $tradingViewSymbol]" />
-                </div>
+                <livewire:instruments.fundamentals :symbol="$symbol" lazy />
             @endif
         </div>
 
         {{-- Side column --}}
         <div class="flex flex-col gap-6">
-            @if ($showTechnicals)
-                <div class="card p-5">
-                    <div class="flex items-center justify-between">
-                        <flux:heading class="uppercase tracking-widest !text-neutral-500 dark:!text-neutral-400" size="sm">
-                            {{ __('Technical Signal') }}</flux:heading>
-                        <flux:text class="text-xs !text-neutral-400">TradingView</flux:text>
-                    </div>
-                    <x-tv-widget class="mt-4 h-96" name="technical-analysis"
-                        :config="['symbol' => $tradingViewSymbol, 'interval' => '1D', 'showIntervalTabs' => true]" />
-                    <flux:text class="mt-2 text-center text-xs">
-                        {{ __('Signals by TradingView — not investment advice.') }}</flux:text>
-                </div>
+            @if ($showFundamentals)
+                <livewire:instruments.analyst-panel :symbol="$symbol" lazy />
             @endif
         </div>
     </div>

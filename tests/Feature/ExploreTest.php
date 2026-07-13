@@ -41,7 +41,9 @@ class ExploreTest extends TestCase
             ->assertOk()
             ->assertSee('TSLA')
             ->assertSee(__("You don't hold this asset — data below comes from the market, not your accounts."))
-            ->assertSee('tradingview');
+            ->assertSee('tradingview')
+            ->assertSeeLivewire('instruments.fundamentals')
+            ->assertSeeLivewire('instruments.analyst-panel');
     }
 
     public function test_owned_instruments_redirect_to_the_holding_detail_page(): void

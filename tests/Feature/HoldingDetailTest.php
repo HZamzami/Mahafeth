@@ -15,12 +15,24 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
 
 class HoldingDetailTest extends TestCase
 {
     use RefreshDatabase;
+
+    private function fakeYahoo(): void
+    {
+        Http::fake([
+            'fc.yahoo.com' => Http::response(status: 404, headers: ['Set-Cookie' => 'A3=d=abc123; Domain=.yahoo.com']),
+            'query1.finance.yahoo.com/v1/test/getcrumb' => Http::response('crumb-token'),
+            'query1.finance.yahoo.com/v10/finance/quoteSummary/*' => Http::response(
+                (string) file_get_contents(base_path('tests/fixtures/yahoo-quote-summary.json')),
+            ),
+        ]);
+    }
 
     private function syncedUser(): User
     {
@@ -102,13 +114,11 @@ class HoldingDetailTest extends TestCase
                 ->get("/holdings/{$symbol}")
                 ->assertOk()
                 ->assertSee(__('Market Chart'))
-                ->assertSee(__('Financials'))
-                ->assertSee(__('About the Company'))
-                ->assertSee(__('Technical Signal'))
+                ->assertSeeLivewire('instruments.fundamentals')
+                ->assertSeeLivewire('instruments.analyst-panel')
                 // Theme placeholder resolved client-side by the reactive
-                // $flux.dark effect on every TradingView iframe.
-                ->assertSee('theme=__THEME__', false)
-                ->assertSee('%22__THEME__%22', false);
+                // $flux.dark effect on the TradingView chart iframe.
+                ->assertSee('theme=__THEME__', false);
         }
     }
 
@@ -166,18 +176,16 @@ class HoldingDetailTest extends TestCase
             ->assertSee(__('In Your Portfolio'));
     }
 
-    public function test_equities_get_the_financials_and_technicals_widgets(): void
+    public function test_equities_get_the_fundamentals_and_analyst_sections(): void
     {
         $this->actingAs($this->syncedUser())
             ->get('/holdings/AAPL')
             ->assertOk()
-            ->assertSee(__('Financials'))
-            ->assertSee(__('Technical Signal'))
-            ->assertSee('embed-widget/technical-analysis', false)
-            ->assertSee('embed-widget/financials', false);
+            ->assertSeeLivewire('instruments.fundamentals')
+            ->assertSeeLivewire('instruments.analyst-panel');
     }
 
-    public function test_crypto_gets_technicals_but_not_financials(): void
+    public function test_crypto_gets_the_chart_but_no_fundamentals(): void
     {
         $user = $this->syncedUser();
 
@@ -189,8 +197,52 @@ class HoldingDetailTest extends TestCase
         $this->actingAs($user)
             ->get('/holdings/BTC')
             ->assertOk()
-            ->assertSee('embed-widget/technical-analysis', false)
-            ->assertDontSee('embed-widget/financials', false);
+            ->assertSee(__('Market Chart'))
+            ->assertDontSeeLivewire('instruments.fundamentals')
+            ->assertDontSeeLivewire('instruments.analyst-panel');
+    }
+
+    public function test_the_fundamentals_section_renders_the_financials_and_company_profile(): void
+    {
+        $this->fakeYahoo();
+        $this->actingAs($this->syncedUser());
+
+        Volt::test('instruments.fundamentals', ['symbol' => 'MSFT'])
+            ->assertSee(__('Financials'))
+            ->assertSee(__('Total Revenue'))
+            ->assertSee(__('vs prior quarter'))
+            ->assertSee('Q1 2026')
+            ->assertSee(__('About the Company'))
+            ->assertSee('Microsoft Corporation develops')
+            ->assertSee(__('Employees'))
+            ->assertSee('228,000');
+    }
+
+    public function test_the_analyst_panel_renders_ratings_price_targets_and_key_stats(): void
+    {
+        $this->fakeYahoo();
+        $this->actingAs($this->syncedUser());
+
+        Volt::test('instruments.analyst-panel', ['symbol' => 'MSFT'])
+            ->assertSee(__('Analyst Ratings'))
+            ->assertSee(__('Based on :count analyst ratings.', ['count' => 56]))
+            ->assertSee(__('Buy'))
+            ->assertSee(__('Analyst Price Target (12 months)'))
+            ->assertSee('559.86')
+            ->assertSee(__('Key Stats'))
+            ->assertSee(__('Market Cap'));
+    }
+
+    public function test_the_fundamentals_sections_hide_when_the_data_is_unavailable(): void
+    {
+        Http::fake(['*' => Http::response(status: 500)]);
+        $this->actingAs($this->syncedUser());
+
+        Volt::test('instruments.fundamentals', ['symbol' => 'MSFT'])
+            ->assertDontSee(__('Total Revenue'));
+
+        Volt::test('instruments.analyst-panel', ['symbol' => 'MSFT'])
+            ->assertDontSee(__('Analyst Ratings'));
     }
 
     public function test_the_page_lists_the_users_transactions_for_the_asset(): void

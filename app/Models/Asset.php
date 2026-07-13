@@ -68,12 +68,21 @@ class Asset extends Model
      */
     public function currencySymbol(): string
     {
-        return match ($this->currency) {
+        return static::symbolForCurrency($this->currency);
+    }
+
+    /**
+     * Get the display symbol for an ISO currency code.
+     */
+    public static function symbolForCurrency(?string $currency): string
+    {
+        return match ($currency) {
             'SAR' => '⃁',
             'USD' => '$',
             'EUR' => '€',
             'GBP' => '£',
-            default => $this->currency.' ',
+            null => '',
+            default => $currency.' ',
         };
     }
 }

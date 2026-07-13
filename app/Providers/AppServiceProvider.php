@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Contracts\ChatResponder;
 use App\Contracts\FilingProvider;
+use App\Contracts\FundamentalsProvider;
 use App\Contracts\InsightGenerator;
 use App\Contracts\NewsProvider;
 use App\Contracts\OpenBankingProvider;
@@ -13,6 +14,7 @@ use App\Services\Insights\ClaudeChatResponder;
 use App\Services\Insights\ClaudeInsightGenerator;
 use App\Services\Insights\FakeChatResponder;
 use App\Services\Insights\FakeInsightGenerator;
+use App\Services\Markets\YahooFundamentalsProvider;
 use App\Services\News\CuratedNewsProvider;
 use App\Services\News\MarketauxNewsProvider;
 use App\Services\OpenBanking\FakeOpenBankingProvider;
@@ -43,6 +45,10 @@ class AppServiceProvider extends ServiceProvider
         // Curated demo filings for now; a live SEC EDGAR or Tadawul
         // provider slots in behind the same contract later.
         $this->app->bind(FilingProvider::class, CuratedFilingProvider::class);
+
+        // Keyless like the chart API, so it needs no fallback binding;
+        // failures surface as null and the fundamentals cards hide.
+        $this->app->bind(FundamentalsProvider::class, YahooFundamentalsProvider::class);
 
         $this->app->bind(NewsProvider::class, function (Application $app) {
             return empty($app->make('config')->get('services.marketaux.token'))
