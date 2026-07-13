@@ -9,13 +9,12 @@ use App\Contracts\InsightGenerator;
 use App\Contracts\NewsProvider;
 use App\Contracts\OpenBankingProvider;
 use App\Contracts\PriceProvider;
-use App\Services\Filings\CuratedFilingProvider;
+use App\Services\Filings\EdgarFilingProvider;
 use App\Services\Insights\ClaudeChatResponder;
 use App\Services\Insights\ClaudeInsightGenerator;
 use App\Services\Insights\FakeChatResponder;
 use App\Services\Insights\FakeInsightGenerator;
 use App\Services\Markets\YahooFundamentalsProvider;
-use App\Services\News\CuratedNewsProvider;
 use App\Services\News\MarketauxNewsProvider;
 use App\Services\OpenBanking\FakeOpenBankingProvider;
 use App\Services\Prices\SimulatedPriceProvider;
@@ -42,19 +41,17 @@ class AppServiceProvider extends ServiceProvider
                 : $app->make(TwelveDataPriceProvider::class);
         });
 
-        // Curated demo filings for now; a live SEC EDGAR or Tadawul
-        // provider slots in behind the same contract later.
-        $this->app->bind(FilingProvider::class, CuratedFilingProvider::class);
+        // Live SEC EDGAR disclosures for US holdings; Tadawul has no
+        // public API, so Saudi symbols simply carry no filings.
+        $this->app->bind(FilingProvider::class, EdgarFilingProvider::class);
 
         // Keyless like the chart API, so it needs no fallback binding;
         // failures surface as null and the fundamentals cards hide.
         $this->app->bind(FundamentalsProvider::class, YahooFundamentalsProvider::class);
 
-        $this->app->bind(NewsProvider::class, function (Application $app) {
-            return empty($app->make('config')->get('services.marketaux.token'))
-                ? $app->make(CuratedNewsProvider::class)
-                : $app->make(MarketauxNewsProvider::class);
-        });
+        // Real headlines only: without a token the fetch fails and the
+        // feed stays empty rather than showing synthetic news.
+        $this->app->bind(NewsProvider::class, MarketauxNewsProvider::class);
 
         $this->app->bind(InsightGenerator::class, function (Application $app) {
             $config = $app->make('config')->get('mahafeth.ai');

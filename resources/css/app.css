@@ -58,6 +58,16 @@ html {
         animation: page-enter 180ms ease-out;
     }
 
+    /* The old page dims the instant a wire:navigate hop starts (class set
+       from app.js), acknowledging the tap before the network answers. */
+    main {
+        transition: opacity 150ms ease-out;
+    }
+
+    body.navigating main {
+        opacity: 0.55;
+    }
+
     @keyframes page-enter {
         from {
             opacity: 0;
@@ -113,6 +123,14 @@ html {
     to {
         transform: rotate(360deg);
     }
+}
+
+/* Livewire's navigate progress bar (NProgress markup) ships 2px thin and
+   easy to miss; make it a bold branded strip above every fixed layer. */
+#nprogress .bar {
+    height: 4px !important;
+    z-index: 100 !important;
+    box-shadow: 0 0 8px var(--livewire-progress-bar-color, var(--color-teal-500));
 }
 
 @utility scrollbar-thin {

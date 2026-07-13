@@ -53,6 +53,14 @@ return [
         'cookie_url' => env('YAHOO_FINANCE_COOKIE_URL', 'https://fc.yahoo.com'),
     ],
 
+    'edgar' => [
+        // Keyless SEC APIs; EDGAR fair-use policy requires a descriptive
+        // User-Agent that identifies the app and a contact address.
+        'tickers_url' => env('EDGAR_TICKERS_URL', 'https://www.sec.gov/files/company_tickers.json'),
+        'submissions_base_url' => env('EDGAR_SUBMISSIONS_BASE_URL', 'https://data.sec.gov'),
+        'user_agent' => env('EDGAR_USER_AGENT', 'Mahafeth/1.0 (devzamzami@proton.me)'),
+    ],
+
     'marketaux' => [
         'base_url' => env('MARKETAUX_BASE_URL', 'https://api.marketaux.com'),
         'token' => env('MARKETAUX_TOKEN'),

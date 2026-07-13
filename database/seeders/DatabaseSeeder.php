@@ -20,7 +20,6 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             InstitutionSeeder::class,
-            NewsSeeder::class,
             DemoPortfolioSeeder::class,
         ]);
     }

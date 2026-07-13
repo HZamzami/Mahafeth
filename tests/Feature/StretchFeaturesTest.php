@@ -5,11 +5,11 @@ namespace Tests\Feature;
 use App\Actions\SyncConnection;
 use App\Models\Connection;
 use App\Models\Institution;
+use App\Models\NewsItem;
 use App\Models\PortfolioSnapshot;
 use App\Models\RiskProfile;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
-use Database\Seeders\NewsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
@@ -37,7 +37,8 @@ class StretchFeaturesTest extends TestCase
 
     public function test_the_news_feed_shows_items_matching_holdings_with_a_relevance_line(): void
     {
-        (new NewsSeeder)->run();
+        NewsItem::factory()->create(['headline' => 'Apple earnings preview', 'symbols' => ['AAPL'], 'sectors' => null]);
+        NewsItem::factory()->create(['headline' => 'Aramco maintains dividend', 'symbols' => ['2222.SR'], 'sectors' => ['Energy']]);
         $this->actingAs($this->analyzedUser());
 
         Volt::test('dashboard.news-feed')
@@ -49,7 +50,7 @@ class StretchFeaturesTest extends TestCase
 
     public function test_the_news_feed_is_empty_without_relevant_holdings(): void
     {
-        (new NewsSeeder)->run();
+        NewsItem::factory()->create(['headline' => 'Apple earnings preview', 'symbols' => ['AAPL'], 'sectors' => null]);
         $this->actingAs(User::factory()->create());
 
         Volt::test('dashboard.news-feed')

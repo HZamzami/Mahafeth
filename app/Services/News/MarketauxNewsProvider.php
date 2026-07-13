@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Live market news from the marketaux API, filtered to symbols actually
- * held in the system so the feed stays portfolio-relevant. Falls back to
- * the curated provider on any API failure.
+ * held in the system so the feed stays portfolio-relevant. On failure the
+ * feed simply stays as it is — never synthetic headlines.
  */
 class MarketauxNewsProvider implements NewsProvider
 {
@@ -35,8 +35,6 @@ class MarketauxNewsProvider implements NewsProvider
         'Utilities' => 'Utilities',
         'Real Estate' => 'Real Estate',
     ];
-
-    public function __construct(private CuratedNewsProvider $fallback) {}
 
     public function fetchLatest(): array
     {
@@ -72,11 +70,11 @@ class MarketauxNewsProvider implements NewsProvider
                 'published_at' => Carbon::parse($article['published_at'] ?? now()),
             ], $articles);
         } catch (\Throwable $exception) {
-            Log::warning('marketaux news fetch failed, using curated headlines.', [
+            Log::warning('marketaux news fetch failed.', [
                 'error' => $exception->getMessage(),
             ]);
 
-            return $this->fallback->fetchLatest();
+            return [];
         }
     }
 }

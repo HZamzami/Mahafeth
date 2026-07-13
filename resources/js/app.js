@@ -4,10 +4,19 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+// Dim the outgoing page the moment a wire:navigate hop starts so every
+// tap gets an instant visual acknowledgement, even before the network
+// answers (styles in app.css under body.navigating).
+document.addEventListener('livewire:navigate', () => {
+    document.body.classList.add('navigating');
+});
+
 // Fade the main content in after every SPA navigation so page changes
 // glide instead of popping. The animation lives behind a
 // prefers-reduced-motion media query in app.css.
 document.addEventListener('livewire:navigated', () => {
+    document.body.classList.remove('navigating');
+
     const main = document.querySelector('main');
 
     if (!main) {
