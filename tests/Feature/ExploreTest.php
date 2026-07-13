@@ -166,6 +166,53 @@ class ExploreTest extends TestCase
             ->assertSee('2223.SR');
     }
 
+    public function test_crypto_results_collapse_to_usd_quoted_base_symbols(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        Http::fake([
+            'api.twelvedata.com/*' => Http::response([
+                'status' => 'ok',
+                'data' => [
+                    ['symbol' => 'ETH/KRW', 'instrument_name' => 'Ethereum Korean Won', 'exchange' => 'Bithumb', 'country' => '', 'currency' => 'KRW', 'instrument_type' => 'Digital Currency'],
+                    ['symbol' => 'ETH/USD', 'instrument_name' => 'Ethereum US Dollar', 'exchange' => 'Binance', 'country' => '', 'currency' => 'USD', 'instrument_type' => 'Digital Currency'],
+                    ['symbol' => 'ETH/USD', 'instrument_name' => 'Ethereum US Dollar', 'exchange' => 'Coinbase Pro', 'country' => '', 'currency' => 'USD', 'instrument_type' => 'Digital Currency'],
+                ],
+            ]),
+        ]);
+
+        Volt::test('explore.index')
+            ->set('query', 'ethereum')
+            // The KRW venue pair is dropped, the USD pair collapses to the
+            // bare base symbol (one row), and the link stays routable.
+            ->assertDontSee('Korean Won')
+            ->assertSee('Ethereum US Dollar')
+            ->assertSee(route('explore.instrument', 'ETH'))
+            ->assertDontSee('ETH/USD');
+    }
+
+    public function test_search_ranks_familiar_instruments_above_exotic_venues(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        Http::fake([
+            'api.twelvedata.com/*' => Http::response([
+                'status' => 'ok',
+                'data' => [
+                    ['symbol' => 'ETHOSLTD', 'instrument_name' => 'Ethos Ltd.', 'exchange' => 'NSE', 'country' => 'India', 'currency' => 'INR', 'instrument_type' => 'Common Stock'],
+                    ['symbol' => 'ETH/USD', 'instrument_name' => 'Ethereum US Dollar', 'exchange' => 'Binance', 'country' => '', 'currency' => 'USD', 'instrument_type' => 'Digital Currency'],
+                    ['symbol' => 'ETHA', 'instrument_name' => 'iShares Ethereum Trust ETF', 'exchange' => 'NASDAQ', 'country' => 'United States', 'currency' => 'USD', 'instrument_type' => 'ETF'],
+                ],
+            ]),
+        ]);
+
+        // The NSE stock keeps its type lead, but the NASDAQ ETF outranks
+        // the crypto pair despite arriving later in the API order.
+        Volt::test('explore.index')
+            ->set('query', 'eth')
+            ->assertSeeInOrder(['Ethos Ltd.', 'iShares Ethereum Trust ETF', 'Ethereum US Dollar']);
+    }
+
     public function test_search_failures_degrade_to_no_market_results(): void
     {
         $this->actingAs(User::factory()->create());

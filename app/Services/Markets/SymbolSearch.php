@@ -19,6 +19,21 @@ class SymbolSearch
     private const MAX_RESULTS = 8;
 
     /**
+     * Twelve Data ranks purely by string relevance, so exotic venue pairs
+     * (ETH/KRW on Bithumb) can precede the instruments people actually
+     * search for; over-fetch and re-rank locally.
+     */
+    private const FETCH_SIZE = 20;
+
+    private const TYPE_WEIGHTS = [
+        'Common Stock' => 30,
+        'ETF' => 20,
+        'Digital Currency' => 10,
+    ];
+
+    private const MAJOR_EXCHANGES = ['Tadawul', 'NASDAQ', 'NYSE'];
+
+    /**
      * @return list<array{symbol: string, name: string, exchange: string, country: string, currency: string, type: string}>
      */
     public function search(string $query): array
@@ -56,7 +71,7 @@ class SymbolSearch
                 ->timeout(15)
                 ->get('/symbol_search', [
                     'symbol' => $query,
-                    'outputsize' => self::MAX_RESULTS,
+                    'outputsize' => self::FETCH_SIZE,
                     'apikey' => config('services.twelvedata.key'),
                 ])
                 ->throw()
@@ -66,7 +81,7 @@ class SymbolSearch
                 throw new \RuntimeException($response['message'] ?? 'unexpected response');
             }
 
-            return array_values(array_map(fn (array $match): array => [
+            $results = array_values(array_map(fn (array $match): array => [
                 'symbol' => ($match['mic_code'] ?? null) === 'XSAU'
                     ? $match['symbol'].'.SR'
                     : $match['symbol'],
@@ -76,6 +91,8 @@ class SymbolSearch
                 'currency' => $match['currency'] ?? '',
                 'type' => $match['instrument_type'] ?? '',
             ], $response['data'] ?? []));
+
+            return $this->curate($results);
         } catch (\Throwable $exception) {
             Log::warning('Twelve Data symbol search failed.', [
                 'query' => $query,
@@ -84,5 +101,39 @@ class SymbolSearch
 
             return null;
         }
+    }
+
+    /**
+     * Normalize, dedupe, and re-rank the raw matches into the shortlist
+     * users see: USD-quoted crypto collapsed to its base symbol (ETH/USD
+     * becomes ETH, our Asset convention — and a slash never survives into
+     * the /explore/{symbol} route), one row per symbol, familiar types and
+     * venues first while preserving relevance order within ties.
+     *
+     * @param  list<array{symbol: string, name: string, exchange: string, country: string, currency: string, type: string}>  $results
+     * @return list<array{symbol: string, name: string, exchange: string, country: string, currency: string, type: string}>
+     */
+    private function curate(array $results): array
+    {
+        return collect($results)
+            ->map(function (array $match): ?array {
+                if ($match['type'] === 'Digital Currency' && str_contains($match['symbol'], '/')) {
+                    if (! str_ends_with($match['symbol'], '/USD')) {
+                        return null;
+                    }
+
+                    $match['symbol'] = strstr($match['symbol'], '/', before_needle: true);
+                }
+
+                return str_contains($match['symbol'], '/') ? null : $match;
+            })
+            ->filter()
+            ->unique('symbol')
+            ->sortBy(fn (array $match, int $index): int => $index
+                - (self::TYPE_WEIGHTS[$match['type']] ?? 0)
+                - (in_array($match['exchange'], self::MAJOR_EXCHANGES, true) ? 5 : 0))
+            ->take(self::MAX_RESULTS)
+            ->values()
+            ->all();
     }
 }

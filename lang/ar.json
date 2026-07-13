@@ -975,5 +975,8 @@
     "Top Gainers": "الأكثر ارتفاعًا",
     "Top Losers": "الأكثر انخفاضًا",
     "Most Active": "الأكثر تداولًا",
-    "Nothing to show right now.": "لا يوجد ما يُعرض حاليًا."
+    "Nothing to show right now.": "لا يوجد ما يُعرض حاليًا.",
+    "Stock": "سهم",
+    "ETF": "صندوق مؤشرات",
+    "REIT": "صندوق عقاري"
 }

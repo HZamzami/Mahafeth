@@ -98,39 +98,56 @@ new class extends Component {
                 @if ($owned->isNotEmpty())
                     <flux:text class="px-3 pb-1 pt-2 text-xs font-medium uppercase tracking-widest">
                         {{ __('Your Holdings') }}</flux:text>
-                    @foreach ($owned as $asset)
-                        <a class="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-700/50"
-                            href="{{ route('holdings.detail', $asset->symbol) }}" wire:navigate
-                            wire:key="owned-{{ $asset->symbol }}">
-                            <span class="min-w-0">
-                                <span class="block truncate text-sm font-medium text-zinc-900 dark:text-white">
-                                    {{ $asset->localizedName() }}</span>
-                                <span class="block text-xs text-zinc-500 dark:text-zinc-400" dir="ltr">
-                                    {{ $asset->symbol }}</span>
-                            </span>
-                            <flux:badge size="sm">{{ $asset->asset_class->label() }}</flux:badge>
-                        </a>
-                    @endforeach
+                    <div class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                        @foreach ($owned as $asset)
+                            <a class="flex items-center gap-3 px-3 py-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-700/50"
+                                href="{{ route('holdings.detail', $asset->symbol) }}" wire:navigate
+                                wire:key="owned-{{ $asset->symbol }}">
+                                <flux:avatar size="sm" color="auto" :name="$asset->symbol"
+                                    :initials="mb_substr($asset->symbol, 0, 2)" />
+                                <span class="min-w-0 flex-1">
+                                    {{-- bdi isolates Latin names inside the RTL layout
+                                         (and vice versa) so punctuation stays attached. --}}
+                                    <span class="block truncate text-sm font-medium text-zinc-900 dark:text-white">
+                                        <bdi>{{ $asset->localizedName() }}</bdi></span>
+                                    <span class="block truncate text-xs text-zinc-500 dark:text-zinc-400">
+                                        <bdi dir="ltr">{{ $asset->symbol }}</bdi></span>
+                                </span>
+                                <flux:badge class="shrink-0" size="sm">{{ $asset->asset_class->label() }}</flux:badge>
+                            </a>
+                        @endforeach
+                    </div>
                 @endif
 
                 @if ($market !== [])
                     <flux:text class="px-3 pb-1 pt-2 text-xs font-medium uppercase tracking-widest">
                         {{ __('Markets') }}</flux:text>
-                    @foreach ($market as $match)
-                        <a class="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-700/50"
-                            href="{{ route('explore.instrument', $match['symbol']) }}" wire:navigate
-                            wire:key="market-{{ $match['symbol'] }}">
-                            <span class="min-w-0">
-                                <span class="block truncate text-sm font-medium text-zinc-900 dark:text-white">
-                                    {{ $match['name'] }}</span>
-                                <span class="block text-xs text-zinc-500 dark:text-zinc-400" dir="ltr">
-                                    {{ $match['symbol'] }} &bull; {{ $match['exchange'] }}</span>
-                            </span>
-                            @if ($match['country'] !== '')
-                                <flux:text class="shrink-0 text-xs">{{ $match['country'] }}</flux:text>
-                            @endif
-                        </a>
-                    @endforeach
+                    <div class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                        @foreach ($market as $match)
+                            @php($typeLabel = match ($match['type']) {
+                                'Common Stock' => __('Stock'),
+                                'ETF' => __('ETF'),
+                                'Digital Currency' => __('Crypto'),
+                                'REIT' => __('REIT'),
+                                default => null,
+                            })
+                            <a class="flex items-center gap-3 px-3 py-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-700/50"
+                                href="{{ route('explore.instrument', $match['symbol']) }}" wire:navigate
+                                wire:key="market-{{ $match['symbol'] }}">
+                                <flux:avatar size="sm" color="auto" :name="$match['symbol']"
+                                    :initials="mb_substr($match['symbol'], 0, 2)" />
+                                <span class="min-w-0 flex-1">
+                                    <span class="block truncate text-sm font-medium text-zinc-900 dark:text-white">
+                                        <bdi>{{ $match['name'] }}</bdi></span>
+                                    <span class="block truncate text-xs text-zinc-500 dark:text-zinc-400">
+                                        <bdi dir="ltr">{{ $match['symbol'] }}{{ $match['exchange'] !== '' ? ' • '.$match['exchange'] : '' }}</bdi></span>
+                                </span>
+                                @if ($typeLabel !== null)
+                                    <flux:badge class="shrink-0" size="sm">{{ $typeLabel }}</flux:badge>
+                                @endif
+                            </a>
+                        @endforeach
+                    </div>
                 @elseif ($owned->isEmpty())
                     <flux:text class="p-4 text-center text-sm" wire:loading.remove wire:target="query">
                         {{ __('No instruments found for :query.', ['query' => trim($query)]) }}</flux:text>
@@ -151,7 +168,7 @@ new class extends Component {
                         wire:key="recent-{{ $item['symbol'] }}">
                         <span class="font-medium text-zinc-800 dark:text-white" dir="ltr">{{ $item['symbol'] }}</span>
                         @if ($item['name'] !== $item['symbol'])
-                            <span class="max-w-40 truncate text-zinc-500 dark:text-zinc-400">{{ $item['name'] }}</span>
+                            <span class="max-w-40 truncate text-zinc-500 dark:text-zinc-400"><bdi>{{ $item['name'] }}</bdi></span>
                         @endif
                     </a>
                 @endforeach
