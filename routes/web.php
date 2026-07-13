@@ -62,6 +62,10 @@ Volt::route('investor-profile', 'investor-profile.index')
     ->middleware(['auth', 'verified'])
     ->name('investor-profile');
 
+Volt::route('plan', 'investment-plan.index')
+    ->middleware(['auth', 'verified'])
+    ->name('plan');
+
 Volt::route('report', 'report.index')
     ->middleware(['auth', 'verified'])
     ->name('report');

@@ -130,6 +130,26 @@ class PortfolioDataAssembler
     }
 
     /**
+     * Daily close series for any catalog symbols, in base currency —
+     * benchmark or not. Used to build candidate universes (e.g. the
+     * investment-plan optimizer) independent of anyone's holdings.
+     *
+     * @param  list<string>  $symbols
+     * @return array<string, array<string, float>> symbol => [date => close]
+     */
+    public function seriesFor(array $symbols, CarbonInterface $from): array
+    {
+        $sources = Asset::whereIn('symbol', $symbols)
+            ->get()
+            ->mapWithKeys(fn (Asset $asset) => [
+                $asset->symbol => ['id' => $asset->id, 'rate' => $this->fxRate($asset->currency)],
+            ])
+            ->all();
+
+        return $this->priceSeries($sources, $from);
+    }
+
+    /**
      * Base-currency units per one unit of the given currency.
      */
     private function fxRate(string $currency): float

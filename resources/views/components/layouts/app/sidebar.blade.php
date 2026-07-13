@@ -34,6 +34,9 @@
                 <flux:navlist.item icon="clipboard-document-check" :href="route('investor-profile')"
                     :current="request()->routeIs('investor-profile')" wire:navigate.hover>{{ __('Investor Profile') }}
                 </flux:navlist.item>
+                <flux:navlist.item icon="rocket-launch" :href="route('plan')"
+                    :current="request()->routeIs('plan')" wire:navigate.hover>{{ __('Investment Plan') }}
+                </flux:navlist.item>
                 <flux:navlist.item icon="document-text" :href="route('report')"
                     :current="request()->routeIs('report')" wire:navigate.hover>{{ __('Report') }}
                 </flux:navlist.item>

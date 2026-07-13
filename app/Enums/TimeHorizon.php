@@ -31,4 +31,18 @@ enum TimeHorizon: string
             self::Long, self::VeryLong => 3,
         };
     }
+
+    /**
+     * How far forward an investment plan projects growth: the midpoint
+     * of each horizon band.
+     */
+    public function projectionYears(): int
+    {
+        return match ($this) {
+            self::Short => 2,
+            self::Medium => 5,
+            self::Long => 10,
+            self::VeryLong => 20,
+        };
+    }
 }

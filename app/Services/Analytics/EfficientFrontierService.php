@@ -24,7 +24,8 @@ class EfficientFrontierService
      *     frontier: list<array{risk: float, return: float}>,
      *     tangency: array{weights: array<string, float>, risk: float, return: float, sharpe: float},
      *     current: array{risk: float, return: float, sharpe: float},
-     *     efficiency_gap: float
+     *     efficiency_gap: float,
+     *     target: ?array{weights: array<string, float>, risk: float, return: float, sharpe: float}
      * }
      */
     public function analyze(
@@ -33,6 +34,7 @@ class EfficientFrontierService
         array $currentWeights,
         ?float $riskFreeRate = null,
         int $samples = 6000,
+        ?float $targetVolatility = null,
     ): array {
         $riskFreeRate ??= (float) config('mahafeth.risk_free_rate');
         $symbols = array_keys($expectedReturns);
@@ -42,6 +44,7 @@ class EfficientFrontierService
         $state = self::SEED;
         $cloud = [];
         $tangency = ['weights' => $currentWeights] + $current;
+        $target = null;
 
         for ($i = 0; $i < $samples; $i++) {
             // Mix uniform portfolios with increasingly concentrated ones:
@@ -58,6 +61,10 @@ class EfficientFrontierService
             if ($point['sharpe'] > $tangency['sharpe']) {
                 $tangency = ['weights' => $weights] + $point;
             }
+
+            if ($targetVolatility !== null && $this->beatsTarget($point, $target, $targetVolatility)) {
+                $target = ['weights' => $weights] + $point;
+            }
         }
 
         return [
@@ -66,7 +73,33 @@ class EfficientFrontierService
             'tangency' => $tangency,
             'current' => $current,
             'efficiency_gap' => $tangency['sharpe'] - $current['sharpe'],
+            'target' => $target,
         ];
+    }
+
+    /**
+     * The investment-plan pick: the highest-return sample within the
+     * investor's volatility budget. Samples inside the budget always beat
+     * samples outside it; when nothing fits, the closest-risk sample
+     * stands in.
+     *
+     * @param  array{risk: float, return: float, sharpe: float}  $point
+     * @param  ?array{weights: array<string, float>, risk: float, return: float, sharpe: float}  $best
+     */
+    private function beatsTarget(array $point, ?array $best, float $targetVolatility): bool
+    {
+        if ($best === null) {
+            return true;
+        }
+
+        $pointFits = $point['risk'] <= $targetVolatility;
+        $bestFits = $best['risk'] <= $targetVolatility;
+
+        return match (true) {
+            $pointFits && $bestFits => $point['return'] > $best['return'],
+            $pointFits !== $bestFits => $pointFits,
+            default => abs($point['risk'] - $targetVolatility) < abs($best['risk'] - $targetVolatility),
+        };
     }
 
     /**

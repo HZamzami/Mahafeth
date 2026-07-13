@@ -217,6 +217,10 @@ new class extends Component {
                 <flux:callout.text>
                     {{ __('Completed on :date — your previous answers are prefilled. Saving again updates your profile.', ['date' => auth()->user()->riskProfile->updated_at->isoFormat('LL')]) }}
                 </flux:callout.text>
+                <x-slot name="actions">
+                    <flux:button size="xs" variant="ghost" icon="rocket-launch" :href="route('plan')" wire:navigate>
+                        {{ __('View your investment plan') }}</flux:button>
+                </x-slot>
             </flux:callout>
         @endif
     </div>
