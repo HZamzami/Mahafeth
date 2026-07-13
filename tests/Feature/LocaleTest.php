@@ -70,4 +70,24 @@ class LocaleTest extends TestCase
         $response->assertOk();
         $response->assertSee('dir="ltr"', false);
     }
+
+    public function test_the_auth_page_footers_are_translated_in_arabic(): void
+    {
+        $this->withSession(['locale' => 'ar']);
+
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee('لا تمتلك حساب؟')
+            ->assertDontSee("Don't have an account?");
+
+        $this->get('/register')
+            ->assertOk()
+            ->assertSee('هل لديك حساب بالفعل؟')
+            ->assertDontSee('Already have an account?');
+
+        $this->get('/forgot-password')
+            ->assertOk()
+            ->assertSee('أو ارجع إلى')
+            ->assertDontSee('Or, return to');
+    }
 }
