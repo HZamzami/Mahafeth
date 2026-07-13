@@ -116,9 +116,11 @@ class HoldingDetailTest extends TestCase
                 ->assertSee(__('Market Chart'))
                 ->assertSeeLivewire('instruments.fundamentals')
                 ->assertSeeLivewire('instruments.analyst-panel')
-                // Theme placeholder resolved client-side by the reactive
-                // $flux.dark effect on the TradingView chart iframe.
-                ->assertSee('theme=__THEME__', false);
+                // Theme placeholders resolved client-side by the reactive
+                // $flux.dark effect: the query one skins the chart toolbar,
+                // the fragment colorTheme skins the page canvas.
+                ->assertSee('theme=__THEME__', false)
+                ->assertSee('%22colorTheme%22%3A%22__THEME__%22', false);
         }
     }
 

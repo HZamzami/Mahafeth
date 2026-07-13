@@ -222,12 +222,17 @@ new class extends Component {
                         <a class="text-xs text-neutral-400 hover:underline" href="https://www.tradingview.com/"
                             target="_blank" rel="noopener noreferrer">{{ __('Chart by TradingView') }}</a>
                     </div>
+                    {{-- The query theme= only skins the chart toolbar; the page
+                         canvas reads colorTheme from the fragment JSON, so both
+                         must carry it. The theme swap changes the query string
+                         too, forcing a real iframe reload (fragment-only changes
+                         are same-document navigations the widget ignores). --}}
                     <div class="mt-4" wire:ignore>
                         <iframe
-                            data-src="https://s.tradingview.com/widgetembed/?symbol={{ urlencode($tradingViewSymbol) }}&interval=D&theme=__THEME__&style=1&locale={{ app()->getLocale() === 'ar' ? 'ar_AE' : 'en' }}&hide_side_toolbar=1&allow_symbol_change=0&withdateranges=1&hide_volume=0"
+                            data-src="https://s.tradingview.com/widgetembed/?symbol={{ urlencode($tradingViewSymbol) }}&interval=D&theme=__THEME__&style=1&locale={{ app()->getLocale() === 'ar' ? 'ar_AE' : 'en' }}&hide_side_toolbar=1&allow_symbol_change=0&withdateranges=1&hide_volume=0#%7B%22colorTheme%22%3A%22__THEME__%22%7D"
                             class="h-[26rem] w-full rounded-lg border-0 sm:h-[30rem]" loading="lazy" title="TradingView"
                             x-data
-                            x-effect="$el.src = $el.dataset.src.replace('__THEME__', $flux.dark ? 'dark' : 'light')"></iframe>
+                            x-effect="$el.src = $el.dataset.src.replaceAll('__THEME__', $flux.dark ? 'dark' : 'light')"></iframe>
                     </div>
                 </div>
             @endif
