@@ -1,4 +1,6 @@
-@php($inactive = 'text-zinc-500 dark:text-zinc-400')
+{{-- Pressed tabs tint teal instantly, before navigation resolves, so a
+     tap always acknowledges itself even when the next page takes a beat. --}}
+@php($inactive = 'text-zinc-500 active:text-teal-600 dark:text-zinc-400 dark:active:text-teal-400')
 @php($active = 'text-teal-600 dark:text-teal-400')
 
 {{-- Slot order by frequency of use: the daily overview and positions

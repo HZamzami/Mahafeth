@@ -1,5 +1,9 @@
-const CACHE = 'mahafeth-v1';
+const CACHE = 'mahafeth-v2';
 const OFFLINE_URL = '/offline.html';
+
+// Hashed build assets, fonts, and icons are immutable: serve them from
+// the cache without touching the network on repeat loads.
+const STATIC_PATH = /^\/(build\/|fonts\/|icons\/)/;
 
 self.addEventListener('install', (event) => {
     event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll([OFFLINE_URL, '/icons/icon-192.png'])));
@@ -8,14 +12,50 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
     event.waitUntil(
-        caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))),
+        Promise.all([
+            caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))),
+            // Let the browser start navigation requests in parallel with
+            // the service-worker boot instead of serializing behind it.
+            self.registration.navigationPreload?.enable(),
+        ]),
     );
     self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
-    if (event.request.mode === 'navigate') {
-        event.respondWith(fetch(event.request).catch(() => caches.match(OFFLINE_URL)));
+    const request = event.request;
+
+    if (request.mode === 'navigate') {
+        event.respondWith(
+            (async () => {
+                try {
+                    return (await event.preloadResponse) || (await fetch(request));
+                } catch {
+                    return caches.match(OFFLINE_URL);
+                }
+            })(),
+        );
+
+        return;
+    }
+
+    const url = new URL(request.url);
+
+    if (request.method === 'GET' && url.origin === self.location.origin && STATIC_PATH.test(url.pathname)) {
+        event.respondWith(
+            caches.match(request).then(
+                (hit) =>
+                    hit ||
+                    fetch(request).then((response) => {
+                        if (response.ok) {
+                            const copy = response.clone();
+                            caches.open(CACHE).then((cache) => cache.put(request, copy));
+                        }
+
+                        return response;
+                    }),
+            ),
+        );
     }
 });
 
