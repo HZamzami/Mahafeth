@@ -83,7 +83,9 @@ class LocaleTest extends TestCase
         $this->get('/register')
             ->assertOk()
             ->assertSee('هل لديك حساب بالفعل؟')
-            ->assertDontSee('Already have an account?');
+            ->assertDontSee('Already have an account?')
+            ->assertSee('الاسم الكامل')
+            ->assertDontSee('Full name');
 
         $this->get('/forgot-password')
             ->assertOk()
