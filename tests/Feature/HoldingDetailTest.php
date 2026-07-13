@@ -216,6 +216,8 @@ class HoldingDetailTest extends TestCase
             ->assertSee('Q1 2026')
             ->assertSee(__('About the Company'))
             ->assertSee('Microsoft Corporation develops')
+            // The fixture summary is long enough to start clamped.
+            ->assertSee(__('Read more'))
             ->assertSee(__('Employees'))
             ->assertSee('228,000');
     }

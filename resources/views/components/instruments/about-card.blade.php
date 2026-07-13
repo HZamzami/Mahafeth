@@ -10,8 +10,20 @@
     </div>
 
     {{-- dir=auto keeps the paragraph readable when the Arabic translation
-         falls back to the English source text. --}}
-    <flux:text class="mt-4 text-sm leading-relaxed" dir="auto">{{ $summary }}</flux:text>
+         falls back to the English source text. Long profiles start clamped
+         to four lines behind a read-more toggle. --}}
+    @php $isLong = mb_strlen($summary) > 350; @endphp
+    <div x-data="{ expanded: {{ $isLong ? 'false' : 'true' }} }">
+        <flux:text class="mt-4 text-sm leading-relaxed" dir="auto"
+            x-bind:class="expanded ? '' : 'line-clamp-4'">{{ $summary }}</flux:text>
+        @if ($isLong)
+            <button class="mt-1.5 text-sm font-medium text-teal-700 hover:underline dark:text-teal-400"
+                type="button" x-on:click="expanded = ! expanded">
+                <span x-show="! expanded">{{ __('Read more') }}</span>
+                <span x-show="expanded" x-cloak>{{ __('Show less') }}</span>
+            </button>
+        @endif
+    </div>
 
     <div class="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-neutral-100 pt-4 dark:border-zinc-800">
         @if ($profile['sector'] !== null)

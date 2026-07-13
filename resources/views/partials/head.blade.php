@@ -11,7 +11,7 @@
 @if (config('webpush.vapid.public_key'))
     <meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') }}" />
 @endif
-<meta name="theme-color" content="#131b2c" />
+<meta name="theme-color" content="#141b28" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
