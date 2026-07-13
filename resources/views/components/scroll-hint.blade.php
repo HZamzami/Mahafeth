@@ -10,7 +10,7 @@
     <div x-show="more" x-cloak x-transition.opacity.duration.150ms aria-hidden="true"
         class="pointer-events-none absolute inset-y-0 end-0 z-10 flex w-12 items-center justify-end bg-gradient-to-l to-transparent rtl:bg-gradient-to-r {{ $surface === 'card'
             ? 'from-white via-white/60 dark:from-zinc-900 dark:via-zinc-900/60'
-            : 'from-sand-50 via-sand-50/60 dark:from-charcoal-950 dark:via-charcoal-950/60' }}">
+            : 'from-surface-50 via-surface-50/60 dark:from-charcoal-950 dark:via-charcoal-950/60' }}">
         <flux:icon.chevron-right class="size-4 text-zinc-400 rtl:rotate-180" />
     </div>
 </div>

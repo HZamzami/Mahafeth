@@ -5,7 +5,7 @@
     @include('partials.head')
 </head>
 
-<body class="flex min-h-screen items-center justify-center bg-sand-50 antialiased dark:bg-charcoal-950">
+<body class="flex min-h-screen items-center justify-center bg-surface-50 antialiased dark:bg-charcoal-950">
     <main class="flex w-full max-w-4xl flex-col items-center gap-10 p-8 text-center">
         <div class="flex flex-col items-center gap-6">
             <x-app-logo-icon class="size-20" />
