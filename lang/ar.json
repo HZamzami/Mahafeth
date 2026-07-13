@@ -908,7 +908,6 @@
     "Recent Transactions": "آخر العمليات",
     "About the Company": "عن الشركة",
     "This holding is flagged as non-compliant in your Shariah screening.": "هذا الأصل مصنف غير متوافق في فحص التوافق الشرعي لمحفظتك.",
-    "Search Stocks": "استكشاف الأسهم",
     "Search any stock, fund, or crypto…": "ابحث عن أي سهم أو صندوق أو عملة رقمية…",
     "Type a ticker or company name — Apple, 2222.SR, BTC…": "اكتب رمز السهم أو اسم الشركة — أرامكو، 2222.SR، BTC…",
     "Your Holdings": "أصولك",
@@ -968,5 +967,12 @@
     "Dividend Yield": "عائد التوزيعات",
     "Debt to Equity": "الدين إلى حقوق الملكية",
     "Read more": "قراءة المزيد",
-    "Show less": "عرض أقل"
+    "Show less": "عرض أقل",
+    "Explore": "استكشاف",
+    "Search any instrument and follow what the market is doing today.": "ابحث عن أي أداة استثمارية وتابع ما يجري في السوق اليوم.",
+    "Recently Viewed": "شوهدت مؤخرًا",
+    "US Market Today": "السوق الأمريكي اليوم",
+    "Top Gainers": "الأكثر ارتفاعًا",
+    "Top Losers": "الأكثر انخفاضًا",
+    "Most Active": "الأكثر تداولًا"
 }

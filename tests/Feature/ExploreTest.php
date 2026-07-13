@@ -63,14 +63,78 @@ class ExploreTest extends TestCase
             ->assertSee(urlencode('TADAWUL:4321'), escape: false);
     }
 
-    public function test_the_search_palette_lists_owned_holdings_first(): void
+    public function test_the_explore_page_renders_the_search_and_movers_sections(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get('/explore')
+            ->assertOk()
+            ->assertSee(__('Explore'))
+            ->assertSee(__('Search any stock, fund, or crypto…'))
+            ->assertSeeLivewire('explore.movers');
+    }
+
+    public function test_visited_instruments_appear_under_recently_viewed(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->get('/explore/TSLA')->assertOk();
+        $this->get('/explore/AMZN')->assertOk();
+
+        $this->get('/explore')
+            ->assertOk()
+            ->assertSee(__('Recently Viewed'))
+            // Newest first, no duplicates.
+            ->assertSeeInOrder(['AMZN', 'TSLA']);
+
+        $this->assertSame(['AMZN', 'TSLA'], session('explore.recent'));
+    }
+
+    public function test_the_movers_section_lists_gainers_losers_and_actives(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        Http::fake([
+            'fc.yahoo.com' => Http::response(status: 404, headers: ['Set-Cookie' => 'A3=d=abc; Domain=.yahoo.com']),
+            'query1.finance.yahoo.com/v1/test/getcrumb' => Http::response('crumb-token'),
+            'query1.finance.yahoo.com/v1/finance/screener/*' => Http::response([
+                'finance' => ['result' => [[
+                    'quotes' => [[
+                        'symbol' => 'NVDA',
+                        'shortName' => 'NVIDIA Corporation',
+                        'regularMarketPrice' => 205.88,
+                        'regularMarketChangePercent' => 4.21,
+                        'currency' => 'USD',
+                    ]],
+                ]]],
+            ]),
+        ]);
+
+        Volt::test('explore.movers')
+            ->assertSee(__('Top Gainers'))
+            ->assertSee(__('Top Losers'))
+            ->assertSee(__('Most Active'))
+            ->assertSee('NVDA')
+            ->assertSee('+4.21%');
+    }
+
+    public function test_the_movers_section_hides_when_the_screener_is_unavailable(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        Http::fake(['*' => Http::response(status: 500)]);
+
+        Volt::test('explore.movers')
+            ->assertDontSee(__('Top Gainers'));
+    }
+
+    public function test_the_search_lists_owned_holdings_first(): void
     {
         $user = $this->syncedUser();
         $this->actingAs($user);
 
         Http::fake(['api.twelvedata.com/*' => Http::response(['status' => 'ok', 'data' => []])]);
 
-        Volt::test('explore.search')
+        Volt::test('explore.index')
             ->set('query', 'AAPL')
             ->assertSee(__('Your Holdings'))
             ->assertSee('AAPL');
@@ -95,7 +159,7 @@ class ExploreTest extends TestCase
             ]),
         ]);
 
-        Volt::test('explore.search')
+        Volt::test('explore.index')
             ->set('query', 'aramco')
             ->assertSee(__('Markets'))
             ->assertSee('Saudi Aramco Base Oil Company')
@@ -108,7 +172,7 @@ class ExploreTest extends TestCase
 
         Http::fake(['api.twelvedata.com/*' => Http::response(status: 500)]);
 
-        Volt::test('explore.search')
+        Volt::test('explore.index')
             ->set('query', 'aramco')
             ->assertSee(__('No instruments found for :query.', ['query' => 'aramco']));
     }

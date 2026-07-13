@@ -49,6 +49,10 @@ Volt::route('holdings/{asset:symbol}', 'holdings.detail')
     ->middleware(['auth', 'verified'])
     ->name('holdings.detail');
 
+Volt::route('explore', 'explore.index')
+    ->middleware(['auth', 'verified'])
+    ->name('explore.index');
+
 Volt::route('explore/{symbol}', 'explore.instrument')
     ->middleware(['auth', 'verified'])
     ->where('symbol', '[A-Za-z0-9.\-]+')

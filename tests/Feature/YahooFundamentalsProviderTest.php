@@ -99,7 +99,7 @@ class YahooFundamentalsProviderTest extends TestCase
 
     public function test_an_expired_crumb_refreshes_the_session_once(): void
     {
-        Cache::put('yahoo-fundamentals:session', ['cookie' => 'A3=stale', 'crumb' => 'stale'], now()->addHour());
+        Cache::put('yahoo:session', ['cookie' => 'A3=stale', 'crumb' => 'stale'], now()->addHour());
 
         Http::fake([
             'fc.yahoo.com' => Http::response(status: 404, headers: ['Set-Cookie' => 'A3=fresh; Domain=.yahoo.com']),

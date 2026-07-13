@@ -16,24 +16,23 @@
             <flux:navlist.group :heading="__('Platform')" class="grid">
                 <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
                     wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                <flux:modal.trigger name="instrument-search">
-                    <flux:navlist.item icon="magnifying-glass" as="button" class="w-full">
-                        {{ __('Search Stocks') }}</flux:navlist.item>
-                </flux:modal.trigger>
+                <flux:navlist.item icon="magnifying-glass" :href="route('explore.index')"
+                    :current="request()->routeIs('explore.*')" wire:navigate>{{ __('Explore') }}
+                </flux:navlist.item>
                 <flux:navlist.item icon="briefcase" :href="route('holdings.index')"
                     :current="request()->routeIs('holdings.*')" wire:navigate>{{ __('Holdings') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="chat-bubble-left-right" :href="route('advisor')"
                     :current="request()->routeIs('advisor')" wire:navigate>{{ __('AI Advisor') }}
                 </flux:navlist.item>
+                <flux:navlist.item icon="chart-bar" :href="route('analytics')"
+                    :current="request()->routeIs('analytics')" wire:navigate>{{ __('Analytics') }}
+                </flux:navlist.item>
                 <flux:navlist.item icon="building-library" :href="route('connections')"
                     :current="request()->routeIs('connections')" wire:navigate>{{ __('Connections') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="clipboard-document-check" :href="route('investor-profile')"
                     :current="request()->routeIs('investor-profile')" wire:navigate>{{ __('Investor Profile') }}
-                </flux:navlist.item>
-                <flux:navlist.item icon="chart-bar" :href="route('analytics')"
-                    :current="request()->routeIs('analytics')" wire:navigate>{{ __('Analytics') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="document-text" :href="route('report')"
                     :current="request()->routeIs('report')" wire:navigate>{{ __('Report') }}
@@ -116,6 +115,7 @@
         </div>
 
         @php($pageTitle = match (true) {
+            request()->routeIs('explore.index') => __('Explore'),
             request()->routeIs('holdings.*') => __('Holdings'),
             request()->routeIs('analytics') => __('Analytics'),
             request()->routeIs('advisor') => __('AI Advisor'),
@@ -180,8 +180,6 @@
     </flux:header>
 
     {{ $slot }}
-
-    <livewire:explore.search />
 
     <x-bottom-nav />
 

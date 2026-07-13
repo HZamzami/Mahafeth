@@ -6,6 +6,10 @@ use App\Services\Markets\SymbolSearch;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
 
+/**
+ * The discovery home: instrument search front and center, the symbols
+ * the user recently looked up, and today's market movers below.
+ */
 new class extends Component {
     public string $query = '';
 
@@ -23,6 +27,7 @@ new class extends Component {
         return [
             'owned' => $owned,
             'market' => $market,
+            'recent' => $this->recentlyViewed(),
         ];
     }
 
@@ -50,20 +55,46 @@ new class extends Component {
             ->limit(6)
             ->get();
     }
+
+    /**
+     * Symbols the user recently opened from Explore. Only symbols live in
+     * the session; display names resolve at render time so they follow
+     * the current locale and any catalog updates.
+     *
+     * @return list<array{symbol: string, name: string}>
+     */
+    private function recentlyViewed(): array
+    {
+        $symbols = session('explore.recent', []);
+
+        if ($symbols === []) {
+            return [];
+        }
+
+        $assets = Asset::whereIn('symbol', $symbols)->get()->keyBy('symbol');
+
+        return array_map(fn (string $symbol): array => [
+            'symbol' => $symbol,
+            'name' => $assets->get($symbol)?->localizedName() ?? $symbol,
+        ], $symbols);
+    }
 }; ?>
 
-<flux:modal name="instrument-search" class="w-full !p-0 sm:max-w-lg" @close="$wire.set('query', '')">
-    <div class="flex flex-col">
-        <div class="border-b border-zinc-200 p-4 dark:border-zinc-700">
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <div>
+        <flux:heading size="xl">{{ __('Explore') }}</flux:heading>
+        <flux:text class="mt-1">{{ __('Search any instrument and follow what the market is doing today.') }}</flux:text>
+    </div>
+
+    {{-- Search --}}
+    <div class="card">
+        <div class="p-4 {{ trim($query) !== '' ? 'border-b border-zinc-200 dark:border-zinc-700' : '' }}">
             <flux:input icon="magnifying-glass" :placeholder="__('Search any stock, fund, or crypto…')"
                 wire:model.live.debounce.350ms="query" autofocus clearable />
         </div>
 
-        <div class="max-h-96 overflow-y-auto p-2" wire:loading.class="opacity-60" wire:target="query">
-            @if (trim($query) === '')
-                <flux:text class="p-4 text-center text-sm">
-                    {{ __('Type a ticker or company name — Apple, 2222.SR, BTC…') }}</flux:text>
-            @else
+        @if (trim($query) !== '')
+            <div class="max-h-96 overflow-y-auto p-2" wire:loading.class="opacity-60" wire:target="query">
                 @if ($owned->isNotEmpty())
                     <flux:text class="px-3 pb-1 pt-2 text-xs font-medium uppercase tracking-widest">
                         {{ __('Your Holdings') }}</flux:text>
@@ -104,7 +135,30 @@ new class extends Component {
                     <flux:text class="p-4 text-center text-sm" wire:loading.remove wire:target="query">
                         {{ __('No instruments found for :query.', ['query' => trim($query)]) }}</flux:text>
                 @endif
-            @endif
-        </div>
+            </div>
+        @endif
     </div>
-</flux:modal>
+
+    {{-- Recently viewed --}}
+    @if ($recent !== [])
+        <div>
+            <flux:heading class="uppercase tracking-widest !text-neutral-500 dark:!text-neutral-400" size="sm">
+                {{ __('Recently Viewed') }}</flux:heading>
+            <div class="mt-3 flex flex-wrap gap-2">
+                @foreach ($recent as $item)
+                    <a class="flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm transition-transform active:scale-95 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                        href="{{ route('explore.instrument', $item['symbol']) }}" wire:navigate
+                        wire:key="recent-{{ $item['symbol'] }}">
+                        <span class="font-medium text-zinc-800 dark:text-white" dir="ltr">{{ $item['symbol'] }}</span>
+                        @if ($item['name'] !== $item['symbol'])
+                            <span class="max-w-40 truncate text-zinc-500 dark:text-zinc-400">{{ $item['name'] }}</span>
+                        @endif
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    {{-- Today's market movers --}}
+    <livewire:explore.movers lazy />
+</div>

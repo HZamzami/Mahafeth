@@ -23,9 +23,27 @@ new class extends Component {
         $this->symbol = strtoupper($symbol);
         $this->asset = Asset::where('symbol', $this->symbol)->first();
 
+        $this->rememberRecentlyViewed();
+
         if ($this->asset !== null && $this->userOwns($this->asset)) {
             $this->redirectRoute('holdings.detail', $this->asset->symbol, navigate: true);
         }
+    }
+
+    /**
+     * Feed the Explore page's recently-viewed list: newest first, one
+     * entry per symbol, capped so the session stays small.
+     */
+    private function rememberRecentlyViewed(): void
+    {
+        $recent = collect(session('explore.recent', []))
+            ->reject(fn (string $symbol): bool => $symbol === $this->symbol)
+            ->prepend($this->symbol)
+            ->take(8)
+            ->values()
+            ->all();
+
+        session(['explore.recent' => $recent]);
     }
 
     public function with(): array
@@ -56,8 +74,8 @@ new class extends Component {
 <div class="mx-auto flex w-full max-w-7xl flex-col gap-6">
     {{-- Header --}}
     <div>
-        <flux:button size="sm" variant="ghost" :href="route('holdings.index')" wire:navigate>
-            <flux:icon.chevron-left class="size-4 rtl:rotate-180" /> {{ __('Holdings') }}</flux:button>
+        <flux:button size="sm" variant="ghost" :href="route('explore.index')" wire:navigate>
+            <flux:icon.chevron-left class="size-4 rtl:rotate-180" /> {{ __('Explore') }}</flux:button>
 
         <div class="mt-3 flex flex-wrap items-end justify-between gap-4">
             <div>

@@ -11,19 +11,13 @@ use Illuminate\Support\Facades\Log;
  * Company fundamentals from the Yahoo Finance quoteSummary API: profile,
  * quarterly revenue/earnings, analyst consensus, and key statistics. Like
  * the chart API it is keyless and covers Tadawul (.SR) symbols, but it
- * additionally demands a session cookie plus a matching "crumb" token.
+ * additionally demands the shared cookie+crumb session.
  */
 class YahooFundamentalsProvider implements FundamentalsProvider
 {
-    /**
-     * Yahoo rejects requests with no User-Agent, and 429-blocks full fake
-     * browser strings; the bare token is the one that passes.
-     */
-    private const USER_AGENT = 'Mozilla/5.0';
-
     private const MODULES = 'assetProfile,earnings,financialData,recommendationTrend,defaultKeyStatistics,summaryDetail,price';
 
-    private const SESSION_CACHE_KEY = 'yahoo-fundamentals:session';
+    public function __construct(private YahooSession $session) {}
 
     public function fetch(string $symbol): ?array
     {
@@ -64,10 +58,10 @@ class YahooFundamentalsProvider implements FundamentalsProvider
      */
     private function quoteSummary(string $symbol, bool $retried = false): ?array
     {
-        $session = $this->session();
+        $session = $this->session->headers();
 
         $response = Http::baseUrl(config('services.yahoo_finance.base_url'))
-            ->withUserAgent(self::USER_AGENT)
+            ->withUserAgent(YahooSession::USER_AGENT)
             ->withHeaders(['Cookie' => $session['cookie']])
             ->timeout(45)
             ->get('/v10/finance/quoteSummary/'.rawurlencode($symbol), [
@@ -78,7 +72,7 @@ class YahooFundamentalsProvider implements FundamentalsProvider
         // An expired session comes back as 401 "Invalid Crumb"; one refresh
         // of the cached cookie+crumb pair is the documented remedy.
         if ($response->status() === 401 && ! $retried) {
-            Cache::forget(self::SESSION_CACHE_KEY);
+            $this->session->forget();
 
             return $this->quoteSummary($symbol, retried: true);
         }
@@ -86,40 +80,6 @@ class YahooFundamentalsProvider implements FundamentalsProvider
         $result = $response->throw()->json('quoteSummary.result.0');
 
         return is_array($result) ? $result : null;
-    }
-
-    /**
-     * The cookie is issued by a plain hit on fc.yahoo.com (the response is
-     * a 404, only the Set-Cookie header matters); the crumb endpoint then
-     * echoes the token that must accompany every quoteSummary call.
-     *
-     * @return array{cookie: string, crumb: string}
-     */
-    private function session(): array
-    {
-        return Cache::remember(self::SESSION_CACHE_KEY, now()->addHours(6), function (): array {
-            $cookieResponse = Http::withUserAgent(self::USER_AGENT)
-                ->timeout(30)
-                ->get(config('services.yahoo_finance.cookie_url'));
-
-            $cookie = collect($cookieResponse->headers()['Set-Cookie'] ?? [])
-                ->map(fn (string $header): string => trim(explode(';', $header, 2)[0]))
-                ->implode('; ');
-
-            $crumb = Http::baseUrl(config('services.yahoo_finance.base_url'))
-                ->withUserAgent(self::USER_AGENT)
-                ->withHeaders(['Cookie' => $cookie])
-                ->timeout(30)
-                ->get('/v1/test/getcrumb')
-                ->throw()
-                ->body();
-
-            if ($cookie === '' || $crumb === '' || str_contains($crumb, '<')) {
-                throw new \RuntimeException('Yahoo Finance session handshake failed.');
-            }
-
-            return ['cookie' => $cookie, 'crumb' => $crumb];
-        });
     }
 
     /**
