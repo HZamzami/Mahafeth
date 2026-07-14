@@ -13,8 +13,8 @@ use Illuminate\Support\Carbon;
  * integrated. Returns a fixed, realistic catalog of accounts and holdings
  * per institution slug, and reproducible GBM price series.
  *
- * The demo data is intentionally imperfect — tech-heavy with an oversized
- * Apple position — so every analyzer downstream has something to report.
+ * The demo data is tech-tilted (Apple leads the brokerage account) so the
+ * analyzers have real findings to report, without wrecking the score.
  */
 class FakeOpenBankingProvider implements OpenBankingProvider
 {
@@ -30,7 +30,7 @@ class FakeOpenBankingProvider implements OpenBankingProvider
             ],
             'holdings' => [
                 'DRY-001' => [
-                    ['symbol' => 'AAPL', 'quantity' => 1900.0, 'avg_cost' => 148.30],
+                    ['symbol' => 'AAPL', 'quantity' => 420.0, 'avg_cost' => 148.30],
                     ['symbol' => 'MSFT', 'quantity' => 260.0, 'avg_cost' => 262.10],
                     ['symbol' => 'NVDA', 'quantity' => 180.0, 'avg_cost' => 205.75],
                     ['symbol' => 'GOOGL', 'quantity' => 300.0, 'avg_cost' => 104.60],

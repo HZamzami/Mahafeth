@@ -24,10 +24,11 @@ class DemoPortfolioSeeder extends Seeder
      */
     public function run(): void
     {
-        // Persona 1: tech-heavy risk-taker with a Balanced profile — every
-        // analyzer has findings (including a non-compliant JPM position for
-        // the Shariah screen), and the health score suffers for it. His
-        // Alinma Capital equities arrive via the statement import flow.
+        // Persona 1: a broadly diversified investor with a Balanced profile
+        // whose health score lands around the mid-70s — good, with real
+        // findings left for the analyzers (a tech tilt, a non-compliant JPM
+        // position for the Shariah screen, and a crypto sleeve). His Alinma
+        // Capital equities arrive via the statement import flow.
         $demo = $this->persona(
             'demo@mahafeth.test',
             'Faisal Alqahtani',
@@ -41,8 +42,9 @@ class DemoPortfolioSeeder extends Seeder
             $demo,
             Institution::where('slug', 'alinma-capital')->firstOrFail(),
             [
-                ['symbol' => '2222.SR', 'quantity' => 800.0, 'avg_cost' => 8.10],
-                ['symbol' => '7010.SR', 'quantity' => 500.0, 'avg_cost' => 10.40],
+                ['symbol' => '2222.SR', 'quantity' => 21000.0, 'avg_cost' => 8.10],
+                ['symbol' => '1120.SR', 'quantity' => 6200.0, 'avg_cost' => 19.40],
+                ['symbol' => '7010.SR', 'quantity' => 9500.0, 'avg_cost' => 10.40],
                 ['symbol' => '1010.SR', 'quantity' => 600.0, 'avg_cost' => 24.00],
             ],
         );

@@ -121,7 +121,8 @@ class DashboardTest extends TestCase
             ->assertSee(__('Annualized Return'))
             ->assertSee(__('Annualized Volatility'))
             ->assertSee(__('Largest Holding'))
-            ->assertSee('AAPL');
+            // Under simulated prices Microsoft is the largest derayah position.
+            ->assertSee('MSFT');
     }
 
     public function test_the_shariah_card_shows_the_connect_prompt_without_a_snapshot(): void
@@ -167,7 +168,9 @@ class DashboardTest extends TestCase
         $this->actingAs($user)
             ->get('/dashboard')
             ->assertOk()
-            ->assertSee('AAPL')
+            // The largest-holding stat card carries the top symbol, which is
+            // Microsoft under simulated prices.
+            ->assertSee('MSFT')
             ->assertSee('Information Technology');
     }
 

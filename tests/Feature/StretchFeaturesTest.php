@@ -61,10 +61,11 @@ class StretchFeaturesTest extends TestCase
     {
         $this->actingAs($this->analyzedUser());
 
-        // The Derayah-only portfolio holds ~49% AAPL — above the 30% threshold.
+        // The Derayah-only portfolio holds ~39% MSFT under simulated prices —
+        // above the 30% threshold.
         Volt::test('dashboard.alerts')
             ->assertSee('Concentration alert')
-            ->assertSee('Apple');
+            ->assertSee('Microsoft');
     }
 
     public function test_users_without_a_snapshot_get_no_alerts(): void

@@ -62,7 +62,8 @@ class PortfolioAnalyzerTest extends TestCase
         $this->assertGreaterThan(0, $metrics['volatility']);
         $this->assertEqualsWithDelta(1.0, array_sum($metrics['weights']), 1e-6);
         $this->assertEqualsWithDelta(1.0, array_sum($metrics['allocations']['asset_class']), 1e-6);
-        $this->assertSame($metrics['largest_position']['symbol'], 'AAPL');
+        // Under simulated prices Microsoft is the largest derayah position.
+        $this->assertSame($metrics['largest_position']['symbol'], 'MSFT');
 
         // Derayah is all-equity, so the class allocation has a single bucket.
         $this->assertSame(['equity'], array_keys($metrics['allocations']['asset_class']));

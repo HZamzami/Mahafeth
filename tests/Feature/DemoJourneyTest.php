@@ -60,10 +60,12 @@ class DemoJourneyTest extends TestCase
         $this->assertNotNull($snapshot->health_score);
         $this->assertGreaterThan(0, $snapshot->total_value);
 
-        // 6. The dashboard is fully dynamic.
+        // 6. The dashboard is fully dynamic. MSFT and BTC vie for the top
+        // spot under simulated prices, so assert the stable sector instead.
         $this->get('/dashboard')
             ->assertOk()
-            ->assertSee('AAPL')
+            ->assertSee(__('Largest Holding'))
+            ->assertSee('Information Technology')
             ->assertDontSee(__('Complete your investor profile to unlock scoring'));
 
         // 7. The analytics page renders the frontier and correlation matrix.

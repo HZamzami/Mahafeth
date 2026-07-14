@@ -65,7 +65,8 @@ class AiInsightTest extends TestCase
         $this->assertNotNull($insight);
         $this->assertSame('en', $insight->locale);
         $this->assertSame($user->latestSnapshot()->id, $insight->portfolio_snapshot_id);
-        $this->assertStringContainsString('Apple', $insight->summary);
+        // Under simulated prices Microsoft is the largest derayah position.
+        $this->assertStringContainsString('Microsoft', $insight->summary);
         $this->assertNotEmpty($insight->recommendations);
 
         // Every action item cites the metrics that justify it.
