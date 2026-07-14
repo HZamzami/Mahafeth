@@ -5,7 +5,10 @@ namespace App\Services\Insights;
 use App\Contracts\InsightGenerator;
 use App\Models\PortfolioSnapshot;
 use App\Models\RiskProfile;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 /**
@@ -20,31 +23,45 @@ class ClaudeInsightGenerator implements InsightGenerator
 
     public function generate(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $goals = []): array
     {
-        $response = Http::withHeaders([
-            'x-api-key' => (string) config('mahafeth.ai.api_key'),
-            'anthropic-version' => self::API_VERSION,
-        ])
-            // No HTTP retries: a second 120s attempt would blow past the
-            // job timeout and get the worker killed mid-run; failures
-            // surface as a failed flag with a Regenerate affordance.
-            ->timeout((int) config('mahafeth.ai.timeout'))
-            ->connectTimeout(10)
-            ->post(self::API_URL, [
-                'model' => config('mahafeth.ai.model'),
-                'max_tokens' => (int) config('mahafeth.ai.max_tokens'),
-                'thinking' => ['type' => 'adaptive'],
-                'system' => $this->systemPrompt(),
-                'messages' => [
-                    ['role' => 'user', 'content' => $this->buildPrompt($snapshot, $riskProfile, $locale, $goals)],
-                ],
-                'output_config' => [
-                    'format' => [
-                        'type' => 'json_schema',
-                        'schema' => $this->outputSchema(),
-                    ],
-                ],
+        try {
+            $response = Http::withHeaders([
+                'x-api-key' => (string) config('mahafeth.ai.api_key'),
+                'anthropic-version' => self::API_VERSION,
             ])
-            ->throw();
+                // One retry on transport failures only (never on HTTP
+                // errors): a failed connect costs at most the 10s connect
+                // timeout, so the retry fits the 150s job budget. A second
+                // full 120s read would blow past it and get the worker
+                // killed mid-run, which is why HTTP errors are not retried;
+                // those surface as a failed flag with a Regenerate
+                // affordance.
+                ->retry(2, 500, fn (\Throwable $e): bool => $e instanceof ConnectionException, throw: true)
+                ->timeout((int) config('mahafeth.ai.timeout'))
+                ->connectTimeout(10)
+                ->post(self::API_URL, [
+                    'model' => config('mahafeth.ai.model'),
+                    'max_tokens' => (int) config('mahafeth.ai.max_tokens'),
+                    'thinking' => ['type' => 'adaptive'],
+                    'system' => $this->systemPrompt(),
+                    'messages' => [
+                        ['role' => 'user', 'content' => $this->buildPrompt($snapshot, $riskProfile, $locale, $goals)],
+                    ],
+                    'output_config' => [
+                        'format' => [
+                            'type' => 'json_schema',
+                            'schema' => $this->outputSchema(),
+                        ],
+                    ],
+                ])
+                ->throw();
+        } catch (RequestException $exception) {
+            Log::error('Claude insight request failed', [
+                'status' => $exception->response->status(),
+                'error' => $exception->response->json('error') ?? substr($exception->response->body(), 0, 500),
+            ]);
+
+            throw $exception;
+        }
 
         return $this->parse($response->json());
     }

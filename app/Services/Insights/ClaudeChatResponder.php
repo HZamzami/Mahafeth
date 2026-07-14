@@ -6,7 +6,10 @@ use App\Contracts\ChatResponder;
 use App\Models\PortfolioSnapshot;
 use App\Models\RiskProfile;
 use Closure;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
@@ -24,35 +27,46 @@ class ClaudeChatResponder implements ChatResponder
 
     public function respond(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $goals, array $history, ?Closure $onProgress = null): string
     {
-        $response = Http::withHeaders([
-            'x-api-key' => (string) config('mahafeth.ai.api_key'),
-            'anthropic-version' => self::API_VERSION,
-        ])
-            // No HTTP retries: a second 60s attempt would blow past the
-            // job timeout; failures surface as a failed flag with a Retry
-            // affordance in the chat.
-            ->timeout((int) config('mahafeth.ai.chat_timeout'))
-            ->connectTimeout(10)
-            ->withOptions(['stream' => true])
-            ->post(self::API_URL, [
-                // Sonnet balances answer quality against chat latency while
-                // insights keep the larger model; adaptive thinking at
-                // medium effort keeps replies fast without Haiku-level
-                // guesswork.
-                'model' => config('mahafeth.ai.chat_model'),
-                'max_tokens' => (int) config('mahafeth.ai.chat_max_tokens'),
-                'thinking' => ['type' => 'adaptive'],
-                'output_config' => ['effort' => 'medium'],
-                // Streaming lets the UI show the reply as it is written.
-                'stream' => true,
-                // Server-side web search grounds questions about current
-                // prices, news, and company facts that the snapshot payload
-                // cannot answer; capped so one message stays cheap.
-                'tools' => [['type' => 'web_search_20260209', 'name' => 'web_search', 'max_uses' => 3]],
-                'system' => $this->systemBlocks($snapshot, $riskProfile, $locale, $goals),
-                'messages' => $history,
+        try {
+            $response = Http::withHeaders([
+                'x-api-key' => (string) config('mahafeth.ai.api_key'),
+                'anthropic-version' => self::API_VERSION,
             ])
-            ->throw();
+                // One retry on transport failures only (never on HTTP errors):
+                // a failed connect costs at most the 10s connect timeout, so
+                // the retry still fits the 90s job budget. A second full 60s
+                // read would not, which is why HTTP errors are not retried.
+                ->retry(2, 500, fn (\Throwable $e): bool => $e instanceof ConnectionException, throw: true)
+                ->timeout((int) config('mahafeth.ai.chat_timeout'))
+                ->connectTimeout(10)
+                ->withOptions(['stream' => true])
+                ->post(self::API_URL, [
+                    // Sonnet balances answer quality against chat latency while
+                    // insights keep the larger model; adaptive thinking at
+                    // medium effort keeps replies fast without Haiku-level
+                    // guesswork.
+                    'model' => config('mahafeth.ai.chat_model'),
+                    'max_tokens' => (int) config('mahafeth.ai.chat_max_tokens'),
+                    'thinking' => ['type' => 'adaptive'],
+                    'output_config' => ['effort' => 'medium'],
+                    // Streaming lets the UI show the reply as it is written.
+                    'stream' => true,
+                    // Server-side web search grounds questions about current
+                    // prices, news, and company facts that the snapshot payload
+                    // cannot answer; capped so one message stays cheap.
+                    'tools' => [['type' => 'web_search_20260209', 'name' => 'web_search', 'max_uses' => 3]],
+                    'system' => $this->systemBlocks($snapshot, $riskProfile, $locale, $goals),
+                    'messages' => $history,
+                ])
+                ->throw();
+        } catch (RequestException $exception) {
+            Log::error('Claude chat request failed', [
+                'status' => $exception->response->status(),
+                'error' => $exception->response->json('error') ?? substr($exception->response->body(), 0, 500),
+            ]);
+
+            throw $exception;
+        }
 
         $text = $this->readStreamedText($response->toPsrResponse()->getBody(), $onProgress);
 

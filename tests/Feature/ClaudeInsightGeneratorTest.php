@@ -7,8 +7,11 @@ use App\Models\RiskProfile;
 use App\Models\User;
 use App\Services\Insights\ClaudeInsightGenerator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class ClaudeInsightGeneratorTest extends TestCase
@@ -73,6 +76,53 @@ class ClaudeInsightGeneratorTest extends TestCase
                 && str_contains($prompt, 'balanced')       // risk profile
                 && str_contains($prompt, 'Arabic');        // locale instruction
         });
+    }
+
+    public function test_a_connection_failure_is_retried_once_then_succeeds(): void
+    {
+        [$snapshot, $profile] = $this->snapshotAndProfile();
+
+        $payload = [
+            'content' => [
+                ['type' => 'text', 'text' => json_encode(['summary' => 'Recovered.', 'recommendations' => []])],
+            ],
+        ];
+
+        $attempts = 0;
+        Http::fake(function () use (&$attempts, $payload) {
+            if ($attempts++ === 0) {
+                throw new ConnectionException('Connection refused');
+            }
+
+            return Http::response($payload);
+        });
+
+        $result = (new ClaudeInsightGenerator)->generate($snapshot, $profile, 'en');
+
+        $this->assertSame('Recovered.', $result['summary']);
+        $this->assertSame(2, $attempts);
+    }
+
+    public function test_an_api_error_is_logged_with_the_anthropic_message(): void
+    {
+        [$snapshot, $profile] = $this->snapshotAndProfile();
+
+        Http::fake([
+            'api.anthropic.com/v1/messages' => Http::response([
+                'type' => 'error',
+                'error' => ['type' => 'authentication_error', 'message' => 'invalid x-api-key'],
+            ], 401),
+        ]);
+
+        Log::shouldReceive('error')
+            ->once()
+            ->withArgs(fn (string $message, array $context): bool => $message === 'Claude insight request failed'
+                && $context['status'] === 401
+                && $context['error']['message'] === 'invalid x-api-key');
+
+        $this->expectException(RequestException::class);
+
+        (new ClaudeInsightGenerator)->generate($snapshot, $profile, 'en');
     }
 
     public function test_the_prompt_contains_the_health_score_and_component_scores(): void
