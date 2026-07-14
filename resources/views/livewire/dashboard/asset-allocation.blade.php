@@ -6,6 +6,11 @@ use Illuminate\Support\Number;
 use Livewire\Volt\Component;
 
 new class extends Component {
+    public function placeholder(): \Illuminate\Contracts\View\View
+    {
+        return view('partials.skeleton-chart');
+    }
+
     private const CIRCUMFERENCE = 251.33; // 2πr with r = 40
 
     private const COLORS = [

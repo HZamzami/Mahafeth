@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
 
 new class extends Component {
+    public function placeholder(): \Illuminate\Contracts\View\View
+    {
+        return view('partials.skeleton-card');
+    }
+
     /**
      * Summarize the user's Open Banking connections.
      */

@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'improved',
+                        'title' => __('A faster-feeling dashboard'),
+                        'body' => __('Heavier cards now load in the background behind smooth placeholders, so the dashboard and analytics pages appear instantly instead of waiting for every chart.'),
+                    ],
+                    [
+                        'type' => 'improved',
                         'title' => __('You stay signed in'),
                         'body' => __('Mahafeth now keeps you signed in on your device, so opening the app takes you straight to your portfolio instead of the login screen.'),
                     ],

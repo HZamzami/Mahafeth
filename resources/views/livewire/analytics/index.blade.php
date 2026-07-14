@@ -517,7 +517,7 @@ new class extends Component {
         </div>
 
         {{-- Stress Test --}}
-        <livewire:analytics.stress-scenarios />
+        <livewire:analytics.stress-scenarios lazy />
         </flux:tab.panel>
 
         <flux:tab.panel name="correlation" class="flex flex-col gap-4">

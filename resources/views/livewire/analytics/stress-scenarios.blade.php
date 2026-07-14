@@ -9,6 +9,11 @@ use Livewire\Volt\Component;
 new class extends Component {
     public string $scenario = 'oil_correction';
 
+    public function placeholder(): \Illuminate\Contracts\View\View
+    {
+        return view('partials.skeleton-card');
+    }
+
     /**
      * Replays the selected shock on the latest snapshot's real weights.
      */

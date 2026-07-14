@@ -191,11 +191,11 @@ class DashboardTest extends TestCase
     public function test_the_dashboard_shows_the_shariah_screening_card(): void
     {
         $user = $this->syncedAndAnalyzedUser();
+        $this->actingAs($user);
 
         // Derayah's fixture includes JPM, the non-compliant contrast position.
-        $this->actingAs($user)
-            ->get('/dashboard')
-            ->assertOk()
+        // The card is lazy-loaded, so assert against the component itself.
+        Volt::test('dashboard.shariah-compliance')
             ->assertSee(__('Shariah Compliance'))
             ->assertSee(__('Flagged Positions'))
             ->assertSee(__('Stock Purification'))

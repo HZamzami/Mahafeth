@@ -5,6 +5,11 @@ use Illuminate\Support\Number;
 use Livewire\Volt\Component;
 
 new class extends Component {
+    public function placeholder(): \Illuminate\Contracts\View\View
+    {
+        return view('partials.skeleton-card');
+    }
+
     /**
      * Shariah screening results from the latest portfolio snapshot.
      */

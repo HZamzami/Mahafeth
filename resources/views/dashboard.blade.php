@@ -25,13 +25,13 @@
             {{-- Left rail --}}
             <div class="flex flex-col gap-4 max-lg:order-2 lg:col-span-3">
                 {{-- Open Banking --}}
-                <livewire:dashboard.open-banking-panel />
+                <livewire:dashboard.open-banking-panel lazy />
 
                 {{-- Asset Allocation --}}
-                <livewire:dashboard.asset-allocation />
+                <livewire:dashboard.asset-allocation lazy />
 
                 {{-- Shariah Compliance --}}
-                <livewire:dashboard.shariah-compliance />
+                <livewire:dashboard.shariah-compliance lazy />
             </div>
 
             {{-- Center column --}}
