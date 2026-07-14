@@ -18,52 +18,52 @@ Route::get('locale/{locale}', function (string $locale) {
 })->middleware('throttle:30,1')->name('locale.update');
 
 Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('dashboard');
 
 Volt::route('advisor', 'advisor.index')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('advisor');
 
 Volt::route('connections', 'connections.index')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('connections');
 
 Volt::route('connections/consent/{institution:slug}', 'connections.consent')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('connections.consent');
 
 Volt::route('analytics', 'analytics.index')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('analytics');
 
 Volt::route('activity', 'activity.index')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('activity');
 
 Volt::route('holdings', 'holdings.index')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('holdings.index');
 
 Volt::route('holdings/{asset:symbol}', 'holdings.detail')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('holdings.detail');
 
 Volt::route('explore', 'explore.index')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('explore.index');
 
 Volt::route('explore/{symbol}', 'explore.instrument')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->where('symbol', '[A-Za-z0-9.\-]+')
     ->name('explore.instrument');
 
 Volt::route('investor-profile', 'investor-profile.index')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('investor-profile');
 
 Volt::route('plan', 'investment-plan.index')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('plan');
 
 Volt::route('whats-new', 'changelog.index')
@@ -71,7 +71,7 @@ Volt::route('whats-new', 'changelog.index')
     ->name('whats-new');
 
 Volt::route('report', 'report.index')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('report');
 
 Route::middleware(['auth'])->group(function () {
