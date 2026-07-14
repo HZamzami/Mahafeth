@@ -70,7 +70,7 @@
                                     <path d="M0 48 C 30 44, 45 52, 70 40 S 120 30, 145 22 S 180 14, 200 8"
                                         fill="none" stroke="var(--color-teal-400)" stroke-width="2.5" stroke-linecap="round"
                                         class="draw-path" stroke-dasharray="230" stroke-dashoffset="230"
-                                        x-data x-intersect.once="$el.style.strokeDashoffset = '0'" />
+                                        data-draw-offset="0" />
                                 </svg>
                             </div>
                         </div>
@@ -83,11 +83,10 @@
                                 <circle cx="50" cy="50" r="40" fill="none" stroke-width="9" class="stroke-zinc-200 dark:stroke-zinc-800" />
                                 <circle cx="50" cy="50" r="40" fill="none" stroke-width="9" stroke-linecap="round"
                                     class="gauge-fill stroke-teal-600 dark:stroke-teal-400" stroke-dasharray="251.33" stroke-dashoffset="251.33"
-                                    x-data x-intersect.once="$el.style.strokeDashoffset = '45.2'" />
+                                    data-draw-offset="45.2" />
                             </svg>
                             <div>
-                                <p class="text-2xl font-semibold text-zinc-900 dark:text-white"
-                                    x-data="countUp(82)" x-intersect.once="start()" x-text="shown">82</p>
+                                <p class="text-2xl font-semibold text-zinc-900 dark:text-white" data-count-to="82">82</p>
                                 <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Portfolio Health Score') }}</p>
                             </div>
                         </div>
@@ -129,7 +128,7 @@
             ] as $stat)
                 <div class="welcome-reveal">
                     <p class="text-4xl font-semibold text-zinc-900 dark:text-white" dir="ltr">
-                        <span x-data="countUp({{ $stat['value'] }})" x-intersect.once="start()" x-text="shown">{{ $stat['value'] }}</span>{{ $stat['suffix'] }}
+                        <span data-count-to="{{ $stat['value'] }}">{{ $stat['value'] }}</span>{{ $stat['suffix'] }}
                     </p>
                     <p class="mt-1 text-sm text-zinc-500">{{ $stat['label'] }}</p>
                 </div>
@@ -192,11 +191,10 @@
                         <circle cx="50" cy="50" r="40" fill="none" stroke-width="8" class="stroke-zinc-200 dark:stroke-zinc-800" />
                         <circle cx="50" cy="50" r="40" fill="none" stroke-width="8" stroke-linecap="round"
                             class="gauge-fill stroke-teal-600 dark:stroke-teal-400" stroke-dasharray="251.33" stroke-dashoffset="251.33"
-                            x-data x-intersect.once="$el.style.strokeDashoffset = '45.2'" />
+                            data-draw-offset="45.2" />
                     </svg>
                     <div>
-                        <p class="text-6xl font-semibold text-zinc-900 dark:text-white"
-                            x-data="countUp(82)" x-intersect.once="start()" x-text="shown">82</p>
+                        <p class="text-6xl font-semibold text-zinc-900 dark:text-white" data-count-to="82">82</p>
                         <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{{ __('Portfolio Health Score') }}</p>
                         <p class="mt-3 inline-flex rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300" dir="ltr">▲ +6 {{ __('this month') }}</p>
                     </div>

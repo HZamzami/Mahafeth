@@ -54,9 +54,65 @@ document.addEventListener('livewire:navigated', () => {
 // the first time they enter the viewport (styles in app.css under
 // .welcome-in). Content stays visible without JS or with reduced motion.
 window.addEventListener('load', () => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Gauge rings and sparklines: sweep the stroke to its target offset.
+    // Driven here rather than by Alpine's x-intersect because this page has
+    // no Livewire component to guarantee the plugin. Reduced motion still
+    // reaches the final state; the CSS transition just isn't there.
+    const drawables = document.querySelectorAll('[data-draw-offset]');
+
+    if (drawables.length) {
+        const drawObserver = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting) {
+                        entry.target.style.strokeDashoffset = entry.target.dataset.drawOffset;
+                        drawObserver.unobserve(entry.target);
+                    }
+                }
+            },
+            { threshold: 0.4 },
+        );
+
+        drawables.forEach((element) => drawObserver.observe(element));
+    }
+
+    // Count-up numbers: the real value is server-rendered, so without JS
+    // or with reduced motion it is simply already there.
+    const counters = document.querySelectorAll('[data-count-to]');
+
+    if (counters.length && !reduceMotion) {
+        const countObserver = new IntersectionObserver((entries) => {
+            for (const entry of entries) {
+                if (!entry.isIntersecting) {
+                    continue;
+                }
+
+                countObserver.unobserve(entry.target);
+
+                const target = Number(entry.target.dataset.countTo);
+                const begin = performance.now();
+
+                const tick = (now) => {
+                    const progress = Math.min((now - begin) / 900, 1);
+                    entry.target.textContent = Math.round(target * (1 - Math.pow(1 - progress, 3)));
+
+                    if (progress < 1) {
+                        requestAnimationFrame(tick);
+                    }
+                };
+
+                requestAnimationFrame(tick);
+            }
+        });
+
+        counters.forEach((element) => countObserver.observe(element));
+    }
+
     const revealables = document.querySelectorAll('.welcome-reveal');
 
-    if (!revealables.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (!revealables.length || reduceMotion) {
         return;
     }
 
