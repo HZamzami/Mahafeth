@@ -154,7 +154,7 @@ new class extends Component {
     }
 }; ?>
 
-<div class="mx-auto flex w-full max-w-7xl flex-col gap-6">
+<div class="stagger-children mx-auto flex w-full max-w-7xl flex-col gap-6">
     {{-- Header --}}
     <div>
         <flux:button size="sm" variant="ghost" :href="route('holdings.index')" wire:navigate>
@@ -213,7 +213,7 @@ new class extends Component {
 
     <div class="grid items-start gap-6 lg:grid-cols-3">
         {{-- Main column --}}
-        <div class="flex flex-col gap-6 lg:col-span-2">
+        <div class="stagger-children flex flex-col gap-6 lg:col-span-2">
             @if ($showChart)
                 <div class="card p-5">
                     <div class="flex items-center justify-between">
@@ -333,7 +333,7 @@ new class extends Component {
         </div>
 
         {{-- Side column --}}
-        <div class="flex flex-col gap-6">
+        <div class="stagger-children flex flex-col gap-6">
             {{-- Position --}}
             <div class="card p-5">
                 <flux:heading class="uppercase tracking-widest !text-neutral-500 dark:!text-neutral-400" size="sm">

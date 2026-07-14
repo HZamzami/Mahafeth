@@ -24,8 +24,8 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'improved',
-                        'title' => __('A more polished dashboard'),
-                        'body' => __('Cards now settle in one after another, your total counts up when the page opens, and cards respond gently under the pointer. Same numbers, better presence.'),
+                        'title' => __('A more polished app'),
+                        'body' => __('Across the app, cards now settle in one after another, totals count up when a page opens, and cards respond gently under the pointer. Same numbers, better presence.'),
                     ],
                     [
                         'type' => 'improved',

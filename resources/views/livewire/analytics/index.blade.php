@@ -223,7 +223,7 @@ new class extends Component {
     }
 }; ?>
 
-<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
+<div class="stagger-children mx-auto flex w-full max-w-5xl flex-col gap-6">
     <div>
         <flux:heading size="xl">{{ __('Portfolio Analytics') }}</flux:heading>
         <flux:text class="mt-1">
@@ -251,7 +251,7 @@ new class extends Component {
 
         <flux:tab.panel name="frontier" selected class="flex flex-col gap-4">
         {{-- Efficient Frontier --}}
-        <div class="grid gap-4 lg:grid-cols-3">
+        <div class="stagger-children grid gap-4 lg:grid-cols-3">
             <div
                 class="card p-5 lg:col-span-2">
                 <flux:heading size="lg">{{ __('Efficient Frontier') }}</flux:heading>

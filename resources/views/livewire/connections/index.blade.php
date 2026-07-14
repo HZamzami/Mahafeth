@@ -114,7 +114,7 @@ new class extends Component {
     }
 }; ?>
 
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
+<div class="stagger-children mx-auto flex w-full max-w-3xl flex-col gap-6">
     <div>
         <flux:heading size="xl">{{ __('Connected Sources') }}</flux:heading>
         <flux:text class="mt-1">
@@ -145,7 +145,7 @@ new class extends Component {
         </flux:callout>
     @endif
 
-    <div class="flex flex-col gap-4">
+    <div class="stagger-children flex flex-col gap-4">
         @foreach ($institutions as $institution)
             @php($connection = $connections->get($institution->id))
             @php($isConnected = $connection?->status === \App\Enums\ConnectionStatus::Connected)

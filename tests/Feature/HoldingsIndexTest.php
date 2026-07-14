@@ -37,7 +37,9 @@ class HoldingsIndexTest extends TestCase
         Volt::test('holdings.index')
             ->assertSee(__('Holdings'))
             ->assertSee(__('Total Portfolio'))
-            ->assertSee('AAPL');
+            ->assertSee('AAPL')
+            ->assertSeeHtml('countUp')
+            ->assertSeeHtml('stagger-children');
     }
 
     public function test_a_fresh_user_sees_the_connect_prompt(): void

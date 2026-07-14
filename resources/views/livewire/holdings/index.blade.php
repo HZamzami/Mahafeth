@@ -13,7 +13,7 @@ new class extends Component {
     }
 }; ?>
 
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
+<div class="stagger-children mx-auto flex w-full max-w-3xl flex-col gap-6">
     <div>
         <flux:heading size="xl">{{ __('Holdings') }}</flux:heading>
         <flux:text class="mt-1">
@@ -25,7 +25,9 @@ new class extends Component {
         <div class="card p-5">
             <div class="flex items-baseline justify-between">
                 <flux:text class="text-xs font-medium uppercase tracking-widest">{{ __('Total Portfolio') }}</flux:text>
-                <flux:heading size="lg" dir="ltr">⃁ {{ Number::format($holdings['totalValue'], 0) }}</flux:heading>
+                <flux:heading size="lg" dir="ltr" data-amount>⃁ <span
+                        x-data="countUp({{ (int) round($holdings['totalValue']) }}, true)" x-intersect.once="start()"
+                        x-text="shown">{{ Number::format($holdings['totalValue'], 0) }}</span></flux:heading>
             </div>
         </div>
 

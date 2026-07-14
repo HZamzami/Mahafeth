@@ -18,7 +18,7 @@ new class extends Component {
     }
 }; ?>
 
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-6"
+<div class="stagger-children mx-auto flex w-full max-w-3xl flex-col gap-6"
     x-data x-init="localStorage.setItem('mahafeth-changelog-seen', '{{ $latestDate }}')">
     <div>
         <flux:heading size="xl">{{ __("What's New") }}</flux:heading>

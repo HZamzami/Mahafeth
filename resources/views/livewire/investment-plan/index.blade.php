@@ -168,7 +168,7 @@ new class extends Component {
     }
 }; ?>
 
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
+<div class="stagger-children mx-auto flex w-full max-w-3xl flex-col gap-6">
     <div>
         <flux:heading size="xl">{{ __('Investment Plan') }}</flux:heading>
         <flux:text class="mt-1">
@@ -211,7 +211,7 @@ new class extends Component {
 
         @if ($plan !== null)
             {{-- Plan stats --}}
-            <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <div class="stagger-children grid grid-cols-2 gap-4 lg:grid-cols-4">
                 <div class="card p-4">
                     <flux:text class="text-xs">{{ __('Expected Return') }}</flux:text>
                     <flux:heading class="!text-emerald-600 dark:!text-emerald-400" size="lg" dir="ltr">
