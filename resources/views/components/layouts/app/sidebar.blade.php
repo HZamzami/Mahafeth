@@ -189,6 +189,8 @@
 
     @include('partials.pwa-install-banner')
 
+    @include('partials.offline-banner')
+
     @fluxScripts
 </body>
 

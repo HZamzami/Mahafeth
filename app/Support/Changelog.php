@@ -23,6 +23,11 @@ class Changelog
                 'date' => '2026-07-14',
                 'items' => [
                     [
+                        'type' => 'new',
+                        'title' => __('Your dashboard, even offline'),
+                        'body' => __('The installed app now remembers your latest dashboard, so opening it without a connection shows your last portfolio view with a clear offline notice instead of an error page.'),
+                    ],
+                    [
                         'type' => 'improved',
                         'title' => __('A faster-feeling dashboard'),
                         'body' => __('Heavier cards now load in the background behind smooth placeholders, so the dashboard and analytics pages appear instantly instead of waiting for every chart.'),

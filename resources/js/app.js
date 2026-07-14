@@ -1,8 +1,25 @@
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js');
+
+        // A signed-out visitor must not keep the previous user's cached
+        // dashboard; the login page doubles as the logout landing spot.
+        if (document.body.dataset.guest !== undefined) {
+            navigator.serviceWorker.controller?.postMessage({ type: 'clear-snapshot' });
+        }
     });
 }
+
+// Surface connectivity in the UI: body.offline shows the banner styled in
+// app.css, covering both an offline launch from the cached dashboard
+// snapshot and a live tab losing its connection.
+const reflectConnectivity = () => {
+    document.body.classList.toggle('offline', !navigator.onLine);
+};
+
+window.addEventListener('online', reflectConnectivity);
+window.addEventListener('offline', reflectConnectivity);
+window.addEventListener('load', reflectConnectivity);
 
 // Dim the outgoing page the moment a wire:navigate hop starts so every
 // tap gets an instant visual acknowledgement, even before the network

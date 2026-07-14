@@ -58,4 +58,26 @@ class PwaTest extends TestCase
         $serviceWorker = file_get_contents(public_path('sw.js'));
         $this->assertStringContainsString('/offline.html', $serviceWorker);
     }
+
+    public function test_service_worker_snapshots_the_dashboard_for_offline_use(): void
+    {
+        $serviceWorker = file_get_contents(public_path('sw.js'));
+
+        $this->assertStringContainsString("'mahafeth-v3'", $serviceWorker);
+        $this->assertStringContainsString('mahafeth-dashboard-snapshot', $serviceWorker);
+        $this->assertStringContainsString('clear-snapshot', $serviceWorker);
+    }
+
+    public function test_the_app_layout_carries_the_offline_banner(): void
+    {
+        $response = $this->actingAs(User::factory()->create())->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee(__('You are offline. Showing your last saved view.'));
+    }
+
+    public function test_the_login_page_marks_the_body_as_guest(): void
+    {
+        $this->get(route('login'))->assertSee('data-guest', false);
+    }
 }

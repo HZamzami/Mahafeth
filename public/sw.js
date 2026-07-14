@@ -1,5 +1,11 @@
-const CACHE = 'mahafeth-v2';
+const CACHE = 'mahafeth-v3';
 const OFFLINE_URL = '/offline.html';
+
+// The most recent dashboard HTML, kept under one fixed key so an offline
+// launch shows the user's last portfolio view instead of the offline page.
+const SNAPSHOT_CACHE = 'mahafeth-dashboard-snapshot';
+const SNAPSHOT_KEY = '/dashboard-snapshot';
+const DASHBOARD_PATH = '/dashboard';
 
 // Hashed build assets, fonts, and icons are immutable: serve them from
 // the cache without touching the network on repeat loads.
@@ -13,7 +19,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         Promise.all([
-            caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))),
+            caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE && key !== SNAPSHOT_CACHE).map((key) => caches.delete(key)))),
             // Let the browser start navigation requests in parallel with
             // the service-worker boot instead of serializing behind it.
             self.registration.navigationPreload?.enable(),
@@ -29,9 +35,18 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(
             (async () => {
                 try {
-                    return (await event.preloadResponse) || (await fetch(request));
+                    const response = (await event.preloadResponse) || (await fetch(request));
+
+                    // Only a real dashboard response is snapshotted; a login
+                    // redirect resolves to a different final URL and is skipped.
+                    if (response.ok && new URL(response.url).pathname === DASHBOARD_PATH) {
+                        const copy = response.clone();
+                        caches.open(SNAPSHOT_CACHE).then((cache) => cache.put(SNAPSHOT_KEY, copy));
+                    }
+
+                    return response;
                 } catch {
-                    return caches.match(OFFLINE_URL);
+                    return (await caches.match(SNAPSHOT_KEY)) || caches.match(OFFLINE_URL);
                 }
             })(),
         );
@@ -56,6 +71,12 @@ self.addEventListener('fetch', (event) => {
                     }),
             ),
         );
+    }
+});
+
+self.addEventListener('message', (event) => {
+    if (event.data?.type === 'clear-snapshot') {
+        event.waitUntil(caches.delete(SNAPSHOT_CACHE));
     }
 });
 
