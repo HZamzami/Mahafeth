@@ -19,16 +19,16 @@
                 <div class="flex flex-col items-start gap-6 max-lg:items-center max-lg:text-center">
                     <div class="flex items-center gap-3">
                         <x-app-logo-icon class="size-12" />
-                        <span class="rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1 text-xs font-medium text-teal-300">
+                        <span class="rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1 text-xs font-medium text-teal-700 dark:text-teal-300">
                             {{ __('Built on the SAMA Open Banking framework') }}
                         </span>
                     </div>
 
-                    <h1 class="text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+                    <h1 class="text-balance text-4xl font-semibold tracking-tight text-zinc-900 dark:text-white sm:text-5xl">
                         {{ __('From scattered portfolios to one investment vision') }}
                     </h1>
 
-                    <p class="max-w-xl text-pretty text-lg text-zinc-400">
+                    <p class="max-w-xl text-pretty text-lg text-zinc-500 dark:text-zinc-400">
                         {{ __('Mahafeth securely connects your investment accounts through Open Banking, unifies them into a single portfolio, and uses institutional-grade analytics with AI to uncover hidden risks and tell you exactly what to do about them.') }}
                     </p>
 
@@ -54,7 +54,7 @@
                                 <p class="text-xs font-medium text-emerald-400" dir="ltr">+8.4%</p>
                             </div>
 
-                            <div class="card space-y-2 p-3 dark:!bg-zinc-900">
+                            <div class="space-y-2 rounded-xl border border-zinc-800 bg-zinc-900 p-3">
                                 <p class="text-xs text-zinc-400">{{ __('Asset Allocation') }}</p>
                                 <div class="flex h-2 gap-0.5 overflow-hidden rounded-full">
                                     <div class="w-[45%] bg-blue-500"></div>
@@ -64,7 +64,7 @@
                                 </div>
                             </div>
 
-                            <div class="card space-y-2 p-3 dark:!bg-zinc-900">
+                            <div class="space-y-2 rounded-xl border border-zinc-800 bg-zinc-900 p-3">
                                 <p class="text-xs text-zinc-400">{{ __('Performance') }}</p>
                                 <svg viewBox="0 0 200 60" class="w-full">
                                     <path d="M0 48 C 30 44, 45 52, 70 40 S 120 30, 145 22 S 180 14, 200 8"
@@ -80,15 +80,15 @@
                     <div class="welcome-parallax absolute -top-6 end-0 sm:-end-6">
                         <div class="welcome-float card flex items-center gap-3 p-4 shadow-2xl dark:!border-zinc-700/60">
                             <svg viewBox="0 0 100 100" class="size-14 -rotate-90">
-                                <circle cx="50" cy="50" r="40" fill="none" stroke-width="9" class="stroke-zinc-800" />
+                                <circle cx="50" cy="50" r="40" fill="none" stroke-width="9" class="stroke-zinc-200 dark:stroke-zinc-800" />
                                 <circle cx="50" cy="50" r="40" fill="none" stroke-width="9" stroke-linecap="round"
-                                    class="gauge-fill stroke-teal-400" stroke-dasharray="251.33" stroke-dashoffset="251.33"
+                                    class="gauge-fill stroke-teal-600 dark:stroke-teal-400" stroke-dasharray="251.33" stroke-dashoffset="251.33"
                                     x-data x-intersect.once="$el.style.strokeDashoffset = '45.2'" />
                             </svg>
                             <div>
-                                <p class="text-2xl font-semibold text-white"
+                                <p class="text-2xl font-semibold text-zinc-900 dark:text-white"
                                     x-data="countUp(82)" x-intersect.once="start()" x-text="shown">82</p>
-                                <p class="text-xs text-zinc-400">{{ __('Portfolio Health Score') }}</p>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Portfolio Health Score') }}</p>
                             </div>
                         </div>
                     </div>
@@ -97,10 +97,10 @@
                     <div class="welcome-parallax absolute bottom-24 start-0 sm:-start-10" style="--depth: 1.6">
                         <div class="welcome-float card max-w-52 p-3.5 shadow-2xl dark:!border-amber-500/20" style="animation-delay: -2s">
                             <div class="flex items-start gap-2.5">
-                                <flux:icon.exclamation-triangle class="mt-0.5 size-4 shrink-0 text-amber-400" />
+                                <flux:icon.exclamation-triangle class="mt-0.5 size-4 shrink-0 text-amber-500 dark:text-amber-400" />
                                 <div>
-                                    <p class="text-xs font-semibold text-white">{{ __('Concentration alert') }}</p>
-                                    <p class="mt-0.5 text-xs text-zinc-400">{{ __('41% of your portfolio sits in a single stock.') }}</p>
+                                    <p class="text-xs font-semibold text-zinc-900 dark:text-white">{{ __('Concentration alert') }}</p>
+                                    <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ __('41% of your portfolio sits in a single stock.') }}</p>
                                 </div>
                             </div>
                         </div>
@@ -110,8 +110,8 @@
                     <div class="welcome-parallax absolute -bottom-6 end-2 sm:-end-2" style="--depth: 2.2">
                         <div class="welcome-float card max-w-56 p-3.5 shadow-2xl dark:!border-teal-500/20" style="animation-delay: -4s">
                             <div class="flex items-start gap-2.5">
-                                <flux:icon.sparkles class="mt-0.5 size-4 shrink-0 text-teal-400" />
-                                <p class="text-xs text-zinc-300">{{ __('Selling 6% of your tech exposure would lift your health score to 88. Want the plan?') }}</p>
+                                <flux:icon.sparkles class="mt-0.5 size-4 shrink-0 text-teal-600 dark:text-teal-400" />
+                                <p class="text-xs text-zinc-600 dark:text-zinc-300">{{ __('Selling 6% of your tech exposure would lift your health score to 88. Want the plan?') }}</p>
                             </div>
                         </div>
                     </div>
@@ -128,7 +128,7 @@
                 ['value' => 2, 'suffix' => '', 'label' => __('languages, Arabic first')],
             ] as $stat)
                 <div class="welcome-reveal">
-                    <p class="text-4xl font-semibold text-white" dir="ltr">
+                    <p class="text-4xl font-semibold text-zinc-900 dark:text-white" dir="ltr">
                         <span x-data="countUp({{ $stat['value'] }})" x-intersect.once="start()" x-text="shown">{{ $stat['value'] }}</span>{{ $stat['suffix'] }}
                     </p>
                     <p class="mt-1 text-sm text-zinc-500">{{ $stat['label'] }}</p>
@@ -138,18 +138,18 @@
 
         {{-- ============ Feature deck ============ --}}
         <section>
-            <h2 class="welcome-reveal mx-auto max-w-2xl text-balance text-center text-3xl font-semibold tracking-tight text-white">
+            <h2 class="welcome-reveal mx-auto max-w-2xl text-balance text-center text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
                 {{ __('Not another dashboard. An intelligence layer over everything you own.') }}
             </h2>
 
             <div class="welcome-deck mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ([
-                    ['icon' => 'building-library', 'tint' => 'text-teal-300 bg-teal-500/15', 'title' => __('One unified portfolio'), 'body' => __('Alinma, local brokerages, and crypto, aggregated securely via Saudi Open Banking.')],
-                    ['icon' => 'heart', 'tint' => 'text-emerald-300 bg-emerald-500/15', 'title' => __('Portfolio Health Score'), 'body' => __('One number, built from diversification, risk, performance, and your own goals.')],
-                    ['icon' => 'eye', 'tint' => 'text-amber-300 bg-amber-500/15', 'title' => __('Hidden risks, revealed'), 'body' => __('Concentration, correlation, and stress behavior that single apps never show you.')],
-                    ['icon' => 'sparkles', 'tint' => 'text-purple-300 bg-purple-500/15', 'title' => __('AI that speaks your language'), 'body' => __('Plain-language reports and a personalized action plan — in Arabic or English.')],
-                    ['icon' => 'check-badge', 'tint' => 'text-emerald-300 bg-emerald-500/15', 'title' => __('Shariah screening built in'), 'body' => __('Every holding is screened for compliance, and your score reflects your values.')],
-                    ['icon' => 'rocket-launch', 'tint' => 'text-cyan-300 bg-cyan-500/15', 'title' => __('Ready for what is next'), 'body' => __('Built on the SAMA Open Banking framework today, ready for investment-account APIs the day they launch.')],
+                    ['icon' => 'building-library', 'tint' => 'text-teal-700 bg-teal-500/10 dark:text-teal-300 dark:bg-teal-500/15', 'title' => __('One unified portfolio'), 'body' => __('Alinma, local brokerages, and crypto, aggregated securely via Saudi Open Banking.')],
+                    ['icon' => 'heart', 'tint' => 'text-emerald-700 bg-emerald-500/10 dark:text-emerald-300 dark:bg-emerald-500/15', 'title' => __('Portfolio Health Score'), 'body' => __('One number, built from diversification, risk, performance, and your own goals.')],
+                    ['icon' => 'eye', 'tint' => 'text-amber-700 bg-amber-500/10 dark:text-amber-300 dark:bg-amber-500/15', 'title' => __('Hidden risks, revealed'), 'body' => __('Concentration, correlation, and stress behavior that single apps never show you.')],
+                    ['icon' => 'sparkles', 'tint' => 'text-purple-700 bg-purple-500/10 dark:text-purple-300 dark:bg-purple-500/15', 'title' => __('AI that speaks your language'), 'body' => __('Plain-language reports and a personalized action plan — in Arabic or English.')],
+                    ['icon' => 'check-badge', 'tint' => 'text-emerald-700 bg-emerald-500/10 dark:text-emerald-300 dark:bg-emerald-500/15', 'title' => __('Shariah screening built in'), 'body' => __('Every holding is screened for compliance, and your score reflects your values.')],
+                    ['icon' => 'rocket-launch', 'tint' => 'text-cyan-700 bg-cyan-500/10 dark:text-cyan-300 dark:bg-cyan-500/15', 'title' => __('Ready for what is next'), 'body' => __('Built on the SAMA Open Banking framework today, ready for investment-account APIs the day they launch.')],
                 ] as $feature)
                     <div class="welcome-reveal welcome-deck-card card p-6 dark:!border-zinc-700/60">
                         <span class="mb-4 inline-flex size-11 items-center justify-center rounded-xl {{ $feature['tint'] }}">
@@ -168,20 +168,20 @@
 
             <div class="relative grid items-center gap-10 lg:grid-cols-2">
                 <div>
-                    <h2 class="text-balance text-3xl font-semibold tracking-tight text-white">
+                    <h2 class="text-balance text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
                         {{ __('From diagnosis to action') }}
                     </h2>
                     <ul class="mt-6 space-y-4">
                         <li class="flex items-start gap-3">
-                            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-teal-400" />
+                            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-teal-600 dark:text-teal-400" />
                             <flux:text>{{ __('Every score explains itself: which holdings drag it down, and what would raise it.') }}</flux:text>
                         </li>
                         <li class="flex items-start gap-3">
-                            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-teal-400" />
+                            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-teal-600 dark:text-teal-400" />
                             <flux:text>{{ __('Concrete rebalancing steps sized to your goals, not generic advice.') }}</flux:text>
                         </li>
                         <li class="flex items-start gap-3">
-                            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-teal-400" />
+                            <flux:icon.check-circle class="mt-0.5 size-5 shrink-0 text-teal-600 dark:text-teal-400" />
                             <flux:text>{{ __('Set your own alert thresholds and get notified the moment one is crossed.') }}</flux:text>
                         </li>
                     </ul>
@@ -189,16 +189,16 @@
 
                 <div class="mx-auto flex items-center gap-8" aria-hidden="true">
                     <svg viewBox="0 0 100 100" class="size-40 -rotate-90 sm:size-48">
-                        <circle cx="50" cy="50" r="40" fill="none" stroke-width="8" class="stroke-zinc-800" />
+                        <circle cx="50" cy="50" r="40" fill="none" stroke-width="8" class="stroke-zinc-200 dark:stroke-zinc-800" />
                         <circle cx="50" cy="50" r="40" fill="none" stroke-width="8" stroke-linecap="round"
-                            class="gauge-fill stroke-teal-400" stroke-dasharray="251.33" stroke-dashoffset="251.33"
+                            class="gauge-fill stroke-teal-600 dark:stroke-teal-400" stroke-dasharray="251.33" stroke-dashoffset="251.33"
                             x-data x-intersect.once="$el.style.strokeDashoffset = '45.2'" />
                     </svg>
                     <div>
-                        <p class="text-6xl font-semibold text-white"
+                        <p class="text-6xl font-semibold text-zinc-900 dark:text-white"
                             x-data="countUp(82)" x-intersect.once="start()" x-text="shown">82</p>
-                        <p class="mt-1 text-sm text-zinc-400">{{ __('Portfolio Health Score') }}</p>
-                        <p class="mt-3 inline-flex rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300" dir="ltr">▲ +6 {{ __('this month') }}</p>
+                        <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{{ __('Portfolio Health Score') }}</p>
+                        <p class="mt-3 inline-flex rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300" dir="ltr">▲ +6 {{ __('this month') }}</p>
                     </div>
                 </div>
             </div>
@@ -219,7 +219,7 @@
                                 ['Rain', 'رين'],
                                 ['Tadawul', 'تداول'],
                             ] as [$en, $ar])
-                                <span class="shrink-0 rounded-full border border-zinc-700/60 bg-zinc-900 px-5 py-2.5 text-sm font-medium text-zinc-300">
+                                <span class="shrink-0 rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium text-zinc-600 dark:border-zinc-700/60 dark:bg-zinc-900 dark:text-zinc-300">
                                     {{ app()->getLocale() === 'ar' ? $ar : $en }}
                                 </span>
                             @endforeach
@@ -230,10 +230,10 @@
         </section>
 
         {{-- ============ Final CTA ============ --}}
-        <section class="welcome-reveal relative overflow-hidden rounded-3xl border border-teal-500/20 bg-gradient-to-br from-teal-500/15 via-zinc-900 to-purple-500/10 p-10 text-center sm:p-16">
+        <section class="welcome-reveal relative overflow-hidden rounded-3xl border border-teal-500/20 bg-gradient-to-br from-teal-500/15 via-white to-purple-500/10 dark:via-zinc-900 p-10 text-center sm:p-16">
             <div aria-hidden="true" class="pointer-events-none absolute -bottom-24 start-1/2 size-80 -translate-x-1/2 rounded-full bg-teal-500/15 blur-3xl rtl:translate-x-1/2"></div>
 
-            <h2 class="relative text-balance text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            <h2 class="relative text-balance text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white sm:text-4xl">
                 {{ __('Your portfolios already hold the answers. See them together.') }}
             </h2>
 
@@ -243,7 +243,7 @@
             </div>
 
             <a href="{{ route('locale.update', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
-                class="relative mt-8 inline-block text-sm text-zinc-400 underline-offset-4 hover:underline">
+                class="relative mt-8 inline-block text-sm text-zinc-500 underline-offset-4 dark:text-zinc-400 hover:underline">
                 {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
             </a>
         </section>
