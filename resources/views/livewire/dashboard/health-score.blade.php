@@ -44,8 +44,10 @@ new class extends Component {
     }
 }; ?>
 
+{{-- shrink-0 keeps the gauge composition at its natural size; the Total
+     Return chart below absorbs the column stretch instead. --}}
 <div
-    class="flex grow flex-col items-center card p-6 text-center">
+    class="flex shrink-0 flex-col items-center card p-6 text-center">
     <div class="flex w-full items-center justify-between">
         <flux:heading size="lg">{{ __('Portfolio Health Score') }}</flux:heading>
         @if ($hasSnapshot)
@@ -54,7 +56,7 @@ new class extends Component {
         @endif
     </div>
 
-    <div class="relative my-8 flex grow items-center justify-center">
+    <div class="relative my-8 flex items-center justify-center">
         <svg class="size-56 -rotate-90" viewBox="0 0 224 224">
             <circle cx="112" cy="112" r="100" fill="transparent" stroke-width="16" stroke-linecap="round"
                 class="stroke-neutral-100 dark:stroke-zinc-800" />

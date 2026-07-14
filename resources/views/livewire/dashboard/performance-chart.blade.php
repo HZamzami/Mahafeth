@@ -82,12 +82,14 @@ new class extends Component {
     }
 }; ?>
 
+{{-- This card absorbs the center column's leftover height (the grid
+     stretches all rails equally); the plot area flexes with it. --}}
 <div
-    class="relative shrink-0 overflow-hidden card p-5">
+    class="relative flex grow flex-col overflow-hidden card p-5">
     <flux:heading class="mb-4" size="lg">{{ __('Total Return') }}</flux:heading>
 
     @if ($points !== [])
-        <flux:chart class="relative" dir="ltr" :value="$points">
+        <flux:chart class="relative flex flex-1 flex-col" dir="ltr" :value="$points">
             {{-- Live readout: follows the cursor/finger, falls back to the latest point. --}}
             <flux:chart.summary class="mb-3 flex items-baseline gap-3">
                 <span class="text-2xl font-semibold tabular-nums text-teal-700 dark:text-teal-300">
@@ -97,7 +99,7 @@ new class extends Component {
                     :format="['month' => 'short', 'year' => 'numeric']" />
             </flux:chart.summary>
 
-            <div class="aspect-3/1 relative">
+            <div class="relative min-h-32 flex-1">
             <flux:chart.svg>
                 @foreach ($benchmarkSymbols as $symbol)
                     <flux:chart.line class="{{ $symbol === 'TASI' ? 'text-amber-400/70 dark:text-amber-300/60' : 'text-zinc-400/70 dark:text-zinc-500/70' }}"
