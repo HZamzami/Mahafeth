@@ -171,15 +171,23 @@ body.navigating main {
         animation: welcome-marquee 30s linear infinite;
     }
 
-    /* Reversing the loop in RTL keeps the pills drifting toward the
-       reading direction on a physical-axis transform. */
+    /* RTL gets its own keyframes rather than animation-direction: reverse,
+       which would start the loop at the shifted position where the strip
+       reads as empty. Both start full at translateX(0) and drift toward
+       the reading direction on a physical-axis transform. */
     [dir='rtl'] .welcome-marquee {
-        animation-direction: reverse;
+        animation-name: welcome-marquee-rtl;
     }
 
     @keyframes welcome-marquee {
         to {
             transform: translateX(-50%);
+        }
+    }
+
+    @keyframes welcome-marquee-rtl {
+        to {
+            transform: translateX(50%);
         }
     }
 }
