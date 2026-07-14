@@ -56,27 +56,53 @@ const initWelcomeEffects = () => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Gauge rings and sparklines: sweep the stroke to its target offset.
-    // Reduced motion still reaches the final state; the CSS transition
-    // just isn't there.
+    // WebKit never fires IntersectionObserver for elements inside an SVG,
+    // so the observer watches the nearest HTML ancestor and then sweeps
+    // the strokes within it. Reduced motion still reaches the final
+    // state; the CSS transition just isn't there.
     const drawables = document.querySelectorAll('[data-draw-offset]:not([data-draw-done])');
 
     if (drawables.length) {
-        const drawObserver = new IntersectionObserver(
-            (entries) => {
-                for (const entry of entries) {
-                    if (entry.isIntersecting) {
-                        entry.target.style.strokeDashoffset = entry.target.dataset.drawOffset;
-                        drawObserver.unobserve(entry.target);
-                    }
-                }
-            },
-            { threshold: 0.4 },
-        );
+        const strokesByAnchor = new Map();
 
         drawables.forEach((element) => {
             element.dataset.drawDone = 'true';
-            drawObserver.observe(element);
+            const anchor = element.closest('div, section') ?? element;
+
+            if (!strokesByAnchor.has(anchor)) {
+                strokesByAnchor.set(anchor, []);
+            }
+
+            strokesByAnchor.get(anchor).push(element);
         });
+
+        const drawObserver = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (!entry.isIntersecting) {
+                        continue;
+                    }
+
+                    for (const element of strokesByAnchor.get(entry.target) ?? []) {
+                        element.style.strokeDashoffset = element.dataset.drawOffset;
+                    }
+
+                    drawObserver.unobserve(entry.target);
+                }
+            },
+            { threshold: 0.25 },
+        );
+
+        strokesByAnchor.forEach((strokes, anchor) => drawObserver.observe(anchor));
+
+        // Belt and braces: if any observer quirk keeps a stroke from
+        // sweeping, fill it after a beat. A pre-filled gauge below the
+        // fold beats an empty one.
+        setTimeout(() => {
+            drawables.forEach((element) => {
+                element.style.strokeDashoffset = element.dataset.drawOffset;
+            });
+        }, 2500);
     }
 
     // Count-up numbers: the real value is server-rendered, so without JS
