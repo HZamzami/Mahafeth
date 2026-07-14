@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'improved',
+                        'title' => __('Insights, ready when you arrive'),
+                        'body' => __('Mahafeth now prepares your AI insight in the background the moment an analysis finishes, so the advisor and dashboard usually have it waiting instead of making you watch a spinner.'),
+                    ],
+                    [
+                        'type' => 'improved',
                         'title' => __('A faster demo with live progress'),
                         'body' => __('Try the demo now builds your sample portfolio in seconds and shows its progress while it works, in your language and direction.'),
                     ],

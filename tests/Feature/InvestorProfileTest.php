@@ -212,6 +212,10 @@ class InvestorProfileTest extends TestCase
         foreach (['diversification', 'correlation', 'risk_alignment', 'performance', 'drawdown', 'concentration'] as $component) {
             $this->assertArrayHasKey($component, $snapshot->component_scores);
         }
+
+        // The AI insight is pre-generated after the first analysis (sync
+        // queue runs it inline here).
+        $this->assertDatabaseHas('ai_insights', ['portfolio_snapshot_id' => $snapshot->id]);
     }
 
     public function test_the_dashboard_nudges_users_without_a_profile(): void

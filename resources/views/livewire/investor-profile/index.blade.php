@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\RiskTolerance;
+use App\Jobs\GenerateInsightsJob;
 use App\Enums\TimeHorizon;
 use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Support\Facades\Auth;
@@ -218,6 +219,11 @@ new class extends Component {
         ]);
 
         $analyzer->analyze(Auth::user()->fresh());
+
+        // Pre-generate the AI insight so it is ready before the user asks.
+        if (Auth::user()->latestSnapshot() !== null) {
+            GenerateInsightsJob::request(Auth::user(), app()->getLocale());
+        }
 
         $this->redirectRoute('dashboard', navigate: true);
     }

@@ -230,7 +230,7 @@ new class extends Component {
      the screen like a native chat; 12rem ≈ header + main padding + bottom
      nav, and the safe-area insets cover the PWA's status bar and home
      indicator. --}}
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:min-h-[calc(100dvh-12rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))]"
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:h-[calc(100dvh-12rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] max-lg:overflow-y-auto"
     @if ($isAwaitingReply) wire:poll.1s @elseif ($isGenerating) wire:poll.2s @endif>
     <div class="flex items-start justify-between gap-4">
         <div>
@@ -361,7 +361,7 @@ new class extends Component {
 
         {{-- Chat --}}
         <div class="flex flex-col card max-lg:min-h-0 max-lg:flex-1">
-            <div class="min-h-40 space-y-3 overflow-y-auto p-5 max-lg:flex-1 lg:max-h-[55vh]" x-data
+            <div class="min-h-40 space-y-3 overflow-y-auto p-5 max-lg:min-h-0 max-lg:flex-1 lg:max-h-[55vh]" x-data
                 x-init="$el.scrollTop = $el.scrollHeight"
                 @chat-updated.window="$nextTick(() => $el.scrollTop = $el.scrollHeight)">
                 @forelse ($messages as $chatMessage)

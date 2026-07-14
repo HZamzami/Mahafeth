@@ -14,7 +14,7 @@ class AiDoctorTest extends TestCase
 
     public function test_a_healthy_configuration_passes(): void
     {
-        config(['mahafeth.ai.api_key' => 'sk-ant-test-key-12345', 'mahafeth.ai.fake' => false, 'queue.default' => 'database']);
+        config(['mahafeth.ai.api_key' => 'sk-ant-test-key-12345', 'mahafeth.ai.fake' => false, 'queue.default' => 'database', 'queue.connections.database.retry_after' => 180]);
         Http::fake(['api.anthropic.com/*' => Http::response(['ok' => true])]);
 
         $this->artisan('mahafeth:ai-doctor')
@@ -43,6 +43,16 @@ class AiDoctorTest extends TestCase
             ->assertFailed();
     }
 
+    public function test_a_short_retry_after_is_flagged(): void
+    {
+        config(['mahafeth.ai.api_key' => 'sk-ant-test-key-12345', 'mahafeth.ai.fake' => false, 'queue.default' => 'database', 'queue.connections.database.retry_after' => 90]);
+        Http::fake(['api.anthropic.com/*' => Http::response(['ok' => true])]);
+
+        $this->artisan('mahafeth:ai-doctor')
+            ->expectsOutputToContain('Set DB_QUEUE_RETRY_AFTER=180')
+            ->assertFailed();
+    }
+
     public function test_an_incompatible_chat_model_is_flagged(): void
     {
         config(['mahafeth.ai.api_key' => 'sk-ant-test-key-12345', 'mahafeth.ai.fake' => false, 'queue.default' => 'database', 'mahafeth.ai.chat_model' => 'claude-haiku-4-5']);
@@ -55,7 +65,7 @@ class AiDoctorTest extends TestCase
 
     public function test_unreachable_api_is_reported_as_an_egress_failure(): void
     {
-        config(['mahafeth.ai.api_key' => 'sk-ant-test-key-12345', 'mahafeth.ai.fake' => false, 'queue.default' => 'database']);
+        config(['mahafeth.ai.api_key' => 'sk-ant-test-key-12345', 'mahafeth.ai.fake' => false, 'queue.default' => 'database', 'queue.connections.database.retry_after' => 180]);
         Http::fake(fn () => throw new ConnectionException('Connection refused'));
 
         $this->artisan('mahafeth:ai-doctor')
@@ -65,7 +75,7 @@ class AiDoctorTest extends TestCase
 
     public function test_stale_queued_jobs_point_at_a_missing_worker(): void
     {
-        config(['mahafeth.ai.api_key' => 'sk-ant-test-key-12345', 'mahafeth.ai.fake' => false, 'queue.default' => 'database']);
+        config(['mahafeth.ai.api_key' => 'sk-ant-test-key-12345', 'mahafeth.ai.fake' => false, 'queue.default' => 'database', 'queue.connections.database.retry_after' => 180]);
         Http::fake(['api.anthropic.com/*' => Http::response(['ok' => true])]);
 
         DB::table('jobs')->insert([
@@ -83,7 +93,7 @@ class AiDoctorTest extends TestCase
 
     public function test_the_live_flag_pings_both_configured_models(): void
     {
-        config(['mahafeth.ai.api_key' => 'sk-ant-test-key-12345', 'mahafeth.ai.fake' => false, 'queue.default' => 'database']);
+        config(['mahafeth.ai.api_key' => 'sk-ant-test-key-12345', 'mahafeth.ai.fake' => false, 'queue.default' => 'database', 'queue.connections.database.retry_after' => 180]);
         Http::fake(['api.anthropic.com/*' => Http::response(['content' => []])]);
 
         $this->artisan('mahafeth:ai-doctor --live')
@@ -96,7 +106,7 @@ class AiDoctorTest extends TestCase
 
     public function test_a_live_ping_failure_surfaces_the_api_error_message(): void
     {
-        config(['mahafeth.ai.api_key' => 'sk-ant-bad-key-12345', 'mahafeth.ai.fake' => false, 'queue.default' => 'database']);
+        config(['mahafeth.ai.api_key' => 'sk-ant-bad-key-12345', 'mahafeth.ai.fake' => false, 'queue.default' => 'database', 'queue.connections.database.retry_after' => 180]);
         Http::fake([
             'api.anthropic.com/v1/messages' => Http::response([
                 'type' => 'error',

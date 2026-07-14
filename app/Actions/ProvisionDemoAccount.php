@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Enums\ConsentStatus;
 use App\Enums\RiskTolerance;
 use App\Enums\TimeHorizon;
+use App\Jobs\GenerateInsightsJob;
 use App\Models\Institution;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
@@ -89,6 +90,12 @@ class ProvisionDemoAccount
         $seeder->backfillSnapshotHistory($user);
         $this->analyzer->analyze($user->fresh());
         $seeder->backfillHealthHistory($user);
+
+        // Pre-generate the AI insight so the advisor and dashboard cards
+        // are ready (or already spinning) by the time the visitor looks.
+        if ($user->latestSnapshot() !== null) {
+            GenerateInsightsJob::request($user, app()->getLocale());
+        }
 
         return $user;
     }

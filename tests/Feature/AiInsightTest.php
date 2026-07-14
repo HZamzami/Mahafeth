@@ -3,14 +3,17 @@
 namespace Tests\Feature;
 
 use App\Actions\GenerateInsights;
+use App\Actions\ProvisionDemoAccount;
 use App\Actions\SyncConnection;
 use App\Contracts\InsightGenerator;
+use App\Jobs\AnalyzePortfolioJob;
 use App\Jobs\GenerateInsightsJob;
 use App\Models\AiInsight;
 use App\Models\Connection;
 use App\Models\Institution;
 use App\Models\RiskProfile;
 use App\Models\User;
+use App\Services\Analytics\AlertEvaluator;
 use App\Services\Analytics\PortfolioAnalyzer;
 use App\Services\Insights\FakeInsightGenerator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,6 +41,61 @@ class AiInsightTest extends TestCase
         app(PortfolioAnalyzer::class)->analyze($user->fresh());
 
         return $user;
+    }
+
+    public function test_the_nightly_analysis_refreshes_insights_for_users_who_use_them(): void
+    {
+        $user = $this->analyzedUser();
+        AiInsight::create([
+            'portfolio_snapshot_id' => $user->latestSnapshot()->id,
+            'locale' => 'en',
+            'summary' => 'Old summary.',
+            'recommendations' => [],
+        ]);
+
+        Queue::fake([GenerateInsightsJob::class]);
+
+        (new AnalyzePortfolioJob($user->fresh()))->handle(
+            app(PortfolioAnalyzer::class),
+            app(AlertEvaluator::class),
+        );
+
+        Queue::assertPushed(GenerateInsightsJob::class);
+    }
+
+    public function test_the_nightly_analysis_skips_insights_for_users_who_never_generated_one(): void
+    {
+        $user = $this->analyzedUser();
+
+        Queue::fake([GenerateInsightsJob::class]);
+
+        (new AnalyzePortfolioJob($user->fresh()))->handle(
+            app(PortfolioAnalyzer::class),
+            app(AlertEvaluator::class),
+        );
+
+        Queue::assertNotPushed(GenerateInsightsJob::class);
+    }
+
+    public function test_the_nightly_analysis_skips_demo_accounts(): void
+    {
+        $user = $this->analyzedUser();
+        $user->update(['email' => 'guest-abc@'.ProvisionDemoAccount::EMAIL_DOMAIN]);
+        AiInsight::create([
+            'portfolio_snapshot_id' => $user->latestSnapshot()->id,
+            'locale' => 'en',
+            'summary' => 'Old summary.',
+            'recommendations' => [],
+        ]);
+
+        Queue::fake([GenerateInsightsJob::class]);
+
+        (new AnalyzePortfolioJob($user->fresh()))->handle(
+            app(PortfolioAnalyzer::class),
+            app(AlertEvaluator::class),
+        );
+
+        Queue::assertNotPushed(GenerateInsightsJob::class);
     }
 
     public function test_the_fake_generator_is_bound_when_no_api_key_is_configured(): void

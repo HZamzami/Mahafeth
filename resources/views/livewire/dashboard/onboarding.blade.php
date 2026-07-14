@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\GenerateInsightsJob;
 use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
@@ -11,6 +12,11 @@ new class extends Component {
     public function analyze(PortfolioAnalyzer $analyzer): void
     {
         $analyzer->analyze(Auth::user());
+
+        // Pre-generate the AI insight so it is ready before the user asks.
+        if (Auth::user()->latestSnapshot() !== null) {
+            GenerateInsightsJob::request(Auth::user(), app()->getLocale());
+        }
 
         $this->dispatch('portfolio-analyzed');
     }

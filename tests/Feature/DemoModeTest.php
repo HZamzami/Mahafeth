@@ -47,6 +47,10 @@ class DemoModeTest extends TestCase
         $this->assertNotNull($snapshot->health_score);
         $this->assertGreaterThan(0, $snapshot->total_value);
 
+        // The AI insight is pre-generated (sync queue runs it inline here),
+        // so the advisor is ready the moment the visitor opens it.
+        $this->assertDatabaseHas('ai_insights', ['portfolio_snapshot_id' => $snapshot->id]);
+
         // Weekly backfill gives the trend chart history from minute one.
         $this->assertGreaterThan(5, $user->portfolioSnapshots()->count());
     }

@@ -142,6 +142,17 @@ class AiDoctor extends Command
             $this->pass("QUEUE_CONNECTION={$connection}");
         }
 
+        $retryAfter = (int) config("queue.connections.{$connection}.retry_after", 0);
+
+        if ($connection === 'database' && $retryAfter < 180) {
+            $this->failCheck(
+                "retry_after={$retryAfter}s",
+                "The insight job legitimately runs up to 150s, so the queue re-serves it mid-run at {$retryAfter}s and generation restarts. Set DB_QUEUE_RETRY_AFTER=180 in the environment.",
+            );
+        } elseif ($connection === 'database') {
+            $this->pass("retry_after={$retryAfter}s");
+        }
+
         // Payload JSON escapes backslashes, so match on the base names.
         $aiJobs = [class_basename(GenerateInsightsJob::class), class_basename(GenerateChatReplyJob::class)];
 

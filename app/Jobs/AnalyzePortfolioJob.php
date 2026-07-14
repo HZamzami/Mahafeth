@@ -2,8 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Actions\ProvisionDemoAccount;
 use App\Enums\ActivityType;
 use App\Models\ActivityEvent;
+use App\Models\AiInsight;
 use App\Models\User;
 use App\Notifications\PortfolioAlertNotification;
 use App\Services\Analytics\AlertEvaluator;
@@ -70,6 +72,15 @@ class AnalyzePortfolioJob implements ShouldBeUnique, ShouldQueue
                 'from' => $previous->health_score,
                 'to' => $snapshot->health_score,
             ]);
+        }
+
+        // Keep the AI insight in step with the fresh analysis, but only for
+        // users who have generated one before: pre-generating for accounts
+        // that never opened the feature would spend a model call per user
+        // per night for nothing. Demo accounts get theirs at provisioning.
+        if (! str_ends_with($this->user->email, '@'.ProvisionDemoAccount::EMAIL_DOMAIN)
+            && AiInsight::whereIn('portfolio_snapshot_id', $this->user->portfolioSnapshots()->select('id'))->exists()) {
+            GenerateInsightsJob::request($this->user, $this->user->preferredLocale());
         }
 
         // Interactive flows call the analyzer directly; only this background

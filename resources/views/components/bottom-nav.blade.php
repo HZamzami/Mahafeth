@@ -12,7 +12,7 @@
 {{-- transform-gpu + will-change pin the nav to its own compositing layer:
      without them, WebKit (installed PWA) sometimes drops the fixed layer
      during large repaints and page text paints over the bar. --}}
-<nav class="fixed inset-x-0 bottom-0 z-40 transform-gpu border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] will-change-transform lg:hidden print:hidden dark:border-zinc-700 dark:bg-zinc-900">
+<nav class="fixed inset-x-0 bottom-0 z-50 transform-gpu border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] will-change-transform lg:hidden print:hidden dark:border-zinc-700 dark:bg-zinc-900">
     <div class="grid grid-cols-5">
         <a href="{{ route('dashboard') }}" wire:navigate.hover
             x-data x-on:click="{{ $press }}"
