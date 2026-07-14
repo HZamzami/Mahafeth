@@ -10,6 +10,7 @@ use App\Models\RiskProfile;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Livewire\Volt\Volt;
@@ -45,6 +46,26 @@ class DashboardTest extends TestCase
             ->assertSee(Str::before($user->name, ' '))
             ->assertSee(__('Total Portfolio'))
             ->assertSee(Number::format($snapshot->total_value, 0));
+    }
+
+    public function test_the_greeting_follows_riyadh_wall_clock_time_not_utc(): void
+    {
+        $this->actingAs(User::factory()->create(['name' => 'Hamza Zamzami']));
+
+        // 06:00 UTC is 09:00 in Riyadh — morning.
+        Carbon::setTestNow('2026-07-14 06:00:00');
+        Volt::test('dashboard.portfolio-hero')
+            ->assertSee(__('Good morning, :name', ['name' => 'Hamza']));
+
+        // 10:00 UTC is 13:00 in Riyadh — afternoon, even though UTC says morning.
+        Carbon::setTestNow('2026-07-14 10:00:00');
+        Volt::test('dashboard.portfolio-hero')
+            ->assertSee(__('Good afternoon, :name', ['name' => 'Hamza']));
+
+        // 15:00 UTC is 18:00 in Riyadh — evening.
+        Carbon::setTestNow('2026-07-14 15:00:00');
+        Volt::test('dashboard.portfolio-hero')
+            ->assertSee(__('Good evening, :name', ['name' => 'Hamza']));
     }
 
     public function test_the_hero_shows_the_connect_cta_without_a_snapshot(): void
@@ -90,6 +111,43 @@ class DashboardTest extends TestCase
         $this->get('/dashboard')
             ->assertOk()
             ->assertDontSee(__('Welcome to Mahafeth'));
+    }
+
+    public function test_the_stat_cards_show_return_volatility_and_largest_holding(): void
+    {
+        $this->actingAs($this->syncedAndAnalyzedUser());
+
+        Volt::test('dashboard.stat-cards')
+            ->assertSee(__('Annualized Return'))
+            ->assertSee(__('Annualized Volatility'))
+            ->assertSee(__('Largest Holding'))
+            ->assertSee('AAPL');
+    }
+
+    public function test_the_shariah_card_shows_the_connect_prompt_without_a_snapshot(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        Volt::test('dashboard.shariah-compliance')
+            ->assertSee(__('Shariah Compliance'))
+            ->assertSee(__('Connect your accounts and run the analysis to screen your portfolio.'));
+    }
+
+    public function test_the_open_banking_panel_counts_connected_sources(): void
+    {
+        $this->actingAs($this->syncedAndAnalyzedUser());
+
+        Volt::test('dashboard.open-banking-panel')
+            ->assertSee(__('Open Banking'))
+            ->assertSee(__('Manage Sources'));
+    }
+
+    public function test_the_open_banking_panel_shows_the_empty_state_for_a_fresh_user(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        Volt::test('dashboard.open-banking-panel')
+            ->assertSee(__('No sources connected yet'));
     }
 
     public function test_the_profile_menu_offers_a_theme_toggle(): void

@@ -70,7 +70,7 @@ new class extends Component {
             </x-slot>
             <x-slot name="controls">
                 <flux:button icon="x-mark" size="sm" variant="ghost" :aria-label="__('Dismiss')"
-                    wire:click="dismiss('{{ $alert['fingerprint'] }}')" />
+                    wire:click="dismiss('{{ $alert['fingerprint'] }}')" wire:loading.attr="disabled" />
             </x-slot>
         </flux:callout>
     @endforeach

@@ -32,6 +32,11 @@ class Changelog
                         'title' => __('More reliable insight generation'),
                         'body' => __('Generating insights no longer fails after a long wait, and asking Mahafeth AI from a stock or news item no longer sends the question twice.'),
                     ],
+                    [
+                        'type' => 'fixed',
+                        'title' => __('Stability sweep across the app'),
+                        'body' => __('Greetings now follow Saudi time, a delisted holding can no longer break your portfolio analysis, and every page was verified against empty accounts and Arabic.'),
+                    ],
                 ],
             ],
             [

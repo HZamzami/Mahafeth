@@ -22,10 +22,14 @@ new class extends Component {
             ? $latest->total_value - $previous->total_value
             : null;
 
+        // The greeting follows local wall-clock time, not the UTC the app
+        // runs on.
+        $hour = now(config('mahafeth.display_timezone'))->hour;
+
         return [
             'greeting' => match (true) {
-                now()->hour < 12 => __('Good morning, :name', ['name' => Str::before(Auth::user()->name, ' ')]),
-                now()->hour < 17 => __('Good afternoon, :name', ['name' => Str::before(Auth::user()->name, ' ')]),
+                $hour < 12 => __('Good morning, :name', ['name' => Str::before(Auth::user()->name, ' ')]),
+                $hour < 17 => __('Good afternoon, :name', ['name' => Str::before(Auth::user()->name, ' ')]),
                 default => __('Good evening, :name', ['name' => Str::before(Auth::user()->name, ' ')]),
             },
             'totalValue' => $latest?->total_value,

@@ -73,7 +73,22 @@ class ReturnCalculator
             $shared = array_intersect_key($prices, $commonDates);
             ksort($shared);
 
-            $aligned[$symbol] = array_values($this->logReturns($shared));
+            // Every series must keep the same length or the covariance
+            // matrix throws, so a step with a non-positive close (a dead
+            // or delisted symbol) contributes a 0.0 return instead of
+            // silently shortening the series.
+            $returns = [];
+            $previous = null;
+
+            foreach ($shared as $close) {
+                if ($previous !== null) {
+                    $returns[] = $previous > 0 && $close > 0 ? log($close / $previous) : 0.0;
+                }
+
+                $previous = $close;
+            }
+
+            $aligned[$symbol] = $returns;
         }
 
         return $aligned;

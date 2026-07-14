@@ -106,7 +106,8 @@ new class extends Component {
         </div>
 
         <div class="mt-6 flex gap-2">
-            <flux:button class="flex-1" variant="ghost" wire:click="deny">{{ __('Deny') }}</flux:button>
+            <flux:button class="flex-1" variant="ghost" wire:click="deny" wire:loading.attr="disabled">
+                {{ __('Deny') }}</flux:button>
             <flux:button class="flex-1" variant="primary" wire:click="approve" wire:loading.attr="disabled">
                 <span wire:loading.remove wire:target="approve">{{ __('Approve access') }}</span>
                 <span wire:loading wire:target="approve" class="flex items-center justify-center gap-2">

@@ -25,6 +25,10 @@ return [
     // converted at read time. SAR is pegged to the dollar at 3.75.
     'base_currency' => 'SAR',
 
+    // Wall-clock timezone for user-facing time (greetings); the app itself
+    // runs on UTC.
+    'display_timezone' => env('MAHAFETH_DISPLAY_TIMEZONE', 'Asia/Riyadh'),
+
     'fx_rates' => [
         'SAR' => 1.0,
         'USD' => 3.75,

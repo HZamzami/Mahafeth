@@ -21,6 +21,12 @@ class GenerateInsightsJob implements ShouldBeUnique, ShouldQueue
      */
     public int $timeout = 150;
 
+    /**
+     * A deleted account silently discards its queued generation instead
+     * of failing the job with a missing-model exception.
+     */
+    public bool $deleteWhenMissingModels = true;
+
     public function __construct(public User $user, public string $locale) {}
 
     /**

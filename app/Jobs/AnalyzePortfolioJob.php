@@ -16,6 +16,12 @@ class AnalyzePortfolioJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
+    /**
+     * A deleted account silently discards its queued analysis instead of
+     * failing the job with a missing-model exception.
+     */
+    public bool $deleteWhenMissingModels = true;
+
     public function __construct(public User $user) {}
 
     /**

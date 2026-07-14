@@ -112,7 +112,8 @@ new class extends Component {
                         <flux:button size="sm" variant="subtle" icon="pencil" wire:click="edit({{ $goal->id }})"
                             :aria-label="__('Edit')" />
                         <flux:button size="sm" variant="subtle" icon="trash" wire:click="delete({{ $goal->id }})"
-                            wire:confirm="{{ __('Delete this goal?') }}" :aria-label="__('Delete')" />
+                            wire:confirm="{{ __('Delete this goal?') }}" wire:loading.attr="disabled"
+                            :aria-label="__('Delete')" />
                     </div>
                 </div>
             @endforeach
