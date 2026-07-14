@@ -130,7 +130,7 @@ class DemoPortfolioSeeder extends Seeder
      * on today's real score, so the trend chart has a story to tell. The
      * history is synthetic — like the rest of the demo data.
      */
-    private function backfillHealthHistory(User $user): void
+    public function backfillHealthHistory(User $user): void
     {
         $currentScore = $user->latestSnapshot()?->health_score;
 
@@ -158,7 +158,7 @@ class DemoPortfolioSeeder extends Seeder
      * have history from day one. Only today's snapshot (written by the
      * analyzer) carries full metrics.
      */
-    private function backfillSnapshotHistory(User $user): void
+    public function backfillSnapshotHistory(User $user): void
     {
         $data = app(PortfolioDataAssembler::class)->forUser($user, now()->subMonths(6));
         $values = app(ReturnCalculator::class)->portfolioValueSeries($data['priceSeries'], $data['quantities']);

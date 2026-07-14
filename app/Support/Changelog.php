@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
+                        'title' => __('Take Mahafeth for a spin'),
+                        'body' => __('A Try the demo button on the welcome page opens a ready-made portfolio, complete with history, alerts, and a health score. No signup, and demo accounts clean themselves up after two days.'),
+                    ],
+                    [
+                        'type' => 'new',
                         'title' => __('Your week, summarized'),
                         'body' => __('Every Sunday morning Mahafeth sends a short week-in-review: how your health score and portfolio value moved, and which alerts are active. Off by turning off alert notifications in your profile.'),
                     ],

@@ -133,4 +133,11 @@ new #[Layout('components.layouts.auth')] class extends Component {
         {{ __("Don't have an account?") }}
         <x-text-link href="{{ route('register') }}">{{ __('Sign up') }}</x-text-link>
     </div>
+
+    <form method="POST" action="{{ route('demo.start') }}" class="text-center text-sm text-zinc-600 dark:text-zinc-400">
+        @csrf
+        {{ __('Just exploring?') }}
+        <button type="submit" class="font-medium text-accent-content underline-offset-4 hover:underline">
+            {{ __('Try the demo') }}</button>
+    </form>
 </div>

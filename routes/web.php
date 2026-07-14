@@ -1,12 +1,23 @@
 <?php
 
+use App\Actions\ProvisionDemoAccount;
 use App\Http\Middleware\SetLocale;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
 Route::get('/', function () {
     return auth()->check() ? redirect()->route('dashboard') : view('welcome');
 })->name('home');
+
+Route::post('demo', function (ProvisionDemoAccount $provision) {
+    $user = $provision->handle();
+
+    Auth::login($user, remember: true);
+    session()->regenerate();
+
+    return redirect()->route('dashboard');
+})->middleware(['guest', 'throttle:5,60'])->name('demo.start');
 
 Route::get('locale/{locale}', function (string $locale) {
     abort_unless(in_array($locale, SetLocale::SUPPORTED_LOCALES, true), 404);

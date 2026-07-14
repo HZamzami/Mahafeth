@@ -32,9 +32,13 @@
                         {{ __('Mahafeth securely connects your investment accounts through Open Banking, unifies them into a single portfolio, and uses institutional-grade analytics with AI to uncover hidden risks and tell you exactly what to do about them.') }}
                     </p>
 
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-wrap items-center gap-3">
                         <flux:button href="{{ route('register') }}" variant="primary">{{ __('Create account') }}</flux:button>
                         <flux:button href="{{ route('login') }}" variant="ghost">{{ __('Log in') }}</flux:button>
+                        <form method="POST" action="{{ route('demo.start') }}">
+                            @csrf
+                            <flux:button type="submit" variant="subtle" icon="play">{{ __('Try the demo') }}</flux:button>
+                        </form>
                     </div>
 
                     <p class="text-sm text-zinc-500">
@@ -235,10 +239,16 @@
                 {{ __('Your portfolios already hold the answers. See them together.') }}
             </h2>
 
-            <div class="relative mt-8 flex items-center justify-center gap-3">
+            <div class="relative mt-8 flex flex-wrap items-center justify-center gap-3">
                 <flux:button href="{{ route('register') }}" variant="primary">{{ __('Create account') }}</flux:button>
                 <flux:button href="{{ route('login') }}" variant="ghost">{{ __('Log in') }}</flux:button>
+                <form method="POST" action="{{ route('demo.start') }}">
+                    @csrf
+                    <flux:button type="submit" variant="subtle" icon="play">{{ __('Try the demo') }}</flux:button>
+                </form>
             </div>
+
+            <p class="relative mt-3 text-xs text-zinc-500">{{ __('The demo opens a ready-made portfolio. No signup needed.') }}</p>
 
             <a href="{{ route('locale.update', app()->getLocale() === 'ar' ? 'en' : 'ar') }}"
                 class="relative mt-8 inline-block text-sm text-zinc-500 underline-offset-4 dark:text-zinc-400 hover:underline">
