@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
+                        'title' => __('See where you are signed in'),
+                        'body' => __('A new Sessions section in settings lists every device signed in to your account, and one button signs out everywhere else.'),
+                    ],
+                    [
+                        'type' => 'new',
                         'title' => __('Start your profile from a preset'),
                         'body' => __('Pick Conservative, Balanced, or Growth and the investor questionnaire fills itself, leaving you one tap from your Investment Policy Statement. Every answer stays editable.'),
                     ],

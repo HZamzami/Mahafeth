@@ -81,6 +81,7 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/password', 'settings.password')->name('settings.password');
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
     Volt::route('settings/passkeys', 'settings.passkeys')->name('settings.passkeys');
+    Volt::route('settings/sessions', 'settings.sessions')->name('settings.sessions');
 });
 
 Route::middleware('throttle:10,1')->group(function () {
