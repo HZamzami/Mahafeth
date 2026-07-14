@@ -15,6 +15,6 @@
     x-cloak
     x-transition.opacity.duration.150ms
     role="status"
-    class="fixed inset-x-4 bottom-24 z-50 mx-auto w-fit max-w-md rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-lg lg:bottom-6 dark:bg-zinc-100 dark:text-zinc-900">
+    class="fixed inset-x-4 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-50 mx-auto w-fit max-w-md rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-lg lg:bottom-6 dark:bg-zinc-100 dark:text-zinc-900">
     <span x-text="message"></span>
 </div>

@@ -34,6 +34,11 @@ class Changelog
                     ],
                     [
                         'type' => 'fixed',
+                        'title' => __('Native-app polish'),
+                        'body' => __('On installed phones the bottom bar now keeps proper spacing from the page, and switching pages visibly acknowledges every tap — the pressed tab tints, the page dims, and a progress strip shows below the status bar.'),
+                    ],
+                    [
+                        'type' => 'fixed',
                         'title' => __('Stability sweep across the app'),
                         'body' => __('Greetings now follow Saudi time, a delisted holding can no longer break your portfolio analysis, and every page was verified against empty accounts and Arabic.'),
                     ],

@@ -58,16 +58,6 @@ html {
         animation: page-enter 180ms ease-out;
     }
 
-    /* The old page dims the instant a wire:navigate hop starts (class set
-       from app.js), acknowledging the tap before the network answers. */
-    main {
-        transition: opacity 150ms ease-out;
-    }
-
-    body.navigating main {
-        opacity: 0.55;
-    }
-
     @keyframes page-enter {
         from {
             opacity: 0;
@@ -78,6 +68,18 @@ html {
             transform: none;
         }
     }
+}
+
+/* The old page dims the instant a wire:navigate hop starts (class set from
+   app.js), acknowledging the tap before the network answers. Deliberately
+   outside the reduced-motion query: a dim is feedback, not motion, and
+   reduced-motion users still need to know their tap landed. */
+main {
+    transition: opacity 150ms ease-out;
+}
+
+body.navigating main {
+    opacity: 0.55;
 }
 
 /* Pull-to-refresh spinner chip (created from app.js in standalone mode). */
@@ -126,8 +128,11 @@ html {
 }
 
 /* Livewire's navigate progress bar (NProgress markup) ships 2px thin and
-   easy to miss; make it a bold branded strip above every fixed layer. */
+   easy to miss; make it a bold branded strip above every fixed layer. The
+   top offset drops it below the status bar in the installed PWA, where
+   top: 0 would hide it behind the notch (it resolves to 0 in browsers). */
 #nprogress .bar {
+    top: env(safe-area-inset-top) !important;
     height: 4px !important;
     z-index: 100 !important;
     box-shadow: 0 0 8px var(--livewire-progress-bar-color, var(--color-teal-500));

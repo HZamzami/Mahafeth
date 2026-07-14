@@ -1041,6 +1041,8 @@
     "Your question now appears in the chat instantly and the answer is composed in the background — keep browsing while Mahafeth AI thinks, and retry with one tap if it fails.": "سؤالك يظهر الآن في المحادثة فورًا وتُكتب الإجابة في الخلفية، تابع التصفح بينما يفكر محافظ الذكي، وأعد المحاولة بلمسة واحدة إذا تعذر الرد.",
     "More reliable insight generation": "توليد رؤى أكثر موثوقية",
     "Generating insights no longer fails after a long wait, and asking Mahafeth AI from a stock or news item no longer sends the question twice.": "توليد الرؤى لم يعد يفشل بعد انتظار طويل، وسؤال محافظ الذكي من صفحة سهم أو خبر لم يعد يرسل السؤال مرتين.",
+    "Native-app polish": "صقل تجربة التطبيق المثبت",
+    "On installed phones the bottom bar now keeps proper spacing from the page, and switching pages visibly acknowledges every tap — the pressed tab tints, the page dims, and a progress strip shows below the status bar.": "على الهواتف المثبت عليها التطبيق يحافظ الشريط السفلي الآن على مسافة مناسبة من الصفحة، والتنقل بين الصفحات يستجيب لكل لمسة بوضوح: التبويب المضغوط يتلون، والصفحة تخفت، ويظهر شريط تقدم أسفل شريط الحالة.",
     "Stability sweep across the app": "جولة تحسين للاستقرار في كامل التطبيق",
     "Greetings now follow Saudi time, a delisted holding can no longer break your portfolio analysis, and every page was verified against empty accounts and Arabic.": "التحية أصبحت تتبع توقيت السعودية، ولم يعد بإمكان سهم مشطوب أن يعطل تحليل محفظتك، وتم التحقق من كل صفحة مع الحسابات الفارغة واللغة العربية."
 }

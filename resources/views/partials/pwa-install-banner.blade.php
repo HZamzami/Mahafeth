@@ -22,7 +22,7 @@
     }"
     x-cloak
     x-show="! dismissed && ! standalone && (installPrompt || iosHint)"
-    class="fixed inset-x-4 bottom-24 z-50 mx-auto flex max-w-md items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 shadow-lg lg:bottom-4 dark:border-zinc-700 dark:bg-zinc-800"
+    class="fixed inset-x-4 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-50 mx-auto flex max-w-md items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 shadow-lg lg:bottom-4 dark:border-zinc-700 dark:bg-zinc-800"
 >
     <img src="/icons/icon-192.png" alt="" class="size-11 shrink-0 rounded-lg" />
 

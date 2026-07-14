@@ -213,8 +213,10 @@ new class extends Component {
 }; ?>
 
 {{-- min-h on mobile stretches the thread so the input sits at the bottom of
-     the screen like a native chat; 12rem ≈ header + main padding + bottom nav. --}}
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:min-h-[calc(100dvh-12rem)]"
+     the screen like a native chat; 12rem ≈ header + main padding + bottom
+     nav, and the safe-area insets cover the PWA's status bar and home
+     indicator. --}}
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:min-h-[calc(100dvh-12rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))]"
     @if ($isGenerating || $isAwaitingReply) wire:poll.2s @endif>
     <div class="flex items-start justify-between gap-4">
         <div>
