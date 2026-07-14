@@ -80,6 +80,11 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
     Volt::route('settings/password', 'settings.password')->name('settings.password');
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
+    Volt::route('settings/passkeys', 'settings.passkeys')->name('settings.passkeys');
+});
+
+Route::middleware('throttle:10,1')->group(function () {
+    Route::passkeys();
 });
 
 require __DIR__.'/auth.php';
