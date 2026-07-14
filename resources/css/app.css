@@ -68,6 +68,61 @@ html {
             transform: none;
         }
     }
+
+    /* Dashboard cards cascade in one after another on page load. The
+       inner grid is excluded so its columns (each stagger-children
+       themselves) run their own cascades in parallel. */
+    .stagger-children > *:not(.grid) {
+        animation: card-rise 400ms ease-out both;
+    }
+
+    .stagger-children > :nth-child(2):not(.grid) {
+        animation-delay: 60ms;
+    }
+
+    .stagger-children > :nth-child(3):not(.grid) {
+        animation-delay: 120ms;
+    }
+
+    .stagger-children > :nth-child(4):not(.grid) {
+        animation-delay: 180ms;
+    }
+
+    .stagger-children > :nth-child(n + 5):not(.grid) {
+        animation-delay: 240ms;
+    }
+
+    @keyframes card-rise {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+    }
+}
+
+/* At-rest responsiveness: cards lift slightly under a pointer. Welcome
+   deck cards keep their own straighten-and-scale hover instead. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .card {
+        transition:
+            transform 150ms ease-out,
+            box-shadow 150ms ease-out,
+            border-color 150ms ease-out;
+    }
+
+    .card:hover:not(.welcome-deck-card) {
+        transform: translateY(-2px);
+        box-shadow:
+            0 2px 4px rgb(24 24 27 / 0.05),
+            0 10px 24px -8px rgb(24 24 27 / 0.14);
+    }
+
+    /* Dark cards render shadowless, so the lift cue is a lightened
+       hairline instead. */
+    .dark .card:hover:not(.welcome-deck-card) {
+        box-shadow: none;
+        border-color: color-mix(in srgb, var(--color-zinc-600) 70%, transparent);
+    }
 }
 
 /* The old page dims the instant a wire:navigate hop starts (class set from

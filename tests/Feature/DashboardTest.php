@@ -59,7 +59,17 @@ class DashboardTest extends TestCase
         Volt::test('dashboard.portfolio-hero')
             ->assertSee(Str::before($user->name, ' '))
             ->assertSee(__('Total Portfolio'))
-            ->assertSee(Number::format($snapshot->total_value, 0));
+            ->assertSee(Number::format($snapshot->total_value, 0))
+            ->assertSeeHtml('countUp');
+    }
+
+    public function test_the_dashboard_staggers_its_cards_in(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->get('/dashboard')
+            ->assertOk()
+            ->assertSee('stagger-children');
     }
 
     public function test_the_greeting_follows_riyadh_wall_clock_time_not_utc(): void

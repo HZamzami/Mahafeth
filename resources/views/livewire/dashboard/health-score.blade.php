@@ -57,6 +57,9 @@ new class extends Component {
     </div>
 
     <div class="relative my-8 flex items-center justify-center">
+        {{-- Soft halo drawing the eye to the flagship metric. --}}
+        <div aria-hidden="true"
+            class="pointer-events-none absolute size-48 rounded-full bg-teal-500/10 blur-3xl dark:bg-teal-400/10"></div>
         <svg class="size-56 -rotate-90" viewBox="0 0 224 224">
             <circle cx="112" cy="112" r="100" fill="transparent" stroke-width="16" stroke-linecap="round"
                 class="stroke-neutral-100 dark:stroke-zinc-800" />

@@ -1,5 +1,5 @@
 <x-layouts.app>
-    <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl"
+    <div class="stagger-children flex h-full w-full flex-1 flex-col gap-4 rounded-xl"
         x-data="{
             hideAmounts: localStorage.getItem('hideAmounts') === '1',
             toggle() {
@@ -23,7 +23,7 @@
         {{-- Main dashboard grid; on phones the health column leads --}}
         <div class="grid flex-1 items-stretch gap-4 lg:grid-cols-12">
             {{-- Left rail --}}
-            <div class="flex flex-col gap-4 max-lg:order-2 lg:col-span-3">
+            <div class="stagger-children flex flex-col gap-4 max-lg:order-2 lg:col-span-3">
                 {{-- Open Banking --}}
                 <livewire:dashboard.open-banking-panel lazy />
 
@@ -35,7 +35,7 @@
             </div>
 
             {{-- Center column --}}
-            <div class="flex flex-col gap-4 max-lg:order-1 lg:col-span-5">
+            <div class="stagger-children flex flex-col gap-4 max-lg:order-1 lg:col-span-5">
                 {{-- Portfolio Health Score --}}
                 <livewire:dashboard.health-score />
 
@@ -47,7 +47,7 @@
             </div>
 
             {{-- Right rail; the AI experience lives on the Advisor tab --}}
-            <div class="flex flex-col gap-4 max-lg:order-3 lg:col-span-4">
+            <div class="stagger-children flex flex-col gap-4 max-lg:order-3 lg:col-span-4">
                 {{-- Goal Forecast --}}
                 <livewire:dashboard.goal-progress lazy />
 

@@ -206,26 +206,28 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
-    window.Alpine.data('countUp', (target) => ({
-        shown: target,
+    window.Alpine.data('countUp', (target, format = false) => ({
+        shown: format ? new Intl.NumberFormat(document.documentElement.lang).format(target) : target,
         start() {
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 return;
             }
 
+            const formatter = format ? new Intl.NumberFormat(document.documentElement.lang) : null;
             const duration = 900;
             const begin = performance.now();
 
             const tick = (now) => {
                 const progress = Math.min((now - begin) / duration, 1);
-                this.shown = Math.round(target * (1 - Math.pow(1 - progress, 3)));
+                const value = Math.round(target * (1 - Math.pow(1 - progress, 3)));
+                this.shown = formatter ? formatter.format(value) : value;
 
                 if (progress < 1) {
                     requestAnimationFrame(tick);
                 }
             };
 
-            this.shown = 0;
+            this.shown = formatter ? formatter.format(0) : 0;
             requestAnimationFrame(tick);
         },
     }));

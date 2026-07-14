@@ -49,7 +49,8 @@ new class extends Component {
                     {{ __('Total Portfolio') }}</flux:text>
                 <a class="group mt-1 flex items-center gap-2" href="{{ route('holdings.index') }}" wire:navigate>
                     <span class="text-4xl font-semibold tabular-nums text-zinc-900 dark:text-white" dir="ltr"
-                        data-amount>⃁ {{ Number::format($totalValue, 0) }}</span>
+                        data-amount>⃁ <span x-data="countUp({{ (int) round($totalValue) }}, true)"
+                            x-intersect.once="start()" x-text="shown">{{ Number::format($totalValue, 0) }}</span></span>
                     <flux:icon.chevron-right
                         class="size-5 text-zinc-400 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
                 </a>

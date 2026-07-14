@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'improved',
+                        'title' => __('A more polished dashboard'),
+                        'body' => __('Cards now settle in one after another, your total counts up when the page opens, and cards respond gently under the pointer. Same numbers, better presence.'),
+                    ],
+                    [
+                        'type' => 'improved',
                         'title' => __('A brand-new front door'),
                         'body' => __('The welcome page was rebuilt from scratch with a live product preview, floating health-score and alert cards, and a lot more personality. Signed-in users skip it entirely and land on their dashboard.'),
                     ],
