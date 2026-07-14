@@ -78,7 +78,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     <form wire:submit="login" class="flex flex-col gap-6">
         <!-- Email Address -->
-        <flux:input wire:model="email" label="{{ __('Email address') }}" type="email" name="email" required autofocus autocomplete="email" placeholder="email@example.com" />
+        <flux:input wire:model="email" label="{{ __('Email address') }}" type="email" name="email" required autofocus autocomplete="username webauthn" placeholder="email@example.com" />
 
         <!-- Password -->
         <div class="relative">
@@ -104,6 +104,30 @@ new #[Layout('components.layouts.auth')] class extends Component {
             <flux:button variant="primary" type="submit" class="w-full">{{ __('Log in') }}</flux:button>
         </div>
     </form>
+
+    {{-- Passkey sign-in; the button only appears when the browser supports WebAuthn. --}}
+    <div
+        x-data="passkeyLogin(@js(route('passkeys.authentication_options')), @js(route('passkeys.login')), @js(csrf_token()))"
+        x-show="supported"
+        x-cloak
+        class="flex flex-col gap-4"
+    >
+        <div class="flex items-center gap-3 text-xs text-zinc-400 dark:text-zinc-500">
+            <div class="h-px flex-1 bg-neutral-200 dark:bg-zinc-800"></div>
+            {{ __('or') }}
+            <div class="h-px flex-1 bg-neutral-200 dark:bg-zinc-800"></div>
+        </div>
+
+        @if (session('authenticatePasskey::message'))
+            <flux:text class="text-center text-sm !text-red-600 dark:!text-red-400">
+                {{ session('authenticatePasskey::message') }}
+            </flux:text>
+        @endif
+
+        <flux:button icon="finger-print" class="w-full" x-on:click="authenticate()" x-bind:disabled="busy">
+            {{ __('Sign in with Face ID or fingerprint') }}
+        </flux:button>
+    </div>
 
     <div class="space-x-1 text-center text-sm text-zinc-600 dark:text-zinc-400">
         {{ __("Don't have an account?") }}

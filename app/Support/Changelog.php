@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
+                        'title' => __('Sign in with Face ID or fingerprint'),
+                        'body' => __('Add a passkey from Settings and sign in with your face, fingerprint, or device screen lock. Faster than a password, and safer too.'),
+                    ],
+                    [
+                        'type' => 'new',
                         'title' => __('Your dashboard, even offline'),
                         'body' => __('The installed app now remembers your latest dashboard, so opening it without a connection shows your last portfolio view with a clear offline notice instead of an error page.'),
                     ],
