@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" class="dark overflow-x-clip">
 
 <head>
     @include('partials.head')
 </head>
 
-<body class="overflow-x-hidden bg-surface-50 antialiased dark:bg-charcoal-950">
-    <main class="relative mx-auto flex w-full max-w-6xl flex-col gap-24 px-6 pb-16 pt-10 sm:gap-32">
+<body class="overflow-x-clip bg-surface-50 antialiased dark:bg-charcoal-950">
+    {{-- The top padding folds in the status-bar inset so the logo clears the notch in the installed PWA. --}}
+    <main class="relative mx-auto flex w-full max-w-6xl flex-col gap-24 px-6 pb-16 pt-[calc(env(safe-area-inset-top)+2.5rem)] sm:gap-32">
 
         {{-- ============ Hero ============ --}}
         <section class="relative" x-data="pointerParallax">
