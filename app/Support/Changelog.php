@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'improved',
+                        'title' => __('Analytics, ready when you are'),
+                        'body' => __('The analytics page now remembers its heavy calculations between visits, so charts appear instantly and refresh automatically after every new sync or analysis.'),
+                    ],
+                    [
+                        'type' => 'improved',
                         'title' => __('A more polished app'),
                         'body' => __('Across the app, cards now settle in one after another, totals count up when a page opens, and cards respond gently under the pointer. Same numbers, better presence.'),
                     ],

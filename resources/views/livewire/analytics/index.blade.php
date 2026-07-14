@@ -8,6 +8,7 @@ use App\Services\Analytics\RebalancePlanner;
 use App\Services\Analytics\ReturnCalculator;
 use App\Services\Analytics\RiskDecomposer;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Number;
 use Livewire\Volt\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -15,9 +16,29 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 new class extends Component {
     /**
      * Correlation, efficient frontier, and risk decomposition of the user's
-     * unified portfolio over the trailing year, computed live.
+     * unified portfolio over the trailing year. The computation is pure DB
+     * math, so it is cached until a new snapshot, re-sync, or profile edit
+     * rotates the key.
      */
     public function with(): array
+    {
+        return Cache::remember($this->cacheKey(), now()->addHours(6), fn (): array => $this->compute());
+    }
+
+    protected function cacheKey(): string
+    {
+        $user = Auth::user();
+
+        return sprintf(
+            'analytics:%d:%s:%s:%s',
+            $user->id,
+            $user->latestSnapshot()?->id ?? 'none',
+            $user->connections()->max('last_synced_at') ?? 'never',
+            $user->riskProfile?->updated_at?->timestamp ?? 'none',
+        );
+    }
+
+    protected function compute(): array
     {
         // Same IPS-driven lookback window as the analyzer.
         $windowYears = Auth::user()->riskProfile?->time_horizon->analysisWindowYears()

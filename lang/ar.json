@@ -1078,6 +1078,8 @@
     "You are offline. Showing your last saved view.": "أنت غير متصل بالإنترنت. يتم عرض آخر نسخة محفوظة.",
     "A faster-feeling dashboard": "لوحة تحكم أسرع استجابة",
     "Heavier cards now load in the background behind smooth placeholders, so the dashboard and analytics pages appear instantly instead of waiting for every chart.": "البطاقات الأثقل تُحمَّل الآن في الخلفية خلف عناصر انتظار سلسة، فتظهر لوحة التحكم وصفحة التحليلات فورًا بدلًا من انتظار كل رسم بياني.",
+    "Analytics, ready when you are": "التحليلات جاهزة متى ما كنت جاهزًا",
+    "The analytics page now remembers its heavy calculations between visits, so charts appear instantly and refresh automatically after every new sync or analysis.": "صفحة التحليلات تتذكر الآن حساباتها الثقيلة بين الزيارات، فتظهر الرسوم البيانية فورًا وتتحدث تلقائيًا بعد كل مزامنة أو تحليل جديد.",
     "A more polished app": "تطبيق أكثر صقلًا",
     "Across the app, cards now settle in one after another, totals count up when a page opens, and cards respond gently under the pointer. Same numbers, better presence.": "في كل أنحاء التطبيق، تستقر البطاقات الآن واحدة تلو الأخرى، والإجماليات تُعدّ تصاعديًا عند فتح الصفحة، والبطاقات تتجاوب بلطف تحت المؤشر. الأرقام نفسها بحضور أفضل.",
     "A brand-new front door": "واجهة استقبال جديدة كليًا",

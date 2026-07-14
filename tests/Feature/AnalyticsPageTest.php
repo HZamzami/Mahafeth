@@ -8,6 +8,7 @@ use App\Models\Institution;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
 
@@ -47,6 +48,36 @@ class AnalyticsPageTest extends TestCase
             ->assertSee('MSFT')
             ->assertSee('Average Correlation')
             ->assertSeeHtml('data-flux-tabs');
+    }
+
+    public function test_the_computation_is_cached_and_served_on_repeat_visits(): void
+    {
+        $user = User::factory()->create();
+        $institution = Institution::factory()->create(['slug' => 'derayah']);
+        $connection = Connection::factory()->pending()->create([
+            'user_id' => $user->id,
+            'institution_id' => $institution->id,
+        ]);
+
+        app(SyncConnection::class)->handle($connection);
+
+        $this->actingAs($user)->get('/analytics')->assertOk();
+
+        $key = sprintf(
+            'analytics:%d:%s:%s:%s',
+            $user->id,
+            $user->latestSnapshot()?->id ?? 'none',
+            $user->connections()->max('last_synced_at') ?? 'never',
+            $user->riskProfile?->updated_at?->timestamp ?? 'none',
+        );
+
+        $this->assertTrue(Cache::has($key));
+
+        // The second visit renders from the cache and still shows the data.
+        $this->get('/analytics')
+            ->assertOk()
+            ->assertSee('Correlation Matrix')
+            ->assertSee('AAPL');
     }
 
     public function test_the_efficient_frontier_and_risk_sections_are_rendered(): void
