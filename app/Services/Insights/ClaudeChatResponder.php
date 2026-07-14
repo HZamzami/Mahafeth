@@ -5,7 +5,9 @@ namespace App\Services\Insights;
 use App\Contracts\ChatResponder;
 use App\Models\PortfolioSnapshot;
 use App\Models\RiskProfile;
+use Closure;
 use Illuminate\Support\Facades\Http;
+use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
 /**
@@ -20,7 +22,7 @@ class ClaudeChatResponder implements ChatResponder
 
     public function __construct(private PortfolioContext $context) {}
 
-    public function respond(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $goals, array $history): string
+    public function respond(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $goals, array $history, ?Closure $onProgress = null): string
     {
         $response = Http::withHeaders([
             'x-api-key' => (string) config('mahafeth.ai.api_key'),
@@ -31,6 +33,7 @@ class ClaudeChatResponder implements ChatResponder
             // affordance in the chat.
             ->timeout((int) config('mahafeth.ai.chat_timeout'))
             ->connectTimeout(10)
+            ->withOptions(['stream' => true])
             ->post(self::API_URL, [
                 // Sonnet balances answer quality against chat latency while
                 // insights keep the larger model; adaptive thinking at
@@ -40,6 +43,8 @@ class ClaudeChatResponder implements ChatResponder
                 'max_tokens' => (int) config('mahafeth.ai.chat_max_tokens'),
                 'thinking' => ['type' => 'adaptive'],
                 'output_config' => ['effort' => 'medium'],
+                // Streaming lets the UI show the reply as it is written.
+                'stream' => true,
                 // Server-side web search grounds questions about current
                 // prices, news, and company facts that the snapshot payload
                 // cannot answer; capped so one message stays cheap.
@@ -49,16 +54,55 @@ class ClaudeChatResponder implements ChatResponder
             ])
             ->throw();
 
-        // With web search the content interleaves thinking, server_tool_use,
-        // and web_search_tool_result blocks between text blocks; the reply
-        // is the concatenation of every text block.
-        $text = collect($response->json('content', []))
-            ->where('type', 'text')
-            ->pluck('text')
-            ->implode('');
+        $text = $this->readStreamedText($response->toPsrResponse()->getBody(), $onProgress);
 
         if ($text === '') {
             throw new RuntimeException('Unexpected response shape from the Claude API.');
+        }
+
+        return $text;
+    }
+
+    /**
+     * Concatenate the text deltas out of the SSE stream. The stream
+     * interleaves thinking, server_tool_use, and web_search_tool_result
+     * events between text blocks; only text_delta events carry the reply.
+     * Progress flushes are throttled because the callback writes to a
+     * database-backed cache in production.
+     */
+    private function readStreamedText(StreamInterface $body, ?Closure $onProgress): string
+    {
+        $text = '';
+        $buffer = '';
+        $unflushed = 0;
+        $lastFlush = microtime(true);
+
+        while (! $body->eof()) {
+            $buffer .= $body->read(1024);
+
+            while (($newline = strpos($buffer, "\n")) !== false) {
+                $line = trim(substr($buffer, 0, $newline));
+                $buffer = substr($buffer, $newline + 1);
+
+                if (! str_starts_with($line, 'data:')) {
+                    continue;
+                }
+
+                $delta = json_decode(trim(substr($line, 5)), true)['delta'] ?? null;
+
+                if (($delta['type'] ?? null) !== 'text_delta') {
+                    continue;
+                }
+
+                $text .= $delta['text'];
+                $unflushed += strlen($delta['text']);
+
+                if ($onProgress !== null && ($unflushed >= 80 || microtime(true) - $lastFlush >= 0.4)) {
+                    $onProgress($text);
+                    $unflushed = 0;
+                    $lastFlush = microtime(true);
+                }
+            }
         }
 
         return $text;

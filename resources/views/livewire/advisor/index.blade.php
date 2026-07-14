@@ -20,6 +20,12 @@ new class extends Component {
     public int $lastChatMessageId = 0;
 
     /**
+     * Length of the streamed partial reply already shown, so the thread
+     * keeps scrolling while the answer is being written.
+     */
+    public int $lastPartialLength = 0;
+
+    /**
      * A question seeded through the "Ask Mahafeth AI" deep-link (?ask=...)
      * is persisted and queued during mount, so navigation from a holding,
      * filing, or news item renders straight into a live conversation with
@@ -78,6 +84,7 @@ new class extends Component {
 
         $this->error = null;
         Cache::forget(GenerateChatReplyJob::failedCacheKey($user));
+        Cache::forget(GenerateChatReplyJob::partialCacheKey($user));
         Cache::put(GenerateChatReplyJob::awaitingCacheKey($user), true, now()->addMinutes(5));
         GenerateChatReplyJob::dispatch($user, app()->getLocale());
     }
@@ -127,6 +134,7 @@ new class extends Component {
         Auth::user()->chatMessages()->delete();
         Cache::forget(GenerateChatReplyJob::awaitingCacheKey(Auth::user()));
         Cache::forget(GenerateChatReplyJob::failedCacheKey(Auth::user()));
+        Cache::forget(GenerateChatReplyJob::partialCacheKey(Auth::user()));
         $this->error = null;
     }
 
@@ -187,12 +195,17 @@ new class extends Component {
         $isGenerating = Cache::has(GenerateInsightsJob::cacheKey(Auth::user(), app()->getLocale()));
         $isAwaitingReply = $this->isAwaitingReply();
         $messages = Auth::user()->chatMessages()->oldest('id')->get();
+        $partialReply = $isAwaitingReply
+            ? (string) Cache::get(GenerateChatReplyJob::partialCacheKey(Auth::user()), '')
+            : '';
 
         // A new message since the last render (own send or a reply landed
-        // via the poll) scrolls the thread to the bottom.
+        // via the poll) scrolls the thread to the bottom; so does the
+        // streamed partial as it grows.
         $latestMessageId = (int) ($messages->last()->id ?? 0);
-        if ($latestMessageId !== $this->lastChatMessageId) {
+        if ($latestMessageId !== $this->lastChatMessageId || mb_strlen($partialReply) !== $this->lastPartialLength) {
             $this->lastChatMessageId = $latestMessageId;
+            $this->lastPartialLength = mb_strlen($partialReply);
             $this->dispatch('chat-updated');
         }
 
@@ -202,6 +215,7 @@ new class extends Component {
             'isGenerating' => $isGenerating,
             'hasFailed' => ! $isGenerating && Cache::has(GenerateInsightsJob::failedCacheKey(Auth::user(), app()->getLocale())),
             'isAwaitingReply' => $isAwaitingReply,
+            'partialReply' => $partialReply,
             'chatFailed' => ! $isAwaitingReply && Cache::has(GenerateChatReplyJob::failedCacheKey(Auth::user())),
             // Same-day re-analysis updates the snapshot row in place, so an
             // insight older than its snapshot explains numbers that changed.
@@ -217,7 +231,7 @@ new class extends Component {
      nav, and the safe-area insets cover the PWA's status bar and home
      indicator. --}}
 <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:min-h-[calc(100dvh-12rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))]"
-    @if ($isGenerating || $isAwaitingReply) wire:poll.2s @endif>
+    @if ($isAwaitingReply) wire:poll.1s @elseif ($isGenerating) wire:poll.2s @endif>
     <div class="flex items-start justify-between gap-4">
         <div>
             <flux:heading size="xl">{{ __('AI Advisor') }}</flux:heading>
@@ -387,14 +401,28 @@ new class extends Component {
 
                 {{-- The reply is composed by a queued job; the flag-driven
                      indicator survives navigation and page refreshes,
-                     unlike wire:loading which only covers the request. --}}
+                     unlike wire:loading which only covers the request. Once
+                     the model starts writing, the streamed partial replaces
+                     the dots and grows with every poll. --}}
                 @if ($isAwaitingReply)
-                    <div class="me-auto flex max-w-[85%] items-center gap-1.5 rounded-2xl bg-neutral-100 px-4 py-3 dark:bg-zinc-800">
-                        <span class="size-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:-0.3s]"></span>
-                        <span class="size-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:-0.15s]"></span>
-                        <span class="size-1.5 animate-bounce rounded-full bg-neutral-400"></span>
-                        <span class="sr-only">{{ __('Mahafeth AI is thinking…') }}</span>
-                    </div>
+                    @if ($partialReply !== '')
+                        <div class="me-auto w-fit max-w-[85%] rounded-2xl bg-neutral-100 px-4 py-2.5 text-sm text-neutral-800 dark:bg-zinc-800 dark:text-neutral-100">
+                            <div class="break-words [&_li]:mt-1 [&_ol]:list-decimal [&_ol]:ps-5 [&_p:not(:last-child)]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ps-5"
+                                dir="auto">
+                                {!! Illuminate\Support\Str::markdown($partialReply, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                            </div>
+                            <span class="mt-1 inline-block size-2 animate-pulse rounded-full bg-teal-500"
+                                aria-hidden="true"></span>
+                            <span class="sr-only">{{ __('Mahafeth AI is thinking…') }}</span>
+                        </div>
+                    @else
+                        <div class="me-auto flex max-w-[85%] items-center gap-1.5 rounded-2xl bg-neutral-100 px-4 py-3 dark:bg-zinc-800">
+                            <span class="size-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:-0.3s]"></span>
+                            <span class="size-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:-0.15s]"></span>
+                            <span class="size-1.5 animate-bounce rounded-full bg-neutral-400"></span>
+                            <span class="sr-only">{{ __('Mahafeth AI is thinking…') }}</span>
+                        </div>
+                    @endif
                 @endif
             </div>
 

@@ -25,6 +25,7 @@ class SendChatMessage
         // The awaiting flag must be set before dispatch: on the sync queue
         // the job runs inline and clears it again in its finally block.
         Cache::forget(GenerateChatReplyJob::failedCacheKey($user));
+        Cache::forget(GenerateChatReplyJob::partialCacheKey($user));
         Cache::put(GenerateChatReplyJob::awaitingCacheKey($user), true, now()->addMinutes(5));
         GenerateChatReplyJob::dispatch($user, $locale);
 

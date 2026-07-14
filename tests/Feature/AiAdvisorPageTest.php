@@ -141,7 +141,7 @@ class AiAdvisorPageTest extends TestCase
 
         $this->app->bind(ChatResponder::class, fn () => new class implements ChatResponder
         {
-            public function respond(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $goals, array $history): string
+            public function respond(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $goals, array $history, ?\Closure $onProgress = null): string
             {
                 throw new \RuntimeException('api down');
             }
@@ -194,6 +194,40 @@ class AiAdvisorPageTest extends TestCase
         Volt::test('advisor.index')->call('retry');
 
         Queue::assertNothingPushed();
+    }
+
+    public function test_the_streamed_partial_reply_renders_while_awaiting(): void
+    {
+        $user = $this->analyzedUser();
+        $this->actingAs($user);
+        $user->chatMessages()->create(['role' => 'user', 'content' => 'What is my risk?', 'locale' => 'en']);
+        Cache::put(GenerateChatReplyJob::awaitingCacheKey($user), true, now()->addMinutes(5));
+        Cache::put(GenerateChatReplyJob::partialCacheKey($user), 'Your volatility is', now()->addMinutes(3));
+
+        $component = Volt::test('advisor.index')
+            ->assertSee('Your volatility is');
+
+        // The next poll sees the partial grow and scrolls the thread.
+        Cache::put(GenerateChatReplyJob::partialCacheKey($user), 'Your volatility is 15.2%, which', now()->addMinutes(3));
+
+        $component->call('$refresh')
+            ->assertSee('Your volatility is 15.2%, which')
+            ->assertDispatched('chat-updated');
+    }
+
+    public function test_a_completed_reply_clears_the_streamed_partial(): void
+    {
+        $user = $this->analyzedUser();
+        $this->actingAs($user);
+
+        // The sync queue runs the job inline; the fake responder streams
+        // slices into the partial cache, and completion clears it.
+        Volt::test('advisor.index')
+            ->set('message', 'What is my risk?')
+            ->call('send');
+
+        $this->assertSame(2, $user->chatMessages()->count());
+        $this->assertFalse(Cache::has(GenerateChatReplyJob::partialCacheKey($user)));
     }
 
     public function test_polling_renders_the_reply_when_it_arrives(): void
@@ -295,6 +329,7 @@ class AiAdvisorPageTest extends TestCase
         AiChatMessage::factory()->create(['user_id' => $user->id]);
         Cache::put(GenerateChatReplyJob::awaitingCacheKey($user), true, now()->addMinutes(5));
         Cache::put(GenerateChatReplyJob::failedCacheKey($user), true, now()->addMinutes(10));
+        Cache::put(GenerateChatReplyJob::partialCacheKey($user), 'half a reply', now()->addMinutes(3));
 
         $this->actingAs($user);
         Volt::test('advisor.index')
@@ -303,6 +338,7 @@ class AiAdvisorPageTest extends TestCase
 
         $this->assertFalse(Cache::has(GenerateChatReplyJob::awaitingCacheKey($user)));
         $this->assertFalse(Cache::has(GenerateChatReplyJob::failedCacheKey($user)));
+        $this->assertFalse(Cache::has(GenerateChatReplyJob::partialCacheKey($user)));
     }
 
     public function test_another_users_messages_never_render(): void

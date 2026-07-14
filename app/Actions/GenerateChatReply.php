@@ -3,9 +3,11 @@
 namespace App\Actions;
 
 use App\Contracts\ChatResponder;
+use App\Jobs\GenerateChatReplyJob;
 use App\Models\AiChatMessage;
 use App\Models\User;
 use App\Services\Insights\PortfolioContext;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Asks the responder for an answer grounded in the latest snapshot and
@@ -48,6 +50,13 @@ class GenerateChatReply
             $locale,
             $this->context->goals($user, $snapshot),
             $this->history($user),
+            // Stream the growing reply into cache; the advisor page polls
+            // it so the answer appears while the model is still writing.
+            fn (string $partial) => Cache::put(
+                GenerateChatReplyJob::partialCacheKey($user),
+                $partial,
+                now()->addMinutes(3),
+            ),
         );
 
         return $user->chatMessages()->create([

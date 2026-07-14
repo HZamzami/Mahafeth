@@ -5,6 +5,7 @@ namespace App\Services\Insights;
 use App\Contracts\ChatResponder;
 use App\Models\PortfolioSnapshot;
 use App\Models\RiskProfile;
+use Closure;
 use Illuminate\Support\Number;
 
 /**
@@ -15,7 +16,22 @@ use Illuminate\Support\Number;
  */
 class FakeChatResponder implements ChatResponder
 {
-    public function respond(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $goals, array $history): string
+    public function respond(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $goals, array $history, ?Closure $onProgress = null): string
+    {
+        $reply = $this->reply($snapshot, $riskProfile, $locale, $history);
+
+        // Emit progressive slices so the streaming UI path is exercised
+        // in tests and offline demos.
+        if ($onProgress !== null) {
+            foreach ([0.4, 0.8] as $portion) {
+                $onProgress(mb_substr($reply, 0, (int) ceil(mb_strlen($reply) * $portion)));
+            }
+        }
+
+        return $reply;
+    }
+
+    private function reply(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $history): string
     {
         $metrics = $snapshot->metrics ?? [];
         $message = mb_strtolower(end($history)['content'] ?? '');

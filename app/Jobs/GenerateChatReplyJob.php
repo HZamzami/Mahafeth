@@ -57,6 +57,15 @@ class GenerateChatReplyJob implements ShouldBeUnique, ShouldQueue
         return "chat:failed:{$user->id}";
     }
 
+    /**
+     * The reply text streamed so far, written by GenerateChatReply as the
+     * model composes and polled by the UI so the answer appears live.
+     */
+    public static function partialCacheKey(User $user): string
+    {
+        return "chat:partial:{$user->id}";
+    }
+
     public function handle(GenerateChatReply $generateChatReply): void
     {
         Cache::put(self::awaitingCacheKey($this->user), true, now()->addSeconds($this->timeout + 30));
@@ -69,6 +78,7 @@ class GenerateChatReplyJob implements ShouldBeUnique, ShouldQueue
             throw $exception;
         } finally {
             Cache::forget(self::awaitingCacheKey($this->user));
+            Cache::forget(self::partialCacheKey($this->user));
         }
     }
 
@@ -76,5 +86,6 @@ class GenerateChatReplyJob implements ShouldBeUnique, ShouldQueue
     {
         Cache::put(self::failedCacheKey($this->user), true, now()->addMinutes(10));
         Cache::forget(self::awaitingCacheKey($this->user));
+        Cache::forget(self::partialCacheKey($this->user));
     }
 }
