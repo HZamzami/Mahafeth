@@ -14,6 +14,8 @@
         {{-- First-run guided checklist; hides itself once a snapshot exists --}}
         <livewire:dashboard.onboarding />
 
+        @include('partials.passkey-nudge')
+
         {{-- Threshold alerts --}}
         <livewire:dashboard.alerts />
 

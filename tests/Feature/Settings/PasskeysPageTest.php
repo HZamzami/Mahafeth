@@ -13,6 +13,26 @@ class PasskeysPageTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_the_dashboard_nudges_users_without_a_passkey(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->get('/dashboard')
+            ->assertOk()
+            ->assertSee(__('Sign in with Face ID or fingerprint next time? Add a passkey in under a minute.'));
+    }
+
+    public function test_the_dashboard_does_not_nudge_passkey_owners(): void
+    {
+        $user = User::factory()->create();
+        $this->makePasskey($user, 'My phone');
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertDontSee(__('Sign in with Face ID or fingerprint next time? Add a passkey in under a minute.'));
+    }
+
     public function test_guests_are_redirected_to_the_login_page(): void
     {
         $this->get('/settings/passkeys')->assertRedirect('/login');
