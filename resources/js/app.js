@@ -50,7 +50,51 @@ document.addEventListener('livewire:navigated', () => {
 // Count a number up from zero when it scrolls into view; used by the
 // health score. Renders the real value server-side, so without JS (or with
 // reduced motion) the number is simply already there.
+// Welcome-page scroll reveals: elements tagged .welcome-reveal animate in
+// the first time they enter the viewport (styles in app.css under
+// .welcome-in). Content stays visible without JS or with reduced motion.
+window.addEventListener('load', () => {
+    const revealables = document.querySelectorAll('.welcome-reveal');
+
+    if (!revealables.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+    }
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            for (const entry of entries) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('welcome-in');
+                    observer.unobserve(entry.target);
+                }
+            }
+        },
+        { threshold: 0.15 },
+    );
+
+    revealables.forEach((element) => observer.observe(element));
+});
+
 document.addEventListener('alpine:init', () => {
+    // Welcome-page hero: drives the CSS vars behind .welcome-parallax so
+    // the floating fragments drift gently against the pointer.
+    window.Alpine.data('pointerParallax', () => ({
+        init() {
+            if (!window.matchMedia('(hover: hover)').matches) {
+                return;
+            }
+
+            this.$el.addEventListener(
+                'pointermove',
+                (event) => {
+                    const bounds = this.$el.getBoundingClientRect();
+                    this.$el.style.setProperty('--px', ((event.clientX - bounds.left) / bounds.width - 0.5).toFixed(3));
+                    this.$el.style.setProperty('--py', ((event.clientY - bounds.top) / bounds.height - 0.5).toFixed(3));
+                },
+                { passive: true },
+            );
+        },
+    }));
     // Shows a gradient + chevron on horizontally scrollable strips (tabs,
     // chip rows) while more content hides past the trailing edge.
     window.Alpine.data('scrollHint', () => ({

@@ -23,6 +23,11 @@ class Changelog
                 'date' => '2026-07-14',
                 'items' => [
                     [
+                        'type' => 'improved',
+                        'title' => __('A brand-new front door'),
+                        'body' => __('The welcome page was rebuilt from scratch with a live product preview, floating health-score and alert cards, and a lot more personality. Signed-in users skip it entirely and land on their dashboard.'),
+                    ],
+                    [
                         'type' => 'new',
                         'title' => __('Sign in with Face ID or fingerprint'),
                         'body' => __('Add a passkey from Settings and sign in with your face, fingerprint, or device screen lock. Faster than a password, and safer too.'),
