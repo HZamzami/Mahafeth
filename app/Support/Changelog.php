@@ -23,6 +23,11 @@ class Changelog
                 'date' => '2026-07-14',
                 'items' => [
                     [
+                        'type' => 'improved',
+                        'title' => __('A faster demo with live progress'),
+                        'body' => __('Try the demo now builds your sample portfolio in seconds and shows its progress while it works, in your language and direction.'),
+                    ],
+                    [
                         'type' => 'new',
                         'title' => __('Take Mahafeth for a spin'),
                         'body' => __('A Try the demo button on the welcome page opens a ready-made portfolio, complete with history, alerts, and a health score. No signup, and demo accounts clean themselves up after two days.'),

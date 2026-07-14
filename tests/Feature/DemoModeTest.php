@@ -78,6 +78,18 @@ class DemoModeTest extends TestCase
         $this->post(route('demo.start'))->assertTooManyRequests();
     }
 
+    public function test_the_demo_forms_carry_the_building_overlay(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee(__('Building your demo portfolio'))
+            ->assertSee('demoBuilding');
+
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee(__('Building your demo portfolio'));
+    }
+
     public function test_getting_the_demo_url_redirects_home(): void
     {
         $this->get('/demo')->assertRedirect(route('home'));

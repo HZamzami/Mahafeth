@@ -168,6 +168,28 @@ window.addEventListener('load', initWelcomeEffects);
 document.addEventListener('livewire:navigated', initWelcomeEffects);
 
 document.addEventListener('alpine:init', () => {
+    // Demo forms: reveal the building overlay the moment the form submits
+    // and cycle the step text while the server provisions the account.
+    // Step labels come from the element's data-steps JSON so they stay
+    // server-translated.
+    window.Alpine.data('demoBuilding', () => ({
+        building: false,
+        step: 0,
+        steps: [],
+
+        init() {
+            this.steps = JSON.parse(this.$el.dataset.steps ?? '[]');
+        },
+
+        start() {
+            this.building = true;
+
+            setInterval(() => {
+                this.step = Math.min(this.step + 1, this.steps.length - 1);
+            }, 2500);
+        },
+    }));
+
     // Welcome-page hero: drives the CSS vars behind .welcome-parallax so
     // the floating fragments drift gently against the pointer.
     window.Alpine.data('pointerParallax', () => ({

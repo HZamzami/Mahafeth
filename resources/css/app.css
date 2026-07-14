@@ -222,6 +222,35 @@ body.navigating main {
         }
     }
 
+    /* Indeterminate bar on the demo-building overlay: a third-width bar
+       sweeping across its track. Reduced motion leaves it static; the
+       cycling step text still signals progress. */
+    .demo-progress-bar {
+        animation: demo-progress 1.4s ease-in-out infinite;
+    }
+
+    [dir='rtl'] .demo-progress-bar {
+        animation-name: demo-progress-rtl;
+    }
+
+    @keyframes demo-progress {
+        from {
+            transform: translateX(-100%);
+        }
+        to {
+            transform: translateX(300%);
+        }
+    }
+
+    @keyframes demo-progress-rtl {
+        from {
+            transform: translateX(100%);
+        }
+        to {
+            transform: translateX(-300%);
+        }
+    }
+
     .welcome-marquee {
         animation: welcome-marquee 30s linear infinite;
     }

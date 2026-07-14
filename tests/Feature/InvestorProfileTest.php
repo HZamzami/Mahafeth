@@ -124,6 +124,17 @@ class InvestorProfileTest extends TestCase
             ->assertDontSee(__('In a hurry? Start from a preset'));
     }
 
+    public function test_the_progress_bar_follows_the_document_direction(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        // No hardcoded LTR override: in Arabic the segments render
+        // right-to-left with the document.
+        Volt::test('investor-profile.index')
+            ->assertSee(__('Question :current of :total', ['current' => 1, 'total' => 10]))
+            ->assertDontSeeHtml('gap-1" dir="ltr"');
+    }
+
     public function test_declining_the_shariah_requirement_persists_an_unconstrained_profile(): void
     {
         $user = User::factory()->create();

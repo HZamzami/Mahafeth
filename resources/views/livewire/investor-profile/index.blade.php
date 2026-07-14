@@ -284,7 +284,8 @@ new class extends Component {
         <div class="mb-6 flex items-center justify-between gap-4">
             <flux:text class="shrink-0 text-xs font-medium uppercase tracking-widest">
                 {{ __('Question :current of :total', ['current' => $step, 'total' => $totalSteps]) }}</flux:text>
-            <div class="flex w-full max-w-80 gap-1" dir="ltr">
+            {{-- Follows the document direction, so the bar fills right-to-left in Arabic. --}}
+            <div class="flex w-full max-w-80 gap-1">
                 @for ($i = 1; $i <= $totalSteps; $i++)
                     <span
                         class="h-1 flex-1 rounded-full transition-colors duration-300 {{ $i <= $step ? 'bg-teal-600 dark:bg-teal-400' : 'bg-neutral-200 dark:bg-zinc-700' }}"></span>
