@@ -47,20 +47,18 @@ document.addEventListener('livewire:navigated', () => {
     main.classList.add('page-enter');
 });
 
-// Count a number up from zero when it scrolls into view; used by the
-// health score. Renders the real value server-side, so without JS (or with
-// reduced motion) the number is simply already there.
-// Welcome-page scroll reveals: elements tagged .welcome-reveal animate in
-// the first time they enter the viewport (styles in app.css under
-// .welcome-in). Content stays visible without JS or with reduced motion.
-window.addEventListener('load', () => {
+// Welcome-page effects: gauge sweeps, count-up numbers, and scroll reveals,
+// all driven by plain IntersectionObservers (this page has no Livewire
+// component, so Alpine's x-intersect is not guaranteed). Runs on the first
+// load and again after every wire:navigate hop, since a navigate swap does
+// not refire window load; the data-*-done flags keep revisits idempotent.
+const initWelcomeEffects = () => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Gauge rings and sparklines: sweep the stroke to its target offset.
-    // Driven here rather than by Alpine's x-intersect because this page has
-    // no Livewire component to guarantee the plugin. Reduced motion still
-    // reaches the final state; the CSS transition just isn't there.
-    const drawables = document.querySelectorAll('[data-draw-offset]');
+    // Reduced motion still reaches the final state; the CSS transition
+    // just isn't there.
+    const drawables = document.querySelectorAll('[data-draw-offset]:not([data-draw-done])');
 
     if (drawables.length) {
         const drawObserver = new IntersectionObserver(
@@ -75,12 +73,15 @@ window.addEventListener('load', () => {
             { threshold: 0.4 },
         );
 
-        drawables.forEach((element) => drawObserver.observe(element));
+        drawables.forEach((element) => {
+            element.dataset.drawDone = 'true';
+            drawObserver.observe(element);
+        });
     }
 
     // Count-up numbers: the real value is server-rendered, so without JS
     // or with reduced motion it is simply already there.
-    const counters = document.querySelectorAll('[data-count-to]');
+    const counters = document.querySelectorAll('[data-count-to]:not([data-count-done])');
 
     if (counters.length && !reduceMotion) {
         const countObserver = new IntersectionObserver((entries) => {
@@ -107,10 +108,13 @@ window.addEventListener('load', () => {
             }
         });
 
-        counters.forEach((element) => countObserver.observe(element));
+        counters.forEach((element) => {
+            element.dataset.countDone = 'true';
+            countObserver.observe(element);
+        });
     }
 
-    const revealables = document.querySelectorAll('.welcome-reveal');
+    const revealables = document.querySelectorAll('.welcome-reveal:not([data-reveal-done])');
 
     if (!revealables.length || reduceMotion) {
         return;
@@ -128,8 +132,14 @@ window.addEventListener('load', () => {
         { threshold: 0.15 },
     );
 
-    revealables.forEach((element) => observer.observe(element));
-});
+    revealables.forEach((element) => {
+        element.dataset.revealDone = 'true';
+        observer.observe(element);
+    });
+};
+
+window.addEventListener('load', initWelcomeEffects);
+document.addEventListener('livewire:navigated', initWelcomeEffects);
 
 document.addEventListener('alpine:init', () => {
     // Welcome-page hero: drives the CSS vars behind .welcome-parallax so
