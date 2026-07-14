@@ -24,9 +24,11 @@ class ClaudeInsightGenerator implements InsightGenerator
             'x-api-key' => (string) config('mahafeth.ai.api_key'),
             'anthropic-version' => self::API_VERSION,
         ])
+            // No HTTP retries: a second 120s attempt would blow past the
+            // job timeout and get the worker killed mid-run; failures
+            // surface as a failed flag with a Regenerate affordance.
             ->timeout((int) config('mahafeth.ai.timeout'))
             ->connectTimeout(10)
-            ->retry(2, 1000, throw: false)
             ->post(self::API_URL, [
                 'model' => config('mahafeth.ai.model'),
                 'max_tokens' => (int) config('mahafeth.ai.max_tokens'),

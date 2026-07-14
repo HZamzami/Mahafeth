@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Actions\SendChatMessage;
+use App\Actions\GenerateChatReply;
 use App\Contracts\ChatResponder;
 use App\Models\AiChatMessage;
 use App\Models\PortfolioSnapshot;
@@ -145,7 +145,8 @@ class ClaudeChatResponderTest extends TestCase
             }
         };
 
-        (new SendChatMessage($spy, app(PortfolioContext::class)))->handle($user, 'one more question', 'en');
+        $user->chatMessages()->create(['role' => 'user', 'content' => 'one more question', 'locale' => 'en']);
+        (new GenerateChatReply($spy, app(PortfolioContext::class)))->handle($user, 'en');
 
         $this->assertCount(20, $spy->history);
         $this->assertSame('one more question', end($spy->history)['content']);

@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\SendChatMessage;
+use App\Jobs\GenerateChatReplyJob;
 use App\Jobs\GenerateInsightsJob;
 use App\Models\AiInsight;
 use Illuminate\Support\Facades\Auth;
@@ -13,29 +14,31 @@ new class extends Component {
     public ?string $error = null;
 
     /**
-     * A question seeded through the "Ask Mahafeth AI" deep-link
-     * (?ask=...), sent right after the page renders so navigation from a
-     * filing or news item lands in a live conversation.
+     * The newest chat message id already shown, so the poll can tell a
+     * fresh reply apart from a re-render and scroll the thread to it.
      */
-    public ?string $pending = null;
+    public int $lastChatMessageId = 0;
 
-    public function mount(): void
+    /**
+     * A question seeded through the "Ask Mahafeth AI" deep-link (?ask=...)
+     * is persisted and queued during mount, so navigation from a holding,
+     * filing, or news item renders straight into a live conversation with
+     * the typing indicator already showing. Cache::add is atomic, so a
+     * refresh, back/forward replay, or second tab of the same link within
+     * five minutes cannot duplicate the question.
+     */
+    public function mount(SendChatMessage $sendChatMessage): void
     {
         $ask = mb_substr(trim((string) request()->query('ask')), 0, 1000);
 
-        $this->pending = $ask === '' ? null : $ask;
-    }
-
-    public function sendPending(SendChatMessage $sendChatMessage): void
-    {
-        if ($this->pending !== null) {
-            $this->sendContent($sendChatMessage, $this->pending);
-            $this->pending = null;
-
-            // Drop ?ask= from the address bar, otherwise a page refresh
-            // re-sends the seeded question.
-            $this->js("window.history.replaceState({}, '', '".route('advisor')."')");
+        if ($ask !== ''
+            && Auth::user()->latestSnapshot() !== null
+            && ! $this->isAwaitingReply()
+            && Cache::add('chat:ask-lock:'.Auth::id().':'.sha1($ask), true, now()->addMinutes(5))) {
+            $sendChatMessage->handle(Auth::user(), $ask, app()->getLocale());
         }
+
+        $this->lastChatMessageId = (int) Auth::user()->chatMessages()->max('id');
     }
 
     /**
@@ -44,23 +47,39 @@ new class extends Component {
      */
     public function generate(): void
     {
-        $user = Auth::user();
-        $locale = app()->getLocale();
-
         // Nothing to explain before the first analysis.
-        if ($user->latestSnapshot() === null) {
+        if (Auth::user()->latestSnapshot() === null) {
             return;
         }
 
-        Cache::forget(GenerateInsightsJob::failedCacheKey($user, $locale));
-        Cache::put(GenerateInsightsJob::cacheKey($user, $locale), true, now()->addMinutes(5));
-        GenerateInsightsJob::dispatch($user, $locale);
+        GenerateInsightsJob::request(Auth::user(), app()->getLocale());
     }
 
     public function send(SendChatMessage $sendChatMessage): void
     {
-        $this->sendContent($sendChatMessage, trim($this->message));
-        $this->message = '';
+        if ($this->sendContent($sendChatMessage, trim($this->message))) {
+            $this->message = '';
+        }
+    }
+
+    /**
+     * Re-queue the reply for the last unanswered message after a failure,
+     * so the user does not have to retype it.
+     */
+    public function retry(): void
+    {
+        $user = Auth::user();
+
+        if (! Cache::has(GenerateChatReplyJob::failedCacheKey($user))
+            || $user->latestSnapshot() === null
+            || $user->chatMessages()->latest('id')->first()?->role !== 'user') {
+            return;
+        }
+
+        $this->error = null;
+        Cache::forget(GenerateChatReplyJob::failedCacheKey($user));
+        Cache::put(GenerateChatReplyJob::awaitingCacheKey($user), true, now()->addMinutes(5));
+        GenerateChatReplyJob::dispatch($user, app()->getLocale());
     }
 
     /**
@@ -106,36 +125,49 @@ new class extends Component {
     public function clearChat(): void
     {
         Auth::user()->chatMessages()->delete();
+        Cache::forget(GenerateChatReplyJob::awaitingCacheKey(Auth::user()));
+        Cache::forget(GenerateChatReplyJob::failedCacheKey(Auth::user()));
+        $this->error = null;
     }
 
-    private function sendContent(SendChatMessage $sendChatMessage, string $content): void
+    /**
+     * Persist the message and queue its reply; returns whether it was
+     * accepted, so callers keep the draft when it was not.
+     */
+    private function sendContent(SendChatMessage $sendChatMessage, string $content): bool
     {
         $this->error = null;
 
         if ($content === '') {
-            return;
+            return false;
+        }
+
+        if ($this->isAwaitingReply()) {
+            $this->error = __('Mahafeth AI is still answering — please wait for the reply to finish.');
+
+            return false;
         }
 
         if (mb_strlen($content) > 1000) {
             $this->error = __('That message is too long — please keep it under 1,000 characters.');
 
-            return;
+            return false;
         }
 
         if (Auth::user()->latestSnapshot() === null) {
             $this->error = __('Connect your accounts and run an analysis first — then I can answer questions about your portfolio.');
 
-            return;
+            return false;
         }
 
-        try {
-            $sendChatMessage->handle(Auth::user(), $content, app()->getLocale());
-        } catch (\Throwable $exception) {
-            report($exception);
-            $this->error = __('The assistant could not be reached — your message was not lost, please try sending it again.');
-        }
+        $sendChatMessage->handle(Auth::user(), $content, app()->getLocale());
 
-        $this->dispatch('chat-updated');
+        return true;
+    }
+
+    private function isAwaitingReply(): bool
+    {
+        return Cache::has(GenerateChatReplyJob::awaitingCacheKey(Auth::user()));
     }
 
     private function latestInsight(): ?AiInsight
@@ -153,16 +185,28 @@ new class extends Component {
         $snapshot = Auth::user()->latestSnapshot();
         $insight = $this->latestInsight();
         $isGenerating = Cache::has(GenerateInsightsJob::cacheKey(Auth::user(), app()->getLocale()));
+        $isAwaitingReply = $this->isAwaitingReply();
+        $messages = Auth::user()->chatMessages()->oldest('id')->get();
+
+        // A new message since the last render (own send or a reply landed
+        // via the poll) scrolls the thread to the bottom.
+        $latestMessageId = (int) ($messages->last()->id ?? 0);
+        if ($latestMessageId !== $this->lastChatMessageId) {
+            $this->lastChatMessageId = $latestMessageId;
+            $this->dispatch('chat-updated');
+        }
 
         return [
             'hasSnapshot' => $snapshot !== null,
             'insight' => $insight,
             'isGenerating' => $isGenerating,
             'hasFailed' => ! $isGenerating && Cache::has(GenerateInsightsJob::failedCacheKey(Auth::user(), app()->getLocale())),
+            'isAwaitingReply' => $isAwaitingReply,
+            'chatFailed' => ! $isAwaitingReply && Cache::has(GenerateChatReplyJob::failedCacheKey(Auth::user())),
             // Same-day re-analysis updates the snapshot row in place, so an
             // insight older than its snapshot explains numbers that changed.
             'isStale' => $insight !== null && $insight->updated_at->lt($snapshot->updated_at),
-            'messages' => Auth::user()->chatMessages()->oldest('id')->get(),
+            'messages' => $messages,
             'starters' => $this->starters(),
         ];
     }
@@ -171,7 +215,7 @@ new class extends Component {
 {{-- min-h on mobile stretches the thread so the input sits at the bottom of
      the screen like a native chat; 12rem ≈ header + main padding + bottom nav. --}}
 <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:min-h-[calc(100dvh-12rem)]"
-    @if ($isGenerating) wire:poll.3s @endif @if ($pending !== null) wire:init="sendPending" @endif>
+    @if ($isGenerating || $isAwaitingReply) wire:poll.2s @endif>
     <div class="flex items-start justify-between gap-4">
         <div>
             <flux:heading size="xl">{{ __('AI Advisor') }}</flux:heading>
@@ -265,7 +309,8 @@ new class extends Component {
                             @endif
 
                             <flux:button class="mt-3 self-start" size="sm" icon="chat-bubble-oval-left"
-                                wire:click="discuss({{ $index }})" wire:loading.attr="disabled">
+                                wire:click="discuss({{ $index }})" wire:loading.attr="disabled"
+                                :disabled="$isAwaitingReply">
                                 {{ __('Discuss this') }}</flux:button>
                         </div>
                         @endforeach
@@ -286,7 +331,8 @@ new class extends Component {
                 <flux:text class="max-w-72 text-sm">
                     {{ __('Generate insights first to start a conversation grounded in your portfolio.') }}
                 </flux:text>
-                <flux:button variant="primary" icon="sparkles" wire:click="generate" wire:loading.attr="disabled">
+                <flux:button variant="primary" icon="sparkles" wire:click="generate" wire:loading.attr="disabled"
+                    :disabled="$isGenerating">
                     {{ __('Generate Insights') }}</flux:button>
             </div>
         @endif
@@ -322,27 +368,42 @@ new class extends Component {
                             <div data-scroll-area class="flex w-full gap-2 overflow-x-auto pb-1 scrollbar-thin">
                                 @foreach ($starters as $index => $starter)
                                     <flux:button class="shrink-0 whitespace-nowrap" size="sm" wire:loading.attr="disabled"
-                                        wire:click="ask({{ $index }})">{{ $starter }}</flux:button>
+                                        :disabled="$isAwaitingReply" wire:click="ask({{ $index }})">{{ $starter }}</flux:button>
                                 @endforeach
                             </div>
                         </x-scroll-hint>
                         <div class="hidden w-full flex-wrap justify-center gap-2 lg:flex">
                             @foreach ($starters as $index => $starter)
                                 <flux:button class="whitespace-nowrap" size="sm" wire:loading.attr="disabled"
-                                    wire:click="ask({{ $index }})">{{ $starter }}</flux:button>
+                                    :disabled="$isAwaitingReply" wire:click="ask({{ $index }})">{{ $starter }}</flux:button>
                             @endforeach
                         </div>
                     </div>
                 @endforelse
 
-                <div wire:loading.flex wire:target="send, ask, discuss"
-                    class="me-auto max-w-[85%] items-center gap-1.5 rounded-2xl bg-neutral-100 px-4 py-3 dark:bg-zinc-800">
-                    <span class="size-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:-0.3s]"></span>
-                    <span class="size-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:-0.15s]"></span>
-                    <span class="size-1.5 animate-bounce rounded-full bg-neutral-400"></span>
-                    <span class="sr-only">{{ __('Mahafeth AI is thinking…') }}</span>
-                </div>
+                {{-- The reply is composed by a queued job; the flag-driven
+                     indicator survives navigation and page refreshes,
+                     unlike wire:loading which only covers the request. --}}
+                @if ($isAwaitingReply)
+                    <div class="me-auto flex max-w-[85%] items-center gap-1.5 rounded-2xl bg-neutral-100 px-4 py-3 dark:bg-zinc-800">
+                        <span class="size-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:-0.3s]"></span>
+                        <span class="size-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:-0.15s]"></span>
+                        <span class="size-1.5 animate-bounce rounded-full bg-neutral-400"></span>
+                        <span class="sr-only">{{ __('Mahafeth AI is thinking…') }}</span>
+                    </div>
+                @endif
             </div>
+
+            @if ($chatFailed)
+                <div class="px-5 pb-3">
+                    <flux:callout color="red" icon="exclamation-triangle" inline>
+                        <flux:callout.text>
+                            {{ __('The assistant could not be reached — your message was not lost, please try sending it again.') }}
+                            <flux:link class="cursor-pointer" wire:click="retry">{{ __('Retry') }}</flux:link>
+                        </flux:callout.text>
+                    </flux:callout>
+                </div>
+            @endif
 
             @if ($error !== null)
                 <div class="px-5 pb-3">
@@ -358,7 +419,7 @@ new class extends Component {
                     x-on:keydown.enter="if (! $event.shiftKey) { $event.preventDefault(); $wire.send(); }">
                     <x-slot:actionsTrailing>
                         <flux:button variant="primary" size="sm" icon="paper-airplane" wire:click="send"
-                            wire:loading.attr="disabled" :aria-label="__('Send')" />
+                            wire:loading.attr="disabled" :disabled="$isAwaitingReply" :aria-label="__('Send')" />
                     </x-slot:actionsTrailing>
                 </flux:composer>
                 <flux:text class="mt-2 text-center text-xs">
@@ -367,3 +428,13 @@ new class extends Component {
         </div>
     @endif
 </div>
+
+@script
+<script>
+    // The ?ask= question is already persisted during mount; drop it from
+    // the address bar right away so a refresh or copied link is clean.
+    if (new URLSearchParams(window.location.search).has('ask')) {
+        window.history.replaceState({}, '', @js(route('advisor')));
+    }
+</script>
+@endscript

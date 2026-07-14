@@ -2,73 +2,32 @@
 
 namespace App\Actions;
 
-use App\Contracts\ChatResponder;
+use App\Jobs\GenerateChatReplyJob;
 use App\Models\AiChatMessage;
 use App\Models\User;
-use App\Services\Insights\PortfolioContext;
+use Illuminate\Support\Facades\Cache;
 
 /**
- * Persists a user's advisor chat message, asks the responder for an
- * answer grounded in the latest snapshot, and persists the reply.
+ * Persists a user's advisor chat message and queues the assistant reply,
+ * so the message shows up in the thread immediately while the model
+ * composes in the background (GenerateChatReplyJob → GenerateChatReply).
  */
 class SendChatMessage
 {
-    /**
-     * Messages sent to the model per turn; older history is dropped to
-     * keep the prompt small.
-     */
-    private const HISTORY_WINDOW = 20;
-
-    private const MAX_MESSAGE_CHARS = 2000;
-
-    public function __construct(
-        private ChatResponder $responder,
-        private PortfolioContext $context,
-    ) {}
-
     public function handle(User $user, string $content, string $locale): AiChatMessage
     {
-        $snapshot = $user->latestSnapshot();
-
-        $user->chatMessages()->create([
+        $message = $user->chatMessages()->create([
             'role' => 'user',
             'content' => $content,
             'locale' => $locale,
         ]);
 
-        $reply = $this->responder->respond(
-            $snapshot,
-            $user->riskProfile,
-            $locale,
-            $this->context->goals($user, $snapshot),
-            $this->history($user),
-        );
+        // The awaiting flag must be set before dispatch: on the sync queue
+        // the job runs inline and clears it again in its finally block.
+        Cache::forget(GenerateChatReplyJob::failedCacheKey($user));
+        Cache::put(GenerateChatReplyJob::awaitingCacheKey($user), true, now()->addMinutes(5));
+        GenerateChatReplyJob::dispatch($user, $locale);
 
-        return $user->chatMessages()->create([
-            'role' => 'assistant',
-            'content' => $reply,
-            'locale' => $locale,
-        ]);
-    }
-
-    /**
-     * The most recent messages, oldest first, each truncated so a pasted
-     * wall of text cannot blow up the prompt.
-     *
-     * @return list<array{role: string, content: string}>
-     */
-    private function history(User $user): array
-    {
-        return $user->chatMessages()
-            ->latest('id')
-            ->limit(self::HISTORY_WINDOW)
-            ->get()
-            ->reverse()
-            ->map(fn (AiChatMessage $message): array => [
-                'role' => $message->role,
-                'content' => mb_substr($message->content, 0, self::MAX_MESSAGE_CHARS),
-            ])
-            ->values()
-            ->all();
+        return $message;
     }
 }

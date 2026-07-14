@@ -14,19 +14,14 @@ new class extends Component {
      */
     public function generate(): void
     {
-        $user = Auth::user();
-        $locale = app()->getLocale();
-
         // Nothing to explain before the first analysis; without this a
         // crafted request pins the card in the analyzing state for the
         // flag's whole TTL.
-        if ($user->latestSnapshot() === null) {
+        if (Auth::user()->latestSnapshot() === null) {
             return;
         }
 
-        Cache::forget(GenerateInsightsJob::failedCacheKey($user, $locale));
-        Cache::put(GenerateInsightsJob::cacheKey($user, $locale), true, now()->addMinutes(5));
-        GenerateInsightsJob::dispatch($user, $locale);
+        GenerateInsightsJob::request(Auth::user(), app()->getLocale());
     }
 
     public function with(): array
@@ -128,7 +123,8 @@ new class extends Component {
             <flux:text class="max-w-64 text-sm">
                 {{ __('Get a plain-language explanation of your scores and a personalized action plan.') }}
             </flux:text>
-            <flux:button variant="primary" icon="sparkles" wire:click="generate" wire:loading.attr="disabled">
+            <flux:button variant="primary" icon="sparkles" wire:click="generate" wire:loading.attr="disabled"
+                :disabled="$isGenerating">
                 {{ __('Generate Insights') }}</flux:button>
         </div>
     @else

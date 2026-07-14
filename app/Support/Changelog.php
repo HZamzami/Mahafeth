@@ -20,6 +20,21 @@ class Changelog
     {
         return [
             [
+                'date' => '2026-07-14',
+                'items' => [
+                    [
+                        'type' => 'improved',
+                        'title' => __('A snappier AI advisor'),
+                        'body' => __('Your question now appears in the chat instantly and the answer is composed in the background — keep browsing while Mahafeth AI thinks, and retry with one tap if it fails.'),
+                    ],
+                    [
+                        'type' => 'fixed',
+                        'title' => __('More reliable insight generation'),
+                        'body' => __('Generating insights no longer fails after a long wait, and asking Mahafeth AI from a stock or news item no longer sends the question twice.'),
+                    ],
+                ],
+            ],
+            [
                 'date' => '2026-07-13',
                 'items' => [
                     [

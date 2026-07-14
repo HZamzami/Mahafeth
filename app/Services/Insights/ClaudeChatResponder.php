@@ -26,9 +26,11 @@ class ClaudeChatResponder implements ChatResponder
             'x-api-key' => (string) config('mahafeth.ai.api_key'),
             'anthropic-version' => self::API_VERSION,
         ])
+            // No HTTP retries: a second 60s attempt would blow past the
+            // job timeout; failures surface as a failed flag with a Retry
+            // affordance in the chat.
             ->timeout((int) config('mahafeth.ai.chat_timeout'))
             ->connectTimeout(10)
-            ->retry(2, 1000, throw: false)
             ->post(self::API_URL, [
                 // Sonnet balances answer quality against chat latency while
                 // insights keep the larger model; adaptive thinking at
