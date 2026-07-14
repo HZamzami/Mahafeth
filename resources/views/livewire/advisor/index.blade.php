@@ -349,12 +349,14 @@ new class extends Component {
                         'me-auto bg-neutral-100 text-neutral-800 dark:bg-zinc-800 dark:text-neutral-100' => $chatMessage->role !== 'user',
                     ])>
                         @if ($chatMessage->role === 'user')
-                            <p class="whitespace-pre-wrap" dir="auto">{{ $chatMessage->content }}</p>
+                            <p class="whitespace-pre-wrap break-words" dir="auto">{{ $chatMessage->content }}</p>
                         @else
                             {{-- Model output rendered as Markdown: html_input strip
                                  removes any raw HTML and unsafe links are blocked,
                                  so a prompt-injected reply cannot become XSS. --}}
-                            <div class="[&_li]:mt-1 [&_ol]:list-decimal [&_ol]:ps-5 [&_p:not(:last-child)]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ps-5"
+                            {{-- break-words keeps long unbreakable tokens (URLs from
+                                 web-search answers) inside the bubble. --}}
+                            <div class="break-words [&_li]:mt-1 [&_ol]:list-decimal [&_ol]:ps-5 [&_p:not(:last-child)]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ps-5"
                                 dir="auto">
                                 {!! Illuminate\Support\Str::markdown($chatMessage->content, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
                             </div>

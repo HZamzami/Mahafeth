@@ -6,7 +6,10 @@
 {{-- Slot order by frequency of use: the daily overview and positions
      first, the AI advisor in the signature center spot, discovery next,
      and everything occasional stashed under More. --}}
-<nav class="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden print:hidden dark:border-zinc-700 dark:bg-zinc-900">
+{{-- transform-gpu + will-change pin the nav to its own compositing layer:
+     without them, WebKit (installed PWA) sometimes drops the fixed layer
+     during large repaints and page text paints over the bar. --}}
+<nav class="fixed inset-x-0 bottom-0 z-40 transform-gpu border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] will-change-transform lg:hidden print:hidden dark:border-zinc-700 dark:bg-zinc-900">
     <div class="grid grid-cols-5">
         <a href="{{ route('dashboard') }}" wire:navigate.hover
             x-data x-on:click="window.haptic?.(5)"
