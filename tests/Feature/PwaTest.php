@@ -43,7 +43,7 @@ class PwaTest extends TestCase
 
         $this->assertSame('Mahafeth محافظ', $manifest['name']);
         $this->assertSame('standalone', $manifest['display']);
-        $this->assertSame('/', $manifest['start_url']);
+        $this->assertSame('/dashboard', $manifest['start_url']);
 
         foreach ($manifest['icons'] as $icon) {
             $this->assertFileExists(public_path($icon['src']));

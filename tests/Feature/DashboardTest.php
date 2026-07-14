@@ -26,6 +26,20 @@ class DashboardTest extends TestCase
         $response->assertRedirect('/login');
     }
 
+    public function test_the_home_page_redirects_authenticated_users_to_the_dashboard(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->get('/')->assertRedirect(route('dashboard'));
+    }
+
+    public function test_the_home_page_shows_the_welcome_page_to_guests(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee(__('From scattered portfolios to one investment vision'));
+    }
+
     public function test_authenticated_users_can_visit_the_dashboard(): void
     {
         $user = User::factory()->create();

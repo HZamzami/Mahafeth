@@ -2,7 +2,7 @@
     "name": "Mahafeth محافظ",
     "short_name": "Mahafeth",
     "description": "From scattered portfolios to one investment vision",
-    "start_url": "/",
+    "start_url": "/dashboard",
     "scope": "/",
     "display": "standalone",
     "background_color": "#141b28",
