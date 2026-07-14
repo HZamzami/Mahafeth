@@ -208,6 +208,8 @@ new class extends Component {
                     </div>
                 </div>
             </div>
+
+            <livewire:settings.alert-rules />
         </div>
 
         <livewire:settings.delete-user-form />

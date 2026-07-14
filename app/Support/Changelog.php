@@ -23,6 +23,16 @@ class Changelog
                 'date' => '2026-07-14',
                 'items' => [
                     [
+                        'type' => 'new',
+                        'title' => __('Custom alerts'),
+                        'body' => __('Set your own limits on volatility, concentration, drawdown, or the health score from your profile settings — Mahafeth watches them with every analysis and notifies you the moment one is crossed.'),
+                    ],
+                    [
+                        'type' => 'improved',
+                        'title' => __('The advisor writes its answers live'),
+                        'body' => __('Mahafeth AI now streams its reply into the chat as it thinks, so you start reading the answer within seconds instead of waiting for the whole response.'),
+                    ],
+                    [
                         'type' => 'improved',
                         'title' => __('A snappier AI advisor'),
                         'body' => __('Your question now appears in the chat instantly and the answer is composed in the background — keep browsing while Mahafeth AI thinks, and retry with one tap if it fails.'),

@@ -35,7 +35,7 @@ class AnalyzePortfolioJob implements ShouldBeUnique, ShouldQueue
     public function handle(PortfolioAnalyzer $analyzer, AlertEvaluator $alertEvaluator): void
     {
         $previous = $this->user->latestSnapshot();
-        $previousAlerts = $alertEvaluator->evaluate($previous?->metrics, $this->user->riskProfile);
+        $previousAlerts = $alertEvaluator->forUser($this->user, $previous);
 
         $snapshot = $analyzer->analyze($this->user);
 
@@ -43,10 +43,12 @@ class AnalyzePortfolioJob implements ShouldBeUnique, ShouldQueue
             return;
         }
 
-        $alerts = $alertEvaluator->evaluate($snapshot->metrics, $this->user->riskProfile);
+        // Diff on identity, not key: custom rules share sentence templates,
+        // so two different rules must still count as distinct alerts.
+        $alerts = $alertEvaluator->forUser($this->user, $snapshot);
         $newAlerts = array_values(array_filter(
             $alerts,
-            fn (array $alert): bool => ! in_array($alert['key'], array_column($previousAlerts, 'key'), true),
+            fn (array $alert): bool => ! in_array($alert['identity'], array_column($previousAlerts, 'identity'), true),
         ));
 
         // The activity feed logs every raised alert and score drop, even

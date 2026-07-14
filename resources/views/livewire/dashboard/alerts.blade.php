@@ -52,10 +52,7 @@ new class extends Component {
     {
         $user = Auth::user();
 
-        return app(AlertEvaluator::class)->evaluate(
-            $user->latestSnapshot()?->metrics,
-            $user->riskProfile,
-        );
+        return app(AlertEvaluator::class)->forUser($user, $user->latestSnapshot());
     }
 }; ?>
 
