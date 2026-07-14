@@ -10,3 +10,7 @@ Schedule::command('mahafeth:refresh-portfolios')->dailyAt('04:00');
 Schedule::command('mahafeth:refresh-news')->everySixHours();
 Schedule::command('mahafeth:refresh-filings')->dailyAt('05:00');
 Schedule::command('queue:prune-failed --hours=168')->weekly();
+
+// Sunday opens the Saudi trading week; the digest lands after that
+// morning's refresh has produced a fresh snapshot.
+Schedule::command('mahafeth:send-weekly-digest')->weeklyOn(0, '05:10');

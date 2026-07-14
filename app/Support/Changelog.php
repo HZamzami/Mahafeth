@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
+                        'title' => __('Your week, summarized'),
+                        'body' => __('Every Sunday morning Mahafeth sends a short week-in-review: how your health score and portfolio value moved, and which alerts are active. Off by turning off alert notifications in your profile.'),
+                    ],
+                    [
+                        'type' => 'new',
                         'title' => __('See where you are signed in'),
                         'body' => __('A new Sessions section in settings lists every device signed in to your account, and one button signs out everywhere else.'),
                     ],
