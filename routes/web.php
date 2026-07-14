@@ -17,7 +17,11 @@ Route::post('demo', function (ProvisionDemoAccount $provision) {
     session()->regenerate();
 
     return redirect()->route('dashboard');
-})->middleware(['guest', 'throttle:5,60'])->name('demo.start');
+})->middleware(['guest', 'throttle:20,10'])->name('demo.start');
+
+// Refreshing the browser after an error page re-requests /demo as GET;
+// land visitors back on the welcome page instead of a 405.
+Route::get('demo', fn () => redirect()->route('home'));
 
 Route::get('locale/{locale}', function (string $locale) {
     abort_unless(in_array($locale, SetLocale::SUPPORTED_LOCALES, true), 404);

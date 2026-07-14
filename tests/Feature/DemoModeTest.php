@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Actions\ProvisionDemoAccount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class DemoModeTest extends TestCase
@@ -63,12 +64,34 @@ class DemoModeTest extends TestCase
 
     public function test_the_demo_route_is_rate_limited(): void
     {
-        for ($i = 0; $i < 5; $i++) {
+        // The throttle is under test, not provisioning: stub the action so
+        // 20 requests do not build 20 real portfolios.
+        $this->mock(ProvisionDemoAccount::class)
+            ->shouldReceive('handle')
+            ->andReturnUsing(fn () => User::factory()->create());
+
+        for ($i = 0; $i < 20; $i++) {
             $this->post(route('demo.start'));
             auth()->logout();
         }
 
         $this->post(route('demo.start'))->assertTooManyRequests();
+    }
+
+    public function test_getting_the_demo_url_redirects_home(): void
+    {
+        $this->get('/demo')->assertRedirect(route('home'));
+    }
+
+    public function test_provisioning_never_fetches_live_prices(): void
+    {
+        config(['services.twelvedata.key' => 'real-key-would-be-here']);
+        Http::fake();
+
+        $this->post(route('demo.start'))->assertRedirect(route('dashboard'));
+
+        $this->assertNotNull(auth()->user()->latestSnapshot());
+        Http::assertNothingSent();
     }
 
     public function test_the_purge_command_removes_only_stale_demo_accounts(): void

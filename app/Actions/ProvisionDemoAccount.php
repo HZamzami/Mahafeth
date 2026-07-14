@@ -8,6 +8,7 @@ use App\Enums\TimeHorizon;
 use App\Models\Institution;
 use App\Models\User;
 use App\Services\Analytics\PortfolioAnalyzer;
+use App\Services\Prices\SimulatedPriceProvider;
 use Database\Seeders\DemoPortfolioSeeder;
 use Database\Seeders\InstitutionSeeder;
 use Illuminate\Support\Str;
@@ -25,11 +26,24 @@ class ProvisionDemoAccount
     public const EMAIL_DOMAIN = 'demo.mahafeth.test';
 
     public function __construct(
-        private SyncConnection $syncConnection,
         private PortfolioAnalyzer $analyzer,
     ) {}
 
     public function handle(): User
+    {
+        // Demo holdings are synthetic, so live price fetching (which sleeps
+        // between provider requests and would hold this request open for a
+        // minute or more on production) adds nothing: build this run's sync
+        // chain on the simulated provider explicitly, leaving the global
+        // env-driven binding untouched.
+        $syncConnection = app()->make(SyncConnection::class, [
+            'syncPrices' => new SyncPrices(app(SimulatedPriceProvider::class)),
+        ]);
+
+        return $this->provision($syncConnection);
+    }
+
+    private function provision(SyncConnection $syncConnection): User
     {
         // Institutions are seeded in dev but not guaranteed in prod; the
         // seeder is idempotent updateOrCreate.
@@ -56,7 +70,7 @@ class ProvisionDemoAccount
                 'expires_at' => now()->addDays((int) config('mahafeth.consent_ttl_days')),
             ]);
 
-            $this->syncConnection->handle($connection);
+            $syncConnection->handle($connection);
         }
 
         $user->riskProfile()->create([
