@@ -70,7 +70,7 @@ class AiAdvisorPageTest extends TestCase
 
         Volt::test('advisor.index')
             ->assertSee(__('Executive Summary'))
-            ->assertSee(__('View the action plan'))
+            ->assertSee(__('Insight & action plan'))
             ->assertSee(__('Discuss this'))
             ->assertSee(__('Show the math'))
             ->assertSee(__('Start with one of these, or ask your own question.'))

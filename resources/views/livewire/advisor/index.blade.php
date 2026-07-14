@@ -265,32 +265,38 @@ new class extends Component {
             </flux:callout>
         @endif
 
+        {{-- Collapsed by default: people open this page for the chat, so
+             the insight is one slim row until asked for. --}}
         @if ($insight !== null)
-            <div class="card space-y-4 p-5">
-                @if ($isStale && ! $isGenerating)
-                    <flux:callout color="amber" icon="exclamation-triangle" inline>
-                        <flux:callout.text>
-                            {{ __('Your analysis has changed since this was generated.') }}
-                            <flux:link class="cursor-pointer" wire:click="generate">{{ __('Regenerate') }}</flux:link>
-                        </flux:callout.text>
-                    </flux:callout>
-                @endif
-
-                <flux:callout color="blue" icon="light-bulb">
-                    <flux:callout.heading>{{ __('Executive Summary') }}</flux:callout.heading>
-                    <flux:callout.text>{{ $insight->summary }}</flux:callout.text>
-                </flux:callout>
-
+            <div class="card px-5 py-1">
                 <flux:accordion transition>
                     <flux:accordion.item>
                         <flux:accordion.heading>
                             <span class="flex items-center gap-2 text-teal-700 dark:text-teal-300">
-                                {{ __('View the action plan') }}
+                                <flux:icon.light-bulb class="size-4 shrink-0" />
+                                {{ __('Insight & action plan') }}
                                 <flux:badge size="sm">{{ count($insight->recommendations) }}</flux:badge>
+                                @if ($isStale && ! $isGenerating)
+                                    <flux:badge size="sm" color="amber">{{ __('Outdated') }}</flux:badge>
+                                @endif
                             </span>
                         </flux:accordion.heading>
 
                         <flux:accordion.content>
+                    @if ($isStale && ! $isGenerating)
+                        <flux:callout class="mt-3" color="amber" icon="exclamation-triangle" inline>
+                            <flux:callout.text>
+                                {{ __('Your analysis has changed since this was generated.') }}
+                                <flux:link class="cursor-pointer" wire:click="generate">{{ __('Regenerate') }}</flux:link>
+                            </flux:callout.text>
+                        </flux:callout>
+                    @endif
+
+                    <flux:callout class="mt-3" color="blue" icon="light-bulb">
+                        <flux:callout.heading>{{ __('Executive Summary') }}</flux:callout.heading>
+                        <flux:callout.text>{{ $insight->summary }}</flux:callout.text>
+                    </flux:callout>
+
                     <div class="mt-3 space-y-3">
                         @foreach ($insight->recommendations as $index => $recommendation)
                         <div
