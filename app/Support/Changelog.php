@@ -23,6 +23,11 @@ class Changelog
                 'date' => '2026-07-14',
                 'items' => [
                     [
+                        'type' => 'new',
+                        'title' => __('Start your profile from a preset'),
+                        'body' => __('Pick Conservative, Balanced, or Growth and the investor questionnaire fills itself, leaving you one tap from your Investment Policy Statement. Every answer stays editable.'),
+                    ],
+                    [
                         'type' => 'improved',
                         'title' => __('Analytics, ready when you are'),
                         'body' => __('The analytics page now remembers its heavy calculations between visits, so charts appear instantly and refresh automatically after every new sync or analysis.'),

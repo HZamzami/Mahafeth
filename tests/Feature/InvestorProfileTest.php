@@ -74,6 +74,56 @@ class InvestorProfileTest extends TestCase
         $this->assertSame('monthly', $profile->constraints['contribution_frequency']);
     }
 
+    public function test_a_preset_fills_every_answer_and_jumps_to_the_final_step(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $component = Volt::test('investor-profile.index')
+            ->assertSee(__('In a hurry? Start from a preset'))
+            ->call('applyPreset', 'balanced')
+            ->assertSet('step', 10);
+
+        $this->assertNotContains(null, $component->get('answers'));
+
+        $component->call('submit')->assertRedirect(route('dashboard'));
+
+        $this->assertSame(RiskTolerance::Balanced, $user->riskProfile()->first()->risk_tolerance);
+    }
+
+    public function test_each_preset_lands_on_its_tolerance_band(): void
+    {
+        foreach (['conservative' => RiskTolerance::Conservative, 'growth' => RiskTolerance::Growth] as $preset => $tolerance) {
+            $user = User::factory()->create();
+            $this->actingAs($user);
+
+            Volt::test('investor-profile.index')
+                ->call('applyPreset', $preset)
+                ->call('submit');
+
+            $this->assertSame($tolerance, $user->riskProfile()->first()->risk_tolerance, "preset {$preset}");
+        }
+    }
+
+    public function test_an_unknown_preset_changes_nothing(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        Volt::test('investor-profile.index')
+            ->call('applyPreset', 'yolo')
+            ->assertSet('step', 1);
+    }
+
+    public function test_presets_are_hidden_when_a_profile_already_exists(): void
+    {
+        $user = User::factory()->create();
+        RiskProfile::factory()->balanced()->create(['user_id' => $user->id]);
+        $this->actingAs($user);
+
+        Volt::test('investor-profile.index')
+            ->assertDontSee(__('In a hurry? Start from a preset'));
+    }
+
     public function test_declining_the_shariah_requirement_persists_an_unconstrained_profile(): void
     {
         $user = User::factory()->create();

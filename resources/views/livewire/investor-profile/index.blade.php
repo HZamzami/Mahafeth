@@ -137,6 +137,35 @@ new class extends Component {
         ];
     }
 
+    /**
+     * Preset answer templates that land on the named tolerance band via
+     * the same questionnaire scoring, so a preset is just a fast path
+     * through the questions: every answer stays editable via Back, and
+     * saving goes through the normal submit().
+     *
+     * @return array<string, array<string, int>>
+     */
+    public static function presets(): array
+    {
+        return [
+            'conservative' => ['age' => 3, 'horizon' => 2, 'goal' => 1, 'drop_reaction' => 2, 'experience' => 2, 'liquidity' => 2, 'target_return' => 1, 'contributions' => 1, 'base_currency' => 1, 'shariah' => 2],
+            'balanced' => ['age' => 2, 'horizon' => 3, 'goal' => 3, 'drop_reaction' => 3, 'experience' => 2, 'liquidity' => 3, 'target_return' => 2, 'contributions' => 1, 'base_currency' => 1, 'shariah' => 2],
+            'growth' => ['age' => 2, 'horizon' => 4, 'goal' => 4, 'drop_reaction' => 3, 'experience' => 3, 'liquidity' => 3, 'target_return' => 3, 'contributions' => 1, 'base_currency' => 1, 'shariah' => 2],
+        ];
+    }
+
+    public function applyPreset(string $preset): void
+    {
+        $template = self::presets()[$preset] ?? null;
+
+        if ($template === null) {
+            return;
+        }
+
+        $this->answers = $template;
+        $this->step = count($this->questions());
+    }
+
     public function next(): void
     {
         $key = array_keys($this->questions())[$this->step - 1];
@@ -227,6 +256,28 @@ new class extends Component {
 
     @if (auth()->user()->riskProfile !== null)
         <livewire:investor-profile.goals />
+    @endif
+
+    @if (auth()->user()->riskProfile === null && $step === 1)
+        <div>
+            <flux:text class="text-xs font-medium uppercase tracking-widest">{{ __('In a hurry? Start from a preset') }}</flux:text>
+            <div class="mt-3 grid gap-3 sm:grid-cols-3">
+                @foreach ([
+                    ['key' => 'conservative', 'icon' => 'shield-check', 'title' => __('Conservative'), 'body' => __('Protect capital first. Around 6% a year with small swings.')],
+                    ['key' => 'balanced', 'icon' => 'scale', 'title' => __('Balanced'), 'body' => __('Steady long-term growth. Around 8% a year with moderate swings.')],
+                    ['key' => 'growth', 'icon' => 'arrow-trending-up', 'title' => __('Growth'), 'body' => __('Maximize returns. Around 10% a year, accepting bigger drops.')],
+                ] as $preset)
+                    <button type="button" wire:click="applyPreset('{{ $preset['key'] }}')"
+                        class="card p-4 text-start transition-colors hover:border-teal-500/60 dark:hover:border-teal-400/60">
+                        <flux:icon :name="$preset['icon']" class="mb-2 size-5 text-teal-700 dark:text-teal-400" />
+                        <flux:heading size="sm">{{ $preset['title'] }}</flux:heading>
+                        <flux:text class="mt-1 text-sm">{{ $preset['body'] }}</flux:text>
+                    </button>
+                @endforeach
+            </div>
+            <flux:text class="mt-2 text-xs">
+                {{ __('A preset fills every answer and jumps to the final step. Use Back to fine-tune anything before saving.') }}</flux:text>
+        </div>
     @endif
 
     <div class="card p-6">
