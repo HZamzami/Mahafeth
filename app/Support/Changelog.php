@@ -23,6 +23,11 @@ class Changelog
                 'date' => '2026-07-14',
                 'items' => [
                     [
+                        'type' => 'improved',
+                        'title' => __('You stay signed in'),
+                        'body' => __('Mahafeth now keeps you signed in on your device, so opening the app takes you straight to your portfolio instead of the login screen.'),
+                    ],
+                    [
                         'type' => 'new',
                         'title' => __('Custom alerts'),
                         'body' => __('Set your own limits on volatility, concentration, drawdown, or the health score from your profile settings — Mahafeth watches them with every analysis and notifies you the moment one is crossed.'),

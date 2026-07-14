@@ -1071,5 +1071,7 @@
     "Native-app polish": "صقل تجربة التطبيق المثبت",
     "On installed phones the bottom bar now keeps proper spacing from the page, and switching pages visibly acknowledges every tap — the pressed tab tints, the page dims, and a progress strip shows below the status bar.": "على الهواتف المثبت عليها التطبيق يحافظ الشريط السفلي الآن على مسافة مناسبة من الصفحة، والتنقل بين الصفحات يستجيب لكل لمسة بوضوح: التبويب المضغوط يتلون، والصفحة تخفت، ويظهر شريط تقدم أسفل شريط الحالة.",
     "Stability sweep across the app": "جولة تحسين للاستقرار في كامل التطبيق",
-    "Greetings now follow Saudi time, a delisted holding can no longer break your portfolio analysis, and every page was verified against empty accounts and Arabic.": "التحية أصبحت تتبع توقيت السعودية، ولم يعد بإمكان سهم مشطوب أن يعطل تحليل محفظتك، وتم التحقق من كل صفحة مع الحسابات الفارغة واللغة العربية."
+    "Greetings now follow Saudi time, a delisted holding can no longer break your portfolio analysis, and every page was verified against empty accounts and Arabic.": "التحية أصبحت تتبع توقيت السعودية، ولم يعد بإمكان سهم مشطوب أن يعطل تحليل محفظتك، وتم التحقق من كل صفحة مع الحسابات الفارغة واللغة العربية.",
+    "You stay signed in": "تبقى مسجّل الدخول",
+    "Mahafeth now keeps you signed in on your device, so opening the app takes you straight to your portfolio instead of the login screen.": "محافظ يبقيك الآن مسجّل الدخول على جهازك، فيأخذك فتح التطبيق مباشرة إلى محفظتك بدلًا من شاشة تسجيل الدخول."
 }

@@ -34,6 +34,19 @@ class AuthenticationTest extends TestCase
         $this->assertAuthenticated();
     }
 
+    public function test_logging_in_always_remembers_the_user(): void
+    {
+        $user = User::factory()->create();
+
+        LivewireVolt::test('auth.login')
+            ->set('email', $user->email)
+            ->set('password', 'password')
+            ->call('login')
+            ->assertHasNoErrors();
+
+        $this->assertNotNull($user->fresh()->remember_token);
+    }
+
     public function test_users_can_not_authenticate_with_invalid_password(): void
     {
         $user = User::factory()->create();
