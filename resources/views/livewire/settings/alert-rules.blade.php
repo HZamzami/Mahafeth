@@ -80,6 +80,18 @@ new class extends Component {
         return [
             'alertRules' => Auth::user()->alertRules()->oldest('id')->get(),
             'metrics' => AlertRule::METRICS,
+            // Translated threshold-field copy per metric, handed to Alpine so
+            // the label and hint swap client-side as the metric changes.
+            'metricMeta' => collect(AlertRule::METRICS)->mapWithKeys(fn (array $definition, string $key): array => [
+                $key => [
+                    'label' => ($definition['direction'] ?? 'above') === 'below'
+                        ? __('Alert when it falls below')
+                        : __('Alert when it rises above'),
+                    'description' => ($definition['unit'] ?? 'percent') === 'percent'
+                        ? __('As a percentage, e.g. 20 for 20%.')
+                        : __('Score points, 1–100.'),
+                ],
+            ])->all(),
             'formatted' => fn (AlertRule $rule): string => AlertRule::METRICS[$rule->metric]['unit'] === 'percent'
                 ? Number::percentage($rule->threshold * 100, 1)
                 : __(':points points', ['points' => (int) round($rule->threshold)]),
@@ -125,15 +137,21 @@ new class extends Component {
             <flux:heading size="lg">{{ $editingId === null ? __('Add alert rule') : __('Edit alert rule') }}
             </flux:heading>
 
-            <flux:select wire:model.live="metric" :label="__('Watch this metric')">
-                @foreach ($metrics as $key => $definition)
-                    <flux:select.option value="{{ $key }}">{{ __($definition['label']) }}</flux:select.option>
-                @endforeach
-            </flux:select>
+            <div class="space-y-6"
+                x-data="{ meta: @js($metricMeta), get current() { return this.meta[$wire.metric] ?? Object.values(this.meta)[0]; } }">
+                <flux:select wire:model="metric" :label="__('Watch this metric')">
+                    @foreach ($metrics as $key => $definition)
+                        <flux:select.option value="{{ $key }}">{{ __($definition['label']) }}</flux:select.option>
+                    @endforeach
+                </flux:select>
 
-            <flux:input wire:model="threshold" type="number" min="1" max="100" step="0.5"
-                :label="($metrics[$metric]['direction'] ?? 'above') === 'below' ? __('Alert when it falls below') : __('Alert when it rises above')"
-                :description="($metrics[$metric]['unit'] ?? 'percent') === 'percent' ? __('As a percentage, e.g. 20 for 20%.') : __('Score points, 1–100.')" />
+                <flux:field>
+                    <flux:label x-text="current.label"></flux:label>
+                    <flux:input wire:model="threshold" type="number" min="1" max="100" step="0.5" />
+                    <flux:description x-text="current.description"></flux:description>
+                    <flux:error name="threshold" />
+                </flux:field>
+            </div>
 
             <div class="flex gap-2">
                 <flux:spacer />
