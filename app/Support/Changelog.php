@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
+                        'title' => __('Your money or the market\'s?'),
+                        'body' => __('The performance chart now separates what you deposited from what the market earned, so a growing balance no longer hides a flat return behind fresh contributions.'),
+                    ],
+                    [
+                        'type' => 'new',
                         'title' => __('Zakat that knows your hawl'),
                         'body' => __('Set your zakat anniversary as a Hijri date and Mahafeth counts down to it, reminds you a week ahead with your estimated amount, and lets you mark it paid for the cycle.'),
                     ],

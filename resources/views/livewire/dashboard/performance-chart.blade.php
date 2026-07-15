@@ -1,8 +1,10 @@
 <?php
 
+use App\Services\Analytics\NetFlowCalculator;
 use App\Services\Analytics\PortfolioDataAssembler;
 use App\Services\Analytics\ReturnCalculator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Number;
 use Livewire\Volt\Component;
 
 new class extends Component {
@@ -32,6 +34,33 @@ new class extends Component {
         return [
             'points' => $this->chartPoints($values, $benchmarks),
             'benchmarkSymbols' => array_keys($benchmarks),
+            'growth' => $this->growthSplit($values, $from),
+        ];
+    }
+
+    /**
+     * Splits the window's value change into what the user put in versus
+     * what the market did. Deposits and withdrawals are external flows;
+     * everything else is growth.
+     *
+     * @param  array<string, float>  $values  date => portfolio value
+     * @return array{net_deposits: float, market_growth: float, since: string}|null
+     */
+    private function growthSplit(array $values, \Carbon\CarbonInterface $from): ?array
+    {
+        $start = reset($values);
+        $end = end($values);
+
+        if ($start === false || count($values) < 2) {
+            return null;
+        }
+
+        $flows = app(NetFlowCalculator::class)->flows(Auth::user(), $from);
+
+        return [
+            'net_deposits' => $flows['net'],
+            'market_growth' => round($end - $start - $flows['net'], 2),
+            'since' => array_key_first($values),
         ];
     }
 
@@ -154,6 +183,15 @@ new class extends Component {
         <flux:text class="mt-1.5 text-center text-xs">
             {{ __('Growth in % since the start of the window.') }}
         </flux:text>
+        @if ($growth !== null)
+            <flux:text class="mt-1 text-center text-xs">
+                {{ __('Since :date: you added :deposits, the market added :growth.', [
+                    'date' => \Illuminate\Support\Carbon::parse($growth['since'])->translatedFormat('M Y'),
+                    'deposits' => "\u{20C1} ".Number::format($growth['net_deposits'], 0),
+                    'growth' => "\u{20C1} ".Number::format($growth['market_growth'], 0),
+                ]) }}
+            </flux:text>
+        @endif
     @else
         <div class="flex aspect-3/1 flex-col items-center justify-center gap-3">
             <flux:text class="text-sm">{{ __('Connect your accounts to see your portfolio performance.') }}</flux:text>

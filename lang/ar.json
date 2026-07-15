@@ -1219,5 +1219,8 @@
     "Record the zakat you paid for this hawl. The card will show it as settled until your next hawl completes.": "سجّل الزكاة التي دفعتها لهذا الحول. ستعرضها البطاقة مسدّدة حتى يكتمل حولك القادم.",
     "Amount paid (SAR)": "المبلغ المدفوع (ريال)",
     "Zakat that knows your hawl": "زكاة تعرف حولك",
-    "Set your zakat anniversary as a Hijri date and Mahafeth counts down to it, reminds you a week ahead with your estimated amount, and lets you mark it paid for the cycle.": "حدد ذكرى زكاتك بالتاريخ الهجري وسيعد محافظ الأيام تنازليا حتى موعدها، ويذكّرك قبلها بأسبوع مع مبلغك التقديري، ويتيح لك تسجيلها مدفوعة لهذه الدورة."
+    "Set your zakat anniversary as a Hijri date and Mahafeth counts down to it, reminds you a week ahead with your estimated amount, and lets you mark it paid for the cycle.": "حدد ذكرى زكاتك بالتاريخ الهجري وسيعد محافظ الأيام تنازليا حتى موعدها، ويذكّرك قبلها بأسبوع مع مبلغك التقديري، ويتيح لك تسجيلها مدفوعة لهذه الدورة.",
+    "Since :date: you added :deposits, the market added :growth.": "منذ :date: أضفت :deposits، وأضاف السوق :growth.",
+    "Your money or the market's?": "أموالك أم نمو السوق؟",
+    "The performance chart now separates what you deposited from what the market earned, so a growing balance no longer hides a flat return behind fresh contributions.": "يفصل مخطط الأداء الآن بين ما أودعته وما حققه السوق، فلا يعود الرصيد المتنامي يخفي عائدا ثابتا وراء إيداعات جديدة."
 }
