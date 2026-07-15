@@ -24,6 +24,16 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'improved',
+                        'title' => __('A livelier app, the same focus'),
+                        'body' => __('The welcome page\'s polish now runs through the whole app: soft background accents behind every page, key numbers that count up as they appear, content that rises in as you arrive, and warmer invitations where a page is still empty.'),
+                    ],
+                    [
+                        'type' => 'fixed',
+                        'title' => __('The demo now shows its progress'),
+                        'body' => __('Tapping Try the demo the instant the page loads used to jump straight into provisioning with no feedback. The building overlay now appears no matter how fast you click.'),
+                    ],
+                    [
+                        'type' => 'improved',
                         'title' => __('Tidier controls everywhere'),
                         'body' => __('Buttons now match the height of the fields they sit beside — like the zakat hawl date row — and the appearance switcher fits phone screens instead of overflowing.'),
                     ],

@@ -450,6 +450,19 @@ body.offline .offline-banner {
     @apply rounded-xl border border-neutral-200/80 bg-white shadow-card print:shadow-none dark:border-neutral-700/60 dark:bg-zinc-900 dark:shadow-none;
 }
 
+/* Ambient background accent adapted from the welcome hero blobs; pair
+   with a color/size and keep it behind content on a `relative` parent. */
+@utility glow {
+    @apply pointer-events-none absolute rounded-full blur-3xl print:hidden;
+}
+
+/* Gradient-washed surface for empty states and onboarding moments,
+   adapted from the welcome CTA. Not `card` on purpose: these are static
+   invitations, so the pointer hover-lift would be noise. */
+@utility card-cta {
+    @apply rounded-xl border border-teal-500/20 bg-gradient-to-br from-teal-500/10 via-white to-purple-500/10 shadow-card print:bg-white print:shadow-none dark:via-zinc-900 dark:shadow-none;
+}
+
 @layer base {
 
     *,

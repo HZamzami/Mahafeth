@@ -28,10 +28,11 @@ new class extends Component {
     }
 }; ?>
 
-<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
+<div class="stagger-children relative mx-auto flex w-full max-w-5xl flex-col gap-6">
+    @include('partials.page-glow')
     <div>
         <flux:heading size="xl">{{ __('Activity') }}</flux:heading>
-        <flux:text class="mt-1">
+        <flux:text class="mt-1 text-balance">
             {{ __('Everything Mahafeth noticed, changed, and secured — in one trail.') }}
         </flux:text>
     </div>

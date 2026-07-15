@@ -132,7 +132,7 @@ new class extends Component {
         <div class="flex items-start justify-between print:hidden">
             <div>
                 <flux:heading size="xl">{{ __('Portfolio Report') }}</flux:heading>
-                <flux:text class="mt-1">{{ __('A snapshot of your unified portfolio, ready to print or save as PDF.') }}
+                <flux:text class="mt-1 text-balance">{{ __('A snapshot of your unified portfolio, ready to print or save as PDF.') }}
                 </flux:text>
             </div>
             <flux:button variant="primary" icon="printer" onclick="window.print()">

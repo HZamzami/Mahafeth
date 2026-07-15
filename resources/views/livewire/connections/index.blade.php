@@ -114,10 +114,11 @@ new class extends Component {
     }
 }; ?>
 
-<div class="stagger-children mx-auto flex w-full max-w-3xl flex-col gap-6">
+<div class="stagger-children relative mx-auto flex w-full max-w-3xl flex-col gap-6">
+    @include('partials.page-glow')
     <div>
         <flux:heading size="xl">{{ __('Connected Sources') }}</flux:heading>
-        <flux:text class="mt-1">
+        <flux:text class="mt-1 text-balance">
             {{ __('Securely link your investment accounts via Open Banking to build your unified portfolio.') }}
         </flux:text>
     </div>

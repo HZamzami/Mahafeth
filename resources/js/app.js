@@ -234,8 +234,10 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
-    window.Alpine.data('countUp', (target, format = false) => ({
-        shown: format ? new Intl.NumberFormat(document.documentElement.lang).format(target) : target,
+    window.Alpine.data('countUp', (target, format = false, decimals = 0) => ({
+        // toFixed mirrors PHP number_format so the server-rendered value and
+        // the animated one are glyph-identical in both locales.
+        shown: format ? new Intl.NumberFormat(document.documentElement.lang).format(target) : target.toFixed(decimals),
         start() {
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 return;
@@ -245,17 +247,20 @@ document.addEventListener('alpine:init', () => {
             const duration = 900;
             const begin = performance.now();
 
+            const render = (value) => {
+                this.shown = formatter ? formatter.format(Math.round(value)) : value.toFixed(decimals);
+            };
+
             const tick = (now) => {
                 const progress = Math.min((now - begin) / duration, 1);
-                const value = Math.round(target * (1 - Math.pow(1 - progress, 3)));
-                this.shown = formatter ? formatter.format(value) : value;
+                render(target * (1 - Math.pow(1 - progress, 3)));
 
                 if (progress < 1) {
                     requestAnimationFrame(tick);
                 }
             };
 
-            this.shown = formatter ? formatter.format(0) : 0;
+            render(0);
             requestAnimationFrame(tick);
         },
     }));

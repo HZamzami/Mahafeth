@@ -230,12 +230,13 @@ new class extends Component {
      the screen like a native chat; 12rem ≈ header + main padding + bottom
      nav, and the safe-area insets cover the PWA's status bar and home
      indicator. --}}
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:h-[calc(100dvh-12rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] max-lg:overflow-y-auto"
+<div class="stagger-children relative mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:h-[calc(100dvh-12rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] max-lg:overflow-y-auto"
     @if ($isAwaitingReply) wire:poll.1s @elseif ($isGenerating) wire:poll.2s @endif>
+    @include('partials.page-glow')
     <div class="flex items-start justify-between gap-4">
         <div>
             <flux:heading size="xl">{{ __('AI Advisor') }}</flux:heading>
-            <flux:text class="mt-1">
+            <flux:text class="mt-1 text-balance">
                 {{ __('Ask anything about your unified portfolio — answers are grounded in your own numbers.') }}
             </flux:text>
         </div>
@@ -247,7 +248,7 @@ new class extends Component {
     </div>
 
     @if (! $hasSnapshot)
-        <div class="flex flex-col items-center gap-4 card p-12 text-center">
+        <div class="flex flex-col items-center gap-4 card-cta p-12 text-center">
             <flux:text class="max-w-64 text-sm">
                 {{ __('Connect your accounts and Mahafeth AI will explain your portfolio in plain language.') }}
             </flux:text>
@@ -342,14 +343,14 @@ new class extends Component {
                 </flux:accordion>
             </div>
         @elseif ($isGenerating)
-            <div class="flex flex-col items-center gap-3 card p-10 text-center">
+            <div class="flex flex-col items-center gap-3 card-cta p-10 text-center">
                 <flux:icon.loading class="size-6 text-teal-700 dark:text-teal-300" />
                 <flux:text class="text-sm">{{ __('Analyzing your portfolio…') }}</flux:text>
                 <flux:text class="max-w-56 text-xs">
                     {{ __('This runs in the background — feel free to keep browsing.') }}</flux:text>
             </div>
         @else
-            <div class="flex flex-col items-center gap-4 card p-10 text-center">
+            <div class="flex flex-col items-center gap-4 card-cta p-10 text-center">
                 <flux:text class="max-w-72 text-sm">
                     {{ __('Generate insights first to start a conversation grounded in your portfolio.') }}
                 </flux:text>

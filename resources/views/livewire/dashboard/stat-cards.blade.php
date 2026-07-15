@@ -38,7 +38,13 @@ new class extends Component {
             <flux:heading
                 class="{{ ($expectedReturn ?? 0) >= 0 ? '!text-emerald-600 dark:!text-emerald-400' : '!text-red-600 dark:!text-red-400' }}"
                 size="xl" dir="ltr">
-                {{ $expectedReturn !== null ? Number::percentage($expectedReturn * 100, 1) : '—' }}</flux:heading>
+                @if ($expectedReturn !== null)
+                    <span x-data="countUp({{ round($expectedReturn * 100, 1) }}, false, 1)" x-intersect.once="start()"
+                        x-text="shown">{{ number_format($expectedReturn * 100, 1) }}</span>%
+                @else
+                    —
+                @endif
+            </flux:heading>
         </div>
         <flux:text
             class="mt-2 flex items-center gap-1 text-xs {{ ($expectedReturn ?? 0) >= 0 ? '!text-emerald-600 dark:!text-emerald-400' : '!text-red-600 dark:!text-red-400' }}">
@@ -62,7 +68,13 @@ new class extends Component {
                 </flux:tooltip>
             </flux:text>
             <flux:heading class="!text-amber-600 dark:!text-amber-400" size="xl" dir="ltr">
-                {{ $volatility !== null ? Number::percentage($volatility * 100, 1) : '—' }}</flux:heading>
+                @if ($volatility !== null)
+                    <span x-data="countUp({{ round($volatility * 100, 1) }}, false, 1)" x-intersect.once="start()"
+                        x-text="shown">{{ number_format($volatility * 100, 1) }}</span>%
+                @else
+                    —
+                @endif
+            </flux:heading>
         </div>
         <div class="mt-4 h-1 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
             <div class="bar-fill h-full bg-amber-500 dark:bg-amber-400" style="width: 0%"

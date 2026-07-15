@@ -244,17 +244,18 @@ new class extends Component {
     }
 }; ?>
 
-<div class="stagger-children mx-auto flex w-full max-w-5xl flex-col gap-6">
+<div class="stagger-children relative mx-auto flex w-full max-w-5xl flex-col gap-6">
+    @include('partials.page-glow')
     <div>
         <flux:heading size="xl">{{ __('Portfolio Analytics') }}</flux:heading>
-        <flux:text class="mt-1">
+        <flux:text class="mt-1 text-balance">
             {{ __('How your assets move together across all connected accounts.') }}
         </flux:text>
     </div>
 
     @if ($symbols === [])
         <div
-            class="flex flex-col items-center justify-center gap-4 card p-16">
+            class="flex flex-col items-center justify-center gap-4 card-cta p-16">
             <flux:text>{{ __('Connect at least two holdings to see correlation analytics.') }}</flux:text>
             <flux:button variant="primary" :href="route('connections')" wire:navigate>
                 {{ __('Connect accounts') }}</flux:button>
@@ -473,7 +474,7 @@ new class extends Component {
                 @endif
             </div>
         @else
-            <div class="flex flex-col items-center gap-2 card p-10 text-center">
+            <div class="flex flex-col items-center gap-2 card-cta p-10 text-center">
                 <flux:icon.check-badge class="size-6 text-emerald-600 dark:text-emerald-400" />
                 <flux:text class="text-sm">
                     {{ __('Your portfolio already sits close to the optimal allocation — no orders needed.') }}</flux:text>
@@ -547,14 +548,16 @@ new class extends Component {
             <div class="card p-5">
                 <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Average Correlation') }}
                 </flux:text>
-                <flux:heading size="xl" dir="ltr">{{ number_format($averageCorrelation, 2) }}</flux:heading>
+                <flux:heading size="xl" dir="ltr"><span x-data="countUp({{ round($averageCorrelation, 2) }}, false, 2)"
+                        x-intersect.once="start()" x-text="shown">{{ number_format($averageCorrelation, 2) }}</span></flux:heading>
                 <flux:text class="mt-2 text-xs">
                     {{ __('Lower values generally indicate better diversification.') }}</flux:text>
             </div>
             <div class="card p-5">
                 <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Stress Correlation') }}
                 </flux:text>
-                <flux:heading size="xl" dir="ltr">{{ number_format($stressAverage, 2) }}</flux:heading>
+                <flux:heading size="xl" dir="ltr"><span x-data="countUp({{ round($stressAverage, 2) }}, false, 2)"
+                        x-intersect.once="start()" x-text="shown">{{ number_format($stressAverage, 2) }}</span></flux:heading>
                 <flux:text class="mt-2 text-xs">
                     {{ __('Estimated average correlation during a market crisis, when assets tend to fall together.') }}
                 </flux:text>
@@ -562,7 +565,8 @@ new class extends Component {
             <div class="card p-5">
                 <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">{{ __('Hidden Factor (PCA)') }}
                 </flux:text>
-                <flux:heading size="xl" dir="ltr">{{ number_format($firstFactorShare * 100, 0) }}%</flux:heading>
+                <flux:heading size="xl" dir="ltr"><span x-data="countUp({{ round($firstFactorShare * 100) }})"
+                        x-intersect.once="start()" x-text="shown">{{ number_format($firstFactorShare * 100, 0) }}</span>%</flux:heading>
                 <flux:text class="mt-2 text-xs">
                     {{ __('Share of total variance driven by a single common factor. High values mean the portfolio is one big bet.') }}
                 </flux:text>

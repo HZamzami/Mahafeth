@@ -168,10 +168,11 @@ new class extends Component {
     }
 }; ?>
 
-<div class="stagger-children mx-auto flex w-full max-w-3xl flex-col gap-6">
+<div class="stagger-children relative mx-auto flex w-full max-w-3xl flex-col gap-6">
+    @include('partials.page-glow')
     <div>
         <flux:heading size="xl">{{ __('Investment Plan') }}</flux:heading>
-        <flux:text class="mt-1">
+        <flux:text class="mt-1 text-balance">
             {{ __('Start investing at the right risk from day one: an allocation built for your profile, before the first riyal is placed.') }}
         </flux:text>
     </div>

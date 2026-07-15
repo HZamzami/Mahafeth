@@ -13,10 +13,11 @@ new class extends Component {
     }
 }; ?>
 
-<div class="stagger-children mx-auto flex w-full max-w-3xl flex-col gap-6">
+<div class="stagger-children relative mx-auto flex w-full max-w-3xl flex-col gap-6">
+    @include('partials.page-glow')
     <div>
         <flux:heading size="xl">{{ __('Holdings') }}</flux:heading>
-        <flux:text class="mt-1">
+        <flux:text class="mt-1 text-balance">
             {{ __('Every position across your connected accounts. Tap one for its market chart and details.') }}
         </flux:text>
     </div>
@@ -70,7 +71,7 @@ new class extends Component {
             @endforeach
         </div>
     @else
-        <div class="flex flex-col items-center gap-4 card p-12 text-center">
+        <div class="flex flex-col items-center gap-4 card-cta p-12 text-center">
             <flux:text class="text-sm">{{ __('No sources connected yet') }}</flux:text>
             <flux:button variant="primary" :href="route('connections')" wire:navigate>
                 {{ __('Connect accounts') }}</flux:button>

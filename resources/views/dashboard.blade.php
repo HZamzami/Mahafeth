@@ -1,5 +1,5 @@
 <x-layouts.app>
-    <div class="stagger-children flex h-full w-full flex-1 flex-col gap-4 rounded-xl"
+    <div class="stagger-children relative flex h-full w-full flex-1 flex-col gap-4 rounded-xl"
         x-data="{
             hideAmounts: localStorage.getItem('hideAmounts') === '1',
             toggle() {
@@ -8,6 +8,7 @@
             },
         }"
         x-bind:class="hideAmounts && 'amounts-hidden'">
+    @include('partials.page-glow')
         {{-- Greeting + total value hero --}}
         <livewire:dashboard.portfolio-hero />
 

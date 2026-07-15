@@ -1245,5 +1245,9 @@
     "Try the trade before you make it": "جرّب الصفقة قبل تنفيذها",
     "A What if? panel on every instrument and holding page simulates a buy or sell and shows how your health score, concentration, volatility, and correlation would shift before you commit real money.": "لوحة \"ماذا لو؟\" في كل صفحة أداة ومقتنى تحاكي شراء أو بيعا وتعرض كيف ستتغير درجة صحتك والتركز والتقلب والارتباط قبل أن تلتزم بمال حقيقي.",
     "Tidier controls everywhere": "عناصر تحكم أكثر اتساقا",
-    "Buttons now match the height of the fields they sit beside — like the zakat hawl date row — and the appearance switcher fits phone screens instead of overflowing.": "أصبحت الأزرار الآن بارتفاع الحقول المجاورة لها، كما في صف تاريخ حول الزكاة، ومبدّل المظهر يلائم شاشات الهواتف بدلا من تجاوز حدودها."
+    "Buttons now match the height of the fields they sit beside — like the zakat hawl date row — and the appearance switcher fits phone screens instead of overflowing.": "أصبحت الأزرار الآن بارتفاع الحقول المجاورة لها، كما في صف تاريخ حول الزكاة، ومبدّل المظهر يلائم شاشات الهواتف بدلا من تجاوز حدودها.",
+    "A livelier app, the same focus": "تطبيق أكثر حيوية، بالتركيز نفسه",
+    "The welcome page's polish now runs through the whole app: soft background accents behind every page, key numbers that count up as they appear, content that rises in as you arrive, and warmer invitations where a page is still empty.": "لمسات صفحة الترحيب أصبحت تسري في التطبيق كله: لمسات خلفية ناعمة خلف كل صفحة، وأرقام رئيسية تتصاعد عند ظهورها، ومحتوى ينساب للأعلى عند وصولك، ودعوات أدفأ حيث لا تزال الصفحة فارغة.",
+    "The demo now shows its progress": "العرض التجريبي يعرض تقدّمه الآن",
+    "Tapping Try the demo the instant the page loads used to jump straight into provisioning with no feedback. The building overlay now appears no matter how fast you click.": "النقر على «جرّب العرض التجريبي» فور تحميل الصفحة كان ينتقل مباشرة إلى تجهيز الحساب دون أي مؤشر. الآن تظهر شاشة التجهيز مهما كانت سرعة نقرك."
 }

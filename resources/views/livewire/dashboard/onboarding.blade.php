@@ -68,7 +68,7 @@ new class extends Component {
      eat a flex gap in the dashboard column. --}}
 <div @class(['hidden' => $analyzed])>
     @if (! $analyzed)
-        <div class="card p-6">
+        <div class="card-cta p-6">
             <flux:heading size="lg">{{ __('Welcome to Mahafeth') }}</flux:heading>
             <flux:text class="mt-1 text-sm">
                 {{ __('Three steps from scattered portfolios to one investment vision.') }}</flux:text>

@@ -29,7 +29,7 @@
         </div>
     </x-scroll-hint>
 
-    <div class="flex-1 self-stretch max-md:pt-2">
+    <div class="stagger-children flex-1 self-stretch max-md:pt-2">
         <flux:heading>{{ $heading ?? '' }}</flux:heading>
         <flux:subheading>{{ $subheading ?? '' }}</flux:subheading>
 
