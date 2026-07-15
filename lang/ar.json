@@ -1257,5 +1257,10 @@
     "Your holdings, in one place": "أصولك في مكان واحد",
     "A holdings page lists every position across your connected accounts, each opening a full instrument screen with a live market chart and the details behind it.": "صفحة الأصول المملوكة تعرض كل مركز عبر حساباتك المتصلة، ويفتح كل منها شاشة أداة كاملة برسم بياني حي للسوق وبالتفاصيل التي وراءه.",
     "A phone-first experience": "تجربة مصممة للهاتف أولًا",
-    "A bottom tab bar, interactive charts, and native-feeling touches make Mahafeth read like an app built for your phone, not a website squeezed onto it.": "شريط تبويب سفلي ورسوم بيانية تفاعلية ولمسات بإحساس التطبيقات الأصلية تجعل محافظ يبدو كتطبيق مبني لهاتفك، لا موقعًا محشورًا فيه."
+    "A bottom tab bar, interactive charts, and native-feeling touches make Mahafeth read like an app built for your phone, not a website squeezed onto it.": "شريط تبويب سفلي ورسوم بيانية تفاعلية ولمسات بإحساس التطبيقات الأصلية تجعل محافظ يبدو كتطبيق مبني لهاتفك، لا موقعًا محشورًا فيه.",
+    "Upload a CSV or text file exported from your broker.": "ارفع ملف CSV أو نصي مُصدَّرًا من وسيطك.",
+    "Needs a symbol and quantity column — average cost is optional. Common header names (ticker, qty, cost) and Arabic headers are understood.": "يحتاج إلى عمود للرمز وآخر للكمية، ومتوسط التكلفة اختياري. يفهم النظام أسماء الأعمدة الشائعة (ticker، qty، cost) والعناوين العربية.",
+    "Download a template": "تنزيل قالب",
+    "SNB Capital": "الأهلي المالية",
+    "Sahm": "سهم"
 }

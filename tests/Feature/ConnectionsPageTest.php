@@ -117,7 +117,7 @@ class ConnectionsPageTest extends TestCase
         $this->actingAs($user);
 
         Volt::test('connections.index')
-            ->set('statement', UploadedFile::fake()->createWithContent('holdings.csv', "symbol,quantity\n2222.SR,800"))
+            ->set('statement', UploadedFile::fake()->createWithContent('holdings.csv', "symbol,quantity\nZZZZ.SR,800"))
             ->call('import', $institution->id)
             ->assertHasErrors('statement');
 

@@ -6,9 +6,10 @@ use App\Enums\ActivityType;
 use App\Enums\ConnectionStatus;
 use App\Enums\ConsentStatus;
 use App\Models\ActivityEvent;
+use App\Enums\InstitutionType;
 use App\Models\Institution;
 use App\Services\Analytics\PortfolioAnalyzer;
-use App\Services\Imports\AlinmaCapitalStatementParser;
+use App\Services\Imports\HoldingsStatementParser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Volt\Component;
@@ -47,14 +48,24 @@ new class extends Component {
      */
     public function import(
         int $institutionId,
-        AlinmaCapitalStatementParser $parser,
+        HoldingsStatementParser $parser,
         ImportHoldings $importHoldings,
         PortfolioAnalyzer $analyzer,
     ): void {
         $this->validate(
-            ['statement' => ['required', 'file', 'mimes:csv,txt', 'max:1024']],
+            ['statement' => ['required', 'file', 'max:1024']],
             ['statement.required' => __('Choose a statement file to import.')],
         );
+
+        // Validate by extension rather than a strict MIME rule: browsers
+        // report .csv files as anything from text/csv to
+        // application/vnd.ms-excel, and a real statement must never be
+        // rejected on stage over a MIME mismatch.
+        if (! in_array(strtolower($this->statement->getClientOriginalExtension()), ['csv', 'txt'], true)) {
+            $this->addError('statement', __('Upload a CSV or text file exported from your broker.'));
+
+            return;
+        }
 
         if (! RateLimiter::attempt('import-holdings:'.Auth::id(), maxAttempts: 10, callback: fn () => true)) {
             $this->addError('statement', __('Too many imports. Please wait a minute and try again.'));
@@ -149,6 +160,11 @@ new class extends Component {
         @foreach ($institutions as $institution)
             @php($connection = $connections->get($institution->id))
             @php($isConnected = $connection?->status === \App\Enums\ConnectionStatus::Connected)
+            {{-- No Saudi brokerage exposes a live Open Banking API yet, so every
+                 brokerage takes its holdings by CSV import; the user picks which
+                 broker their statement is from. Banks and crypto keep the
+                 live/consent connect flow. --}}
+            @php($isImportable = $institution->type === InstitutionType::Brokerage)
 
             <div
                 class="flex flex-col gap-4 card p-5 sm:flex-row sm:items-center">
@@ -184,7 +200,7 @@ new class extends Component {
 
                 <div class="flex shrink-0 flex-wrap gap-2">
                 @if ($isConnected)
-                        @if ($institution->provider === 'import')
+                        @if ($isImportable)
                             <flux:modal.trigger name="import-{{ $institution->id }}">
                                 <flux:button size="sm" variant="outline">{{ __('Import statement') }}</flux:button>
                             </flux:modal.trigger>
@@ -196,9 +212,9 @@ new class extends Component {
                         @endif
                         <flux:button size="sm" variant="subtle" wire:click="disconnect({{ $connection->id }})"
                             wire:loading.attr="disabled">
-                            {{ $institution->provider === 'import' ? __('Disconnect') : __('Revoke access') }}
+                            {{ $isImportable ? __('Disconnect') : __('Revoke access') }}
                         </flux:button>
-                    @elseif ($institution->provider === 'import')
+                    @elseif ($isImportable)
                         <flux:modal.trigger name="import-{{ $institution->id }}">
                             <flux:button size="sm" variant="primary">{{ __('Import statement') }}</flux:button>
                         </flux:modal.trigger>
@@ -210,7 +226,7 @@ new class extends Component {
                 </div>
             </div>
 
-            @if ($institution->provider === 'import')
+            @if ($isImportable)
                 <flux:modal name="import-{{ $institution->id }}" class="md:w-96">
                     <div class="space-y-6">
                         <div>
@@ -240,9 +256,9 @@ new class extends Component {
                         <flux:error name="statement" />
 
                         <flux:text class="text-xs">
-                            {{ __('Expected columns: symbol, quantity, avg_cost.') }}
-                            <a class="underline" href="{{ asset('samples/alinma-capital-holdings.csv') }}" download>
-                                {{ __('Download a sample file') }}</a>
+                            {{ __('Needs a symbol and quantity column — average cost is optional. Common header names (ticker, qty, cost) and Arabic headers are understood.') }}
+                            <a class="underline" href="{{ asset('samples/holdings-template.csv') }}" download>
+                                {{ __('Download a template') }}</a>
                         </flux:text>
 
                         <div class="flex gap-2">
