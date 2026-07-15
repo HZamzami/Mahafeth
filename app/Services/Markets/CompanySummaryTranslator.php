@@ -88,12 +88,12 @@ class CompanySummaryTranslator
             'x-api-key' => (string) config('mahafeth.ai.api_key'),
             'anthropic-version' => self::API_VERSION,
         ])
-            ->timeout((int) config('mahafeth.ai.chat_timeout'))
+            ->timeout((int) config('mahafeth.ai.translation_timeout'))
             ->connectTimeout(10)
             ->retry(2, 1000, throw: false)
             ->post(self::API_URL, [
-                'model' => config('mahafeth.ai.chat_model'),
-                'max_tokens' => (int) config('mahafeth.ai.chat_max_tokens'),
+                'model' => config('mahafeth.ai.translation_model'),
+                'max_tokens' => (int) config('mahafeth.ai.translation_max_tokens'),
                 'system' => 'You translate company business descriptions into Modern Standard Arabic in a natural financial register. Keep proper nouns, tickers, and product names in Latin script. Respond with the translation only — no preamble.',
                 'messages' => [['role' => 'user', 'content' => $summary]],
             ])

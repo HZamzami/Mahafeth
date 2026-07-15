@@ -156,6 +156,12 @@ return [
         // leaves room to think and still answer.
         'chat_max_tokens' => 4096,
         'chat_timeout' => 60,
+        // Translating a single company paragraph is a tiny job — Haiku is
+        // far faster and cheaper than the chat model and plenty good here.
+        // No thinking, a small token ceiling, and a short timeout.
+        'translation_model' => env('MAHAFETH_AI_TRANSLATION_MODEL', 'claude-haiku-4-5'),
+        'translation_max_tokens' => 1024,
+        'translation_timeout' => 30,
     ],
 
 ];
