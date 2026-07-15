@@ -168,6 +168,8 @@ new class extends Component {
             </div>
 
             <livewire:settings.alert-rules />
+
+            <livewire:settings.zakat />
         </div>
 
         <livewire:settings.delete-user-form />

@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
+                        'title' => __('Zakat that knows your hawl'),
+                        'body' => __('Set your zakat anniversary as a Hijri date and Mahafeth counts down to it, reminds you a week ahead with your estimated amount, and lets you mark it paid for the cycle.'),
+                    ],
+                    [
+                        'type' => 'new',
                         'title' => __('Purification that knows what you paid'),
                         'body' => __('Stock purification is now a ledger, not a running total: mark what you donated and the card resets, accruing only new impure income since that date. Assets with a published purification rate accrue just their impure share.'),
                     ],

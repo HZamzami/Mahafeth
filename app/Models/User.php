@@ -33,6 +33,8 @@ class User extends Authenticatable implements HasLocalePreference, HasPasskeys /
         'locale',
         'notify_alerts',
         'password',
+        'zakat_hawl_month',
+        'zakat_hawl_day',
     ];
 
     /**
@@ -57,6 +59,7 @@ class User extends Authenticatable implements HasLocalePreference, HasPasskeys /
             'email_verified_at' => 'datetime',
             'notify_alerts' => 'boolean',
             'password' => 'hashed',
+            'zakat_last_reminded_for' => 'date',
         ];
     }
 

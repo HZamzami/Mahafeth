@@ -65,6 +65,8 @@ return [
     'zakat' => [
         'rate' => env('MAHAFETH_ZAKAT_RATE', 0.025),
         'nisab' => env('MAHAFETH_ZAKAT_NISAB', 35000.0),
+        // Days before the hawl completes that the reminder goes out.
+        'reminder_days' => env('MAHAFETH_ZAKAT_REMINDER_DAYS', 7),
     ],
 
     // Deterministic stress scenarios replayed on the live portfolio: each

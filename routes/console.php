@@ -15,3 +15,7 @@ Schedule::command('queue:prune-failed --hours=168')->weekly();
 // Sunday opens the Saudi trading week; the digest lands after that
 // morning's refresh has produced a fresh snapshot.
 Schedule::command('mahafeth:send-weekly-digest')->weeklyOn(0, '05:10');
+
+// Zakat hawl reminders go out after the snapshots refresh so the
+// estimated amount reflects that morning's analysis.
+Schedule::command('mahafeth:zakat-reminders')->dailyAt('05:20');

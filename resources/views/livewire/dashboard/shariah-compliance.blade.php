@@ -11,6 +11,8 @@ new class extends Component {
 
     public ?string $purifiedAmount = null;
 
+    public ?string $zakatPaidAmount = null;
+
     public function placeholder(): \Illuminate\Contracts\View\View
     {
         return view('partials.skeleton-card');
@@ -41,6 +43,56 @@ new class extends Component {
     }
 
     /**
+     * Record a zakat payment for the current hawl cycle.
+     */
+    public function markZakatPaid(): void
+    {
+        $this->validate(
+            ['zakatPaidAmount' => ['required', 'numeric', 'min:0.01']],
+            attributes: ['zakatPaidAmount' => __('amount')],
+        );
+
+        Auth::user()->obligationSettlements()->create([
+            'kind' => ObligationKind::Zakat,
+            'amount' => (float) $this->zakatPaidAmount,
+            'settled_through' => today()->toDateString(),
+        ]);
+
+        $this->modal('mark-zakat-paid')->close();
+        $this->zakatPaidAmount = null;
+    }
+
+    /**
+     * The user's hawl cycle: next completion date and whether this cycle's
+     * zakat is already recorded as paid.
+     *
+     * @return array{next: \Illuminate\Support\Carbon, paid: bool, paid_on: ?\Illuminate\Support\Carbon}|null
+     */
+    private function hawl(): ?array
+    {
+        $user = Auth::user();
+
+        if ($user->zakat_hawl_month === null || $user->zakat_hawl_day === null) {
+            return null;
+        }
+
+        $next = \App\Support\HijriDate::nextGregorian($user->zakat_hawl_month, $user->zakat_hawl_day);
+        $previous = \App\Support\HijriDate::gregorian(
+            \App\Support\HijriDate::toHijri($next)['year'] - 1,
+            $user->zakat_hawl_month,
+            $user->zakat_hawl_day,
+        );
+
+        $paidOn = $user->settledThrough(ObligationKind::Zakat);
+
+        return [
+            'next' => $next,
+            'paid' => $paidOn !== null && $paidOn->gte($previous),
+            'paid_on' => $paidOn,
+        ];
+    }
+
+    /**
      * Shariah screening results from the latest portfolio snapshot.
      */
     public function with(): array
@@ -63,6 +115,7 @@ new class extends Component {
                 ->latest('settled_through')
                 ->limit(5)
                 ->get(),
+            'hawl' => $this->hawl(),
         ];
     }
 }; ?>
@@ -224,7 +277,49 @@ new class extends Component {
                 <flux:text class="mt-1 text-xs">
                     {{ __('2.5% of your zakatable wealth (cash, equities, funds, and crypto at market value).') }}
                 </flux:text>
+
+                @if ($hawl !== null)
+                    @if ($hawl['paid'])
+                        <flux:text class="mt-2 flex items-center gap-1.5 text-xs !text-emerald-600 dark:!text-emerald-400">
+                            <flux:icon.check-circle class="size-3.5 shrink-0" />
+                            {{ __('Zakat paid on :date for this hawl.', ['date' => $hawl['paid_on']->translatedFormat('j M Y')]) }}
+                        </flux:text>
+                    @else
+                        <flux:text class="mt-2 text-xs">
+                            {{ trans_choice('{0} Hawl completes today — :hijri.|{1} Hawl completes tomorrow — :hijri.|[2,*] Hawl completes in :count days — :hijri.', (int) today()->diffInDays($hawl['next']), ['hijri' => \App\Support\HijriDate::format($hawl['next'])]) }}
+                        </flux:text>
+                        @if (! $zakat['below_nisab'])
+                            <flux:modal.trigger name="mark-zakat-paid">
+                                <flux:button class="mt-2" size="xs" variant="outline"
+                                    x-on:click="$wire.zakatPaidAmount = '{{ number_format($zakat['zakat_due'], 2, '.', '') }}'">
+                                    {{ __('Mark zakat paid') }}</flux:button>
+                            </flux:modal.trigger>
+                        @endif
+                    @endif
+                @else
+                    <a class="mt-2 inline-block text-xs font-medium text-teal-700 hover:underline dark:text-teal-300"
+                        href="{{ route('settings.profile') }}" wire:navigate>
+                        {{ __('Set your hawl date for reminders') }}</a>
+                @endif
             </div>
+
+            <flux:modal name="mark-zakat-paid" class="md:w-96">
+                <form wire:submit="markZakatPaid" class="space-y-4 text-start">
+                    <flux:heading size="lg">{{ __('Mark zakat paid') }}</flux:heading>
+                    <flux:text class="text-sm">
+                        {{ __('Record the zakat you paid for this hawl. The card will show it as settled until your next hawl completes.') }}
+                    </flux:text>
+                    <flux:input wire:model="zakatPaidAmount" type="number" step="0.01" min="0.01" dir="ltr"
+                        :label="__('Amount paid (SAR)')" />
+                    <div class="flex justify-end gap-2">
+                        <flux:modal.close>
+                            <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                        </flux:modal.close>
+                        <flux:button type="submit" variant="primary" wire:loading.attr="disabled">
+                            {{ __('Confirm') }}</flux:button>
+                    </div>
+                </form>
+            </flux:modal>
         @endif
     @endif
 </div>
