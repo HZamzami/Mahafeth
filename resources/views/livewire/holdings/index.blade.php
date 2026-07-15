@@ -22,6 +22,8 @@ new class extends Component {
     </div>
 
     @if ($holdings['rows'] !== [])
+        <livewire:holdings.income-calendar lazy />
+
         <div class="card p-5">
             <div class="flex items-baseline justify-between">
                 <flux:text class="text-xs font-medium uppercase tracking-widest">{{ __('Total Portfolio') }}</flux:text>

@@ -1222,5 +1222,11 @@
     "Set your zakat anniversary as a Hijri date and Mahafeth counts down to it, reminds you a week ahead with your estimated amount, and lets you mark it paid for the cycle.": "حدد ذكرى زكاتك بالتاريخ الهجري وسيعد محافظ الأيام تنازليا حتى موعدها، ويذكّرك قبلها بأسبوع مع مبلغك التقديري، ويتيح لك تسجيلها مدفوعة لهذه الدورة.",
     "Since :date: you added :deposits, the market added :growth.": "منذ :date: أضفت :deposits، وأضاف السوق :growth.",
     "Your money or the market's?": "أموالك أم نمو السوق؟",
-    "The performance chart now separates what you deposited from what the market earned, so a growing balance no longer hides a flat return behind fresh contributions.": "يفصل مخطط الأداء الآن بين ما أودعته وما حققه السوق، فلا يعود الرصيد المتنامي يخفي عائدا ثابتا وراء إيداعات جديدة."
+    "The performance chart now separates what you deposited from what the market earned, so a growing balance no longer hides a flat return behind fresh contributions.": "يفصل مخطط الأداء الآن بين ما أودعته وما حققه السوق، فلا يعود الرصيد المتنامي يخفي عائدا ثابتا وراء إيداعات جديدة.",
+    "Dividend Income": "دخل التوزيعات",
+    "Received, last 12 months": "المستلم خلال آخر 12 شهرا",
+    "Expected, next 12 months": "المتوقع خلال 12 شهرا القادمة",
+    "Solid bars are received dividends; faded bars repeat last year's payments for positions you still hold.": "الأعمدة الصلبة توزيعات مستلمة؛ والأعمدة الباهتة تكرر مدفوعات العام الماضي للمراكز التي ما زلت تحتفظ بها.",
+    "See your dividend rhythm": "اعرف إيقاع توزيعاتك",
+    "A new income calendar on the Holdings page charts the dividends you received month by month and projects the year ahead from positions you still hold.": "تقويم دخل جديد في صفحة المقتنيات يرسم التوزيعات التي استلمتها شهرا بشهر ويتوقع العام القادم من المراكز التي ما زلت تحتفظ بها."
 }

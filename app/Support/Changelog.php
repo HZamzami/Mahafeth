@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
+                        'title' => __('See your dividend rhythm'),
+                        'body' => __('A new income calendar on the Holdings page charts the dividends you received month by month and projects the year ahead from positions you still hold.'),
+                    ],
+                    [
+                        'type' => 'new',
                         'title' => __('Your money or the market\'s?'),
                         'body' => __('The performance chart now separates what you deposited from what the market earned, so a growing balance no longer hides a flat return behind fresh contributions.'),
                     ],
