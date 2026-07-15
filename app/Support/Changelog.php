@@ -27,6 +27,11 @@ class Changelog
                         'title' => __('Any stock, and a real ledger'),
                         'body' => __('Manual accounts now search the whole market — add any listed stock, fund, or crypto, not just a short list. And instead of a flat quantity, you record dated buys, sells, deposits, and withdrawals; Mahafeth derives each position and its average cost from the ledger, so your own accounts carry cost basis and history like the rest of the app.'),
                     ],
+                    [
+                        'type' => 'new',
+                        'title' => __('See the gains you\'ve banked'),
+                        'body' => __('Your report and every holding page now show realized profit and loss — what you actually locked in by selling — next to the paper gains on what you still hold. Sell a position down to zero and its profit still shows, even though it has left your holdings.'),
+                    ],
                 ],
             ],
             [

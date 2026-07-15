@@ -8,6 +8,7 @@ use App\Models\Holding;
 use App\Services\Analytics\GoalForecaster;
 use App\Services\Analytics\HoldingsSummarizer;
 use App\Services\Analytics\PortfolioDataAssembler;
+use App\Services\Analytics\RealizedGainCalculator;
 use App\Services\Analytics\RebalancePlanner;
 use App\Services\Fx\FxRateService;
 use Illuminate\Support\Facades\Auth;
@@ -28,6 +29,7 @@ new class extends Component {
             'components' => $snapshot?->component_scores,
             'profile' => $user->riskProfile,
             'holdings' => app(HoldingsSummarizer::class)->rows($user),
+            'realizedPl' => app(RealizedGainCalculator::class)->forUser($user),
             'insight' => $snapshot === null ? null : AiInsight::query()
                 ->where('portfolio_snapshot_id', $snapshot->id)
                 ->where('locale', app()->getLocale())
@@ -157,6 +159,13 @@ new class extends Component {
                             class="text-xs {{ $totalPl >= 0 ? '!text-emerald-600 dark:!text-emerald-400' : '!text-red-600 dark:!text-red-400' }}"
                             dir="ltr">
                             {{ __('Unrealized P/L') }}: ⃁ {{ $totalPl >= 0 ? '+' : '−' }}{{ Number::localizedAbbreviate(abs($totalPl), 1) }}
+                        </flux:text>
+                    @endif
+                    @if (round($realizedPl, 2) != 0.0)
+                        <flux:text
+                            class="text-xs {{ $realizedPl >= 0 ? '!text-emerald-600 dark:!text-emerald-400' : '!text-red-600 dark:!text-red-400' }}"
+                            dir="ltr">
+                            {{ __('Realized P/L') }}: ⃁ {{ $realizedPl >= 0 ? '+' : '−' }}{{ Number::localizedAbbreviate(abs($realizedPl), 1) }}
                         </flux:text>
                     @endif
                 </div>

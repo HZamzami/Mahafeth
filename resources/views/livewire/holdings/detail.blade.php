@@ -8,6 +8,7 @@ use App\Models\CompanyFiling;
 use App\Models\Holding;
 use App\Models\NewsItem;
 use App\Models\Transaction;
+use App\Services\Analytics\RealizedGainCalculator;
 use App\Services\Fx\FxRateService;
 use App\Services\Markets\TradingViewSymbol;
 use Illuminate\Support\Facades\Auth;
@@ -60,6 +61,7 @@ new class extends Component {
             'value' => $value,
             'pl' => $value !== null ? $value - $cost : null,
             'plPct' => $value !== null && $cost > 0 ? ($value - $cost) / $cost : null,
+            'realized' => app(RealizedGainCalculator::class)->forAsset(Auth::user(), $this->asset) * $rate,
             'weight' => $metrics['weights'][$this->asset->symbol] ?? null,
             'sectorExposure' => $this->asset->sector !== null
                 ? ($metrics['allocations']['sector'][$this->asset->sector] ?? null)
@@ -364,6 +366,18 @@ new class extends Component {
                             {{ $pl !== null ? ($pl >= 0 ? '+' : '−').$currencySymbol.' '.number_format(abs($pl), 0).' ('.number_format(($plPct ?? 0) * 100, 1).'%)' : '—' }}
                         </flux:heading>
                     </div>
+                    @if (round($realized, 2) != 0.0)
+                        <div>
+                            <flux:tooltip :content="__('Profit or loss you locked in by selling shares of this holding.')">
+                                <flux:text class="text-xs">{{ __('Realized P/L') }}</flux:text>
+                            </flux:tooltip>
+                            <flux:heading
+                                class="{{ $realized >= 0 ? '!text-emerald-600 dark:!text-emerald-400' : '!text-red-600 dark:!text-red-400' }}"
+                                dir="ltr">
+                                {{ ($realized >= 0 ? '+' : '−').$currencySymbol.' '.number_format(abs($realized), 0) }}
+                            </flux:heading>
+                        </div>
+                    @endif
                 </div>
 
                 <flux:button class="mt-5 w-full" size="sm" variant="primary" icon="chat-bubble-left-right"
