@@ -35,14 +35,17 @@ class RefreshFilings extends Command
         $filings = $filingProvider->fetchLatest();
 
         foreach ($filings as $filing) {
+            // Key on the SEC document URL, the filing's true identity: the
+            // headline can change (an 8-K gets a more specific label) without
+            // spawning a duplicate row for the same filing.
             CompanyFiling::updateOrCreate(
-                ['headline' => $filing['headline']],
+                ['url' => $filing['url']],
                 [
+                    'headline' => $filing['headline'],
                     'headline_ar' => $filing['headline_ar'],
                     'symbol' => $filing['symbol'],
                     'type' => $filing['type'],
                     'source' => $filing['source'],
-                    'url' => $filing['url'],
                     'excerpt' => $filing['excerpt'],
                     'excerpt_ar' => $filing['excerpt_ar'],
                     'published_at' => $filing['published_at'],
