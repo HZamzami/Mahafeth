@@ -35,10 +35,10 @@
                     <div class="flex flex-wrap items-center gap-3">
                         <flux:button href="{{ route('register') }}" variant="primary">{{ __('Create account') }}</flux:button>
                         <flux:button href="{{ route('login') }}" variant="ghost">{{ __('Log in') }}</flux:button>
-                        <form method="POST" action="{{ route('demo.start') }}" x-data="demoBuilding"
-                            x-on:submit="start()" data-steps='@json([__('Connecting accounts…'), __('Syncing prices…'), __('Running the analysis…')])'>
+                        <form method="POST" action="{{ route('demo.start') }}" data-demo-form
+                            data-steps='@json([__('Connecting accounts…'), __('Syncing prices…'), __('Running the analysis…')])'>
                             @csrf
-                            <flux:button type="submit" variant="subtle" icon="play" x-bind:disabled="building">
+                            <flux:button type="submit" variant="subtle" icon="play">
                                 {{ __('Try the demo') }}</flux:button>
                             @include('partials.demo-building')
                         </form>
@@ -245,10 +245,10 @@
             <div class="relative mt-8 flex flex-wrap items-center justify-center gap-3">
                 <flux:button href="{{ route('register') }}" variant="primary">{{ __('Create account') }}</flux:button>
                 <flux:button href="{{ route('login') }}" variant="ghost">{{ __('Log in') }}</flux:button>
-                <form method="POST" action="{{ route('demo.start') }}" x-data="demoBuilding"
-                    x-on:submit="start()" data-steps='@json([__('Connecting accounts…'), __('Syncing prices…'), __('Running the analysis…')])'>
+                <form method="POST" action="{{ route('demo.start') }}" data-demo-form
+                    data-steps='@json([__('Connecting accounts…'), __('Syncing prices…'), __('Running the analysis…')])'>
                     @csrf
-                    <flux:button type="submit" variant="subtle" icon="play" x-bind:disabled="building">
+                    <flux:button type="submit" variant="subtle" icon="play">
                         {{ __('Try the demo') }}</flux:button>
                     @include('partials.demo-building')
                 </form>

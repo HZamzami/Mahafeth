@@ -167,29 +167,35 @@ const initWelcomeEffects = () => {
 window.addEventListener('load', initWelcomeEffects);
 document.addEventListener('livewire:navigated', initWelcomeEffects);
 
+// Demo forms: reveal the building overlay the moment the form submits and
+// cycle the step text while the server provisions the account. Step labels
+// come from the form's data-steps JSON so they stay server-translated.
+// Deliberately NOT an Alpine component: the hero button is clickable before
+// Alpine (loaded via livewire.js on DOMContentLoaded) has walked the page,
+// so an early click would submit natively with no overlay. This delegated
+// listener is live as soon as the bundle executes.
+document.addEventListener('submit', (event) => {
+    const form = event.target.closest('form[data-demo-form]');
+
+    if (!form) {
+        return;
+    }
+
+    const overlay = form.querySelector('[data-demo-overlay]');
+    const stepText = form.querySelector('[data-demo-step]');
+    const steps = JSON.parse(form.dataset.steps ?? '[]');
+    let step = 0;
+
+    overlay.style.display = '';
+    form.querySelector('button[type="submit"]')?.setAttribute('disabled', '');
+
+    setInterval(() => {
+        step = Math.min(step + 1, steps.length - 1);
+        stepText.textContent = steps[step] ?? stepText.textContent;
+    }, 2500);
+});
+
 document.addEventListener('alpine:init', () => {
-    // Demo forms: reveal the building overlay the moment the form submits
-    // and cycle the step text while the server provisions the account.
-    // Step labels come from the element's data-steps JSON so they stay
-    // server-translated.
-    window.Alpine.data('demoBuilding', () => ({
-        building: false,
-        step: 0,
-        steps: [],
-
-        init() {
-            this.steps = JSON.parse(this.$el.dataset.steps ?? '[]');
-        },
-
-        start() {
-            this.building = true;
-
-            setInterval(() => {
-                this.step = Math.min(this.step + 1, this.steps.length - 1);
-            }, 2500);
-        },
-    }));
-
     // Welcome-page hero: drives the CSS vars behind .welcome-parallax so
     // the floating fragments drift gently against the pointer.
     window.Alpine.data('pointerParallax', () => ({

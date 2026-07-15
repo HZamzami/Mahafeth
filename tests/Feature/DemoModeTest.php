@@ -133,11 +133,12 @@ class DemoModeTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee(__('Building your demo portfolio'))
-            ->assertSee('demoBuilding');
+            ->assertSee('data-demo-form', false);
 
         $this->get('/login')
             ->assertOk()
-            ->assertSee(__('Building your demo portfolio'));
+            ->assertSee(__('Building your demo portfolio'))
+            ->assertSee('data-demo-form', false);
     }
 
     public function test_getting_the_demo_url_redirects_home(): void

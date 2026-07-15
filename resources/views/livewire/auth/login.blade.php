@@ -134,12 +134,11 @@ new #[Layout('components.layouts.auth')] class extends Component {
         <x-text-link href="{{ route('register') }}">{{ __('Sign up') }}</x-text-link>
     </div>
 
-    <form method="POST" action="{{ route('demo.start') }}" x-data="demoBuilding" x-on:submit="start()"
+    <form method="POST" action="{{ route('demo.start') }}" data-demo-form
         data-steps='@json([__('Connecting accounts…'), __('Syncing prices…'), __('Running the analysis…')])' class="text-center text-sm text-zinc-600 dark:text-zinc-400">
         @csrf
         {{ __('Just exploring?') }}
-        <button type="submit" class="font-medium text-accent-content underline-offset-4 hover:underline"
-            x-bind:disabled="building">
+        <button type="submit" class="font-medium text-accent-content underline-offset-4 hover:underline">
             {{ __('Try the demo') }}</button>
         @include('partials.demo-building')
     </form>
