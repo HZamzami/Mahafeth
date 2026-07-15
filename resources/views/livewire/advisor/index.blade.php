@@ -237,11 +237,11 @@ new class extends Component {
      No stagger-children here: this element re-renders on wire:poll while
      a reply generates, and the entrance animation would replay on every
      poll, making messages blink in and out.
-     The -mx-2/px-2/pb-1 on mobile widens the scroll box into flux:main's
-     gutter: overflow-y-auto also clips overflow-x, which would otherwise
-     slice the chat card's side and bottom shadows. Content position is
-     unchanged; the card's shadow now reads like every other card. --}}
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:-mx-2 max-lg:h-[calc(100dvh-10.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] max-lg:overflow-y-auto max-lg:px-2 max-lg:pb-1"
+     The column itself does not scroll: the chat card is flex-1/min-h-0 so
+     it absorbs the leftover height and the message thread scrolls inside
+     it. Keeping overflow off the root is what lets mx-auto center cleanly
+     and lets the card's shadow render into flux:main's gutter. --}}
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:h-[calc(100dvh-10.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))]"
     @if ($isAwaitingReply) wire:poll.1s @elseif ($isGenerating) wire:poll.2s @endif>
     <div class="flex items-start justify-between gap-4">
         <div>
