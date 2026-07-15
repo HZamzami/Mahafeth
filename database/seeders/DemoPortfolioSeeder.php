@@ -4,14 +4,25 @@ namespace Database\Seeders;
 
 use App\Actions\ImportHoldings;
 use App\Actions\SyncConnection;
+use App\Enums\ActivityType;
 use App\Enums\ConsentStatus;
+use App\Enums\ObligationKind;
 use App\Enums\RiskTolerance;
+use App\Enums\ShariahStatus;
 use App\Enums\TimeHorizon;
+use App\Enums\TransactionType;
+use App\Models\ActivityEvent;
 use App\Models\Institution;
+use App\Models\InvestmentPlan;
+use App\Models\Transaction;
 use App\Models\User;
+use App\Services\Analytics\InvestmentPlanBuilder;
 use App\Services\Analytics\PortfolioAnalyzer;
 use App\Services\Analytics\PortfolioDataAssembler;
 use App\Services\Analytics\ReturnCalculator;
+use App\Services\Fx\FxRateService;
+use App\Support\HijriDate;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 
@@ -59,8 +70,10 @@ class DemoPortfolioSeeder extends Seeder
         );
 
         $this->backfillSnapshotHistory($demo);
+        $this->seedShowcaseState($demo);
         app(PortfolioAnalyzer::class)->analyze($demo->fresh());
         $this->backfillHealthHistory($demo);
+        $this->enrichPreviousSnapshot($demo->fresh());
 
         // Persona 2: a calmer investor holding only local Saudi equities,
         // whose portfolio volatility actually matches her Balanced profile —
@@ -151,6 +164,175 @@ class DemoPortfolioSeeder extends Seeder
                 'health_score' => max(0, min(100, $currentScore + $drift + $wiggle)),
             ]);
         }
+    }
+
+    /**
+     * State the showcase features need, seeded before the analyzer runs so
+     * the snapshot reflects it: an investment plan (drift), a zakat hawl
+     * date (countdown), a past purification settlement (ledger story), and
+     * one resolved alert (follow-through moment). Like the health history,
+     * parts of this are demo storytelling.
+     */
+    public function seedShowcaseState(User $user): void
+    {
+        // A real optimizer plan: its targets differ from the tech-heavy
+        // actual weights, so the drift alert fires naturally and the
+        // Investment Plan page is populated for the tour.
+        $totalValue = $this->currentPortfolioValue($user);
+        $plan = app(InvestmentPlanBuilder::class)->build($user, max(100_000.0, round($totalValue, -3)), 8_000.0);
+
+        if ($plan !== null) {
+            InvestmentPlan::updateOrCreate(
+                ['user_id' => $user->id],
+                ['amount' => max(100_000.0, round($totalValue, -3)), 'monthly_contribution' => 8_000.0, ...$plan],
+            );
+        }
+
+        // Hawl completes in ten days: close enough for an urgent countdown,
+        // far enough that the reminder window story still makes sense.
+        $hawl = HijriDate::toHijri(today()->addDays(10));
+        $user->forceFill([
+            'zakat_hawl_month' => $hawl['month'],
+            'zakat_hawl_day' => $hawl['day'],
+        ])->save();
+
+        // Purified 100 days ago for the impure income known at the time, so
+        // the ledger shows history and only the newer dividend is owed.
+        $settledThrough = now()->subDays(100);
+        $priorImpureIncome = $this->impureDividendsBefore($user, $settledThrough);
+
+        if ($priorImpureIncome > 0) {
+            $user->obligationSettlements()->updateOrCreate(
+                ['kind' => ObligationKind::Purification, 'settled_through' => $settledThrough->toDateString()],
+                ['amount' => round($priorImpureIncome, 2)],
+            );
+        }
+
+        // One acted-on alert from yesterday, so the dashboard opens with a
+        // "nice work" moment alongside the live warnings.
+        $resolved = ActivityEvent::record($user, ActivityType::AlertResolved, [
+            'key' => 'Risk alert: portfolio volatility of :volatility is well above your :target target.',
+            'params' => ['volatility' => '23.8%', 'target' => '15.0%'],
+        ]);
+        $resolved->forceFill(['created_at' => now()->subDay()])->save();
+    }
+
+    /**
+     * Rewrite the most recent pre-today snapshot with real per-holding
+     * valuation state as of its date (and slightly shifted component
+     * scores), so daily-move attribution and the "what changed" strip work
+     * from the first minute instead of the second day.
+     */
+    public function enrichPreviousSnapshot(User $user): void
+    {
+        $today = $user->latestSnapshot();
+        $previous = $user->portfolioSnapshots()
+            ->where('as_of', '<', today()->toDateString())
+            ->orderByDesc('as_of')
+            ->first();
+
+        if ($today?->metrics === null || $previous === null) {
+            return;
+        }
+
+        $data = app(PortfolioDataAssembler::class)->forUser($user, now()->subMonths(6));
+
+        // The weekly backfill can land on the very date of the latest close,
+        // which would make the two snapshots identical and the daily move a
+        // flat 0.00%. Value the previous snapshot at least one trading day
+        // behind the freshest price instead.
+        $latestPriceDate = collect($data['priceSeries'])
+            ->map(fn (array $series): ?string => array_key_last($series))
+            ->filter()
+            ->max();
+        $asOf = min($previous->as_of->toDateString(), $latestPriceDate);
+        $holdings = [];
+        $total = 0.0;
+
+        foreach ($data['priceSeries'] as $symbol => $series) {
+            $closes = array_filter($series, fn (string $date): bool => $date < $asOf, ARRAY_FILTER_USE_KEY);
+
+            if ($closes === []) {
+                continue;
+            }
+
+            $baseClose = end($closes);
+            $rate = $data['fxRates'][$symbol] ?? 1.0;
+            $quantity = $data['quantities'][$symbol] ?? 0.0;
+
+            $holdings[$symbol] = [
+                'quantity' => $quantity,
+                'native_close' => $rate > 0 ? $baseClose / $rate : $baseClose,
+                'fx_rate' => $rate,
+                'value' => round($quantity * $baseClose, 4),
+                'weight' => 0.0,
+                'currency' => $data['assets'][$symbol]['currency'] ?? config('mahafeth.base_currency'),
+                'name' => $data['assets'][$symbol]['name'] ?? $symbol,
+                'price_date' => array_key_last($closes),
+            ];
+
+            $total += $holdings[$symbol]['value'];
+        }
+
+        if ($holdings === [] || $total <= 0) {
+            return;
+        }
+
+        foreach ($holdings as $symbol => $state) {
+            $holdings[$symbol]['weight'] = $state['value'] / $total;
+        }
+
+        // Component scores a few points apart from today's, so the health
+        // card has a delta to explain (the concentration driver names the
+        // real largest position from today's metrics).
+        $components = $today->component_scores ?? [];
+        $shifted = $components;
+
+        if (isset($shifted['concentration'])) {
+            $shifted['concentration'] = min(100, $shifted['concentration'] + 12);
+        }
+        if (isset($shifted['performance'])) {
+            $shifted['performance'] = min(100, $shifted['performance'] + 3);
+        }
+
+        $previous->update([
+            'total_value' => round($total, 4),
+            'metrics' => ['holdings' => $holdings],
+            'component_scores' => $shifted === [] ? null : $shifted,
+            'health_score' => $today->health_score !== null
+                ? min(100, $today->health_score + 3)
+                : $previous->health_score,
+        ]);
+    }
+
+    /**
+     * Current portfolio value from the latest closes, before any snapshot
+     * exists.
+     */
+    private function currentPortfolioValue(User $user): float
+    {
+        $data = app(PortfolioDataAssembler::class)->forUser($user, now()->subMonths(1));
+        $values = app(ReturnCalculator::class)->portfolioValueSeries($data['priceSeries'], $data['quantities']);
+
+        return $values === [] ? 0.0 : (float) end($values);
+    }
+
+    /**
+     * Base-currency dividends from non-compliant holdings executed on or
+     * before the given moment: what a diligent investor would already have
+     * purified.
+     */
+    private function impureDividendsBefore(User $user, CarbonInterface $before): float
+    {
+        $fx = app(FxRateService::class);
+
+        return Transaction::with('asset')
+            ->where('type', TransactionType::Dividend)
+            ->where('executed_at', '<=', $before)
+            ->whereHas('asset', fn ($query) => $query->where('shariah_status', ShariahStatus::NonCompliant))
+            ->whereHas('account.connection', fn ($query) => $query->whereBelongsTo($user))
+            ->get()
+            ->sum(fn (Transaction $transaction): float => $transaction->amount * $fx->rate($transaction->asset->currency));
     }
 
     /**

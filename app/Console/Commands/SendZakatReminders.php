@@ -25,6 +25,7 @@ class SendZakatReminders extends Command
         $users = User::whereNotNull('zakat_hawl_month')
             ->whereNotNull('zakat_hawl_day')
             ->where('notify_alerts', true)
+            ->where('email', 'not like', '%@demo.mahafeth.test')
             ->get();
 
         foreach ($users as $user) {

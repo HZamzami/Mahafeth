@@ -3,7 +3,12 @@
 namespace Tests\Feature;
 
 use App\Actions\ProvisionDemoAccount;
+use App\Enums\ActivityType;
+use App\Models\ActivityEvent;
+use App\Models\InvestmentPlan;
 use App\Models\User;
+use App\Services\Analytics\DailyMoveAttributor;
+use App\Services\Analytics\NetFlowCalculator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -39,8 +44,8 @@ class DemoModeTest extends TestCase
         $this->assertStringEndsWith('@'.ProvisionDemoAccount::EMAIL_DOMAIN, $user->email);
         $this->assertNotNull($user->email_verified_at);
         $this->assertNotNull($user->riskProfile);
-        $this->assertSame(3, $user->connections()->count());
-        $this->assertSame(3, $user->consents()->count());
+        $this->assertSame(4, $user->connections()->count());
+        $this->assertSame(4, $user->consents()->count());
 
         $snapshot = $user->latestSnapshot();
         $this->assertNotNull($snapshot);
@@ -53,6 +58,47 @@ class DemoModeTest extends TestCase
 
         // Weekly backfill gives the trend chart history from minute one.
         $this->assertGreaterThan(5, $user->portfolioSnapshots()->count());
+    }
+
+    public function test_the_demo_account_showcases_every_flagship_feature(): void
+    {
+        $this->post(route('demo.start'))->assertRedirect(route('dashboard'));
+
+        $user = auth()->user();
+        $snapshot = $user->latestSnapshot();
+        $metrics = $snapshot->metrics;
+
+        // Drift: a plan exists and its targets diverge from actual weights.
+        $this->assertNotNull(InvestmentPlan::whereBelongsTo($user)->first());
+        $this->assertNotNull($metrics['drift']);
+
+        // Daily move: the previous snapshot carries per-holding state, so
+        // the attribution card renders on the first visit.
+        $previous = $user->portfolioSnapshots()
+            ->where('as_of', '<', today()->toDateString())
+            ->orderByDesc('as_of')
+            ->first();
+        $this->assertNotNull($previous->metrics['holdings'] ?? null);
+        $this->assertNotNull(app(DailyMoveAttributor::class)->attribute($snapshot, $previous));
+
+        // What changed: both snapshots have component scores and differ.
+        $this->assertNotNull($previous->component_scores);
+        $this->assertNotSame($snapshot->health_score, $previous->health_score);
+
+        // Zakat hawl countdown + purification ledger story.
+        $this->assertNotNull($user->zakat_hawl_month);
+        $this->assertNotNull($user->zakat_hawl_day);
+        $this->assertSame(1, $user->obligationSettlements()->count());
+        $this->assertGreaterThan(0, $metrics['shariah']['purification_outstanding']);
+
+        // Contribution vs growth: the cash sleeve brings deposit flows.
+        $flows = app(NetFlowCalculator::class)->flows($user, now()->subYear());
+        $this->assertGreaterThan(0, $flows['deposits']);
+
+        // Follow-through: one resolved alert from yesterday.
+        $this->assertSame(1, ActivityEvent::whereBelongsTo($user)
+            ->where('type', ActivityType::AlertResolved)
+            ->count());
     }
 
     public function test_signed_in_users_are_redirected_without_a_new_account(): void

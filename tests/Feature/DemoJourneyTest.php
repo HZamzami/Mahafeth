@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\AiInsight;
 use App\Models\Institution;
 use App\Models\User;
+use App\Services\Analytics\DailyMoveAttributor;
 use Database\Seeders\InstitutionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt;
@@ -105,6 +106,19 @@ class DemoJourneyTest extends TestCase
         $this->assertNotNull($demo->riskProfile);
         $this->assertNotNull($demo->latestSnapshot()?->health_score);
         $this->assertGreaterThan(20, $demo->portfolioSnapshots()->whereNotNull('health_score')->count());
+
+        // The golden persona showcases the newest features: drift against a
+        // real plan, first-visit daily-move attribution, and the hawl and
+        // purification state.
+        $this->assertNotNull($demo->latestSnapshot()->metrics['drift']);
+        $previous = $demo->portfolioSnapshots()
+            ->where('as_of', '<', today()->toDateString())
+            ->orderByDesc('as_of')
+            ->first();
+        $this->assertNotNull(app(DailyMoveAttributor::class)
+            ->attribute($demo->latestSnapshot(), $previous));
+        $this->assertNotNull($demo->zakat_hawl_month);
+        $this->assertGreaterThan(0, $demo->latestSnapshot()->metrics['shariah']['purification_outstanding']);
 
         // The contrasting conservative persona is scored too.
         $sara = User::where('email', 'sara@mahafeth.test')->firstOrFail();

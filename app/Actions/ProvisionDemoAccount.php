@@ -59,7 +59,9 @@ class ProvisionDemoAccount
         // Not mass-assignable on purpose; the demo account is born verified.
         $user->forceFill(['email_verified_at' => now()])->save();
 
-        foreach (Institution::whereIn('slug', ['derayah', 'alrajhi-capital', 'rain'])->get() as $institution) {
+        // alinma-bank contributes the cash sleeve and the deposit
+        // transactions the contribution-vs-growth split reads.
+        foreach (Institution::whereIn('slug', ['alinma-bank', 'derayah', 'alrajhi-capital', 'rain'])->get() as $institution) {
             $connection = $user->connections()->create(['institution_id' => $institution->id]);
 
             $user->consents()->create([
@@ -86,10 +88,16 @@ class ProvisionDemoAccount
 
         // Weekly history plus a plausible health trajectory, so the trend
         // chart and week-over-week comparisons work from the first minute.
+        // The showcase state (plan, hawl, purification ledger, resolved
+        // alert) goes in before the analyzer so the snapshot reflects it,
+        // and the previous snapshot is enriched after so daily-move
+        // attribution has a real starting point.
         $seeder = new DemoPortfolioSeeder;
         $seeder->backfillSnapshotHistory($user);
+        $seeder->seedShowcaseState($user);
         $this->analyzer->analyze($user->fresh());
         $seeder->backfillHealthHistory($user);
+        $seeder->enrichPreviousSnapshot($user->fresh());
 
         // Pre-generate the AI insight so the advisor and dashboard cards
         // are ready (or already spinning) by the time the visitor looks.

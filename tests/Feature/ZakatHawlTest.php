@@ -100,6 +100,22 @@ class ZakatHawlTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    public function test_demo_accounts_never_receive_reminders(): void
+    {
+        Notification::fake();
+
+        $soonHawl = HijriDate::toHijri(today()->addDays(2));
+        User::factory()->create([
+            'email' => 'guest-abc@demo.mahafeth.test',
+            'zakat_hawl_month' => $soonHawl['month'],
+            'zakat_hawl_day' => $soonHawl['day'],
+        ]);
+
+        $this->artisan('mahafeth:zakat-reminders')->assertSuccessful();
+
+        Notification::assertNothingSent();
+    }
+
     public function test_the_settings_section_saves_and_clears_the_hawl_date(): void
     {
         $user = User::factory()->create();
