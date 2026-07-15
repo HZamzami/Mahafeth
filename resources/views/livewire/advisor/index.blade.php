@@ -114,7 +114,8 @@ new class extends Component {
     }
 
     /**
-     * "Discuss this" on a recommendation seeds the chat with it.
+     * "Discuss this" on a recommendation seeds the chat with it and
+     * closes the insight drawer so the conversation is in view.
      */
     public function discuss(SendChatMessage $sendChatMessage, int $index): void
     {
@@ -127,6 +128,8 @@ new class extends Component {
         $this->sendContent($sendChatMessage, __('I\'d like to discuss this recommendation: ":title". How do I do this?', [
             'title' => $recommendation['title'],
         ]));
+
+        $this->modal('advisor-insight')->close();
     }
 
     public function clearChat(): void
@@ -239,7 +242,9 @@ new class extends Component {
     <div class="flex items-start justify-between gap-4">
         <div>
             <flux:heading size="xl">{{ __('AI Advisor') }}</flux:heading>
-            <flux:text class="mt-1 text-balance">
+            {{-- Once a conversation exists, the phone gives every pixel to the
+                 thread; the subtitle stays on desktop where space is free. --}}
+            <flux:text class="mt-1 text-balance {{ $messages->isNotEmpty() ? 'max-lg:hidden' : '' }}">
                 {{ __('Ask anything about your unified portfolio — answers are grounded in your own numbers.') }}
             </flux:text>
         </div>
@@ -271,103 +276,112 @@ new class extends Component {
             </flux:callout>
         @endif
 
-        {{-- Collapsed by default: people open this page for the chat, so
-             the insight is one slim row until asked for. --}}
+        {{-- The insight lives in a drawer, not inline: an overlay can never
+             squeeze the fixed-height chat. The page keeps one slim row. --}}
         @if ($insight !== null)
-            <div class="card px-5 py-1">
-                <flux:accordion transition>
-                    <flux:accordion.item>
-                        <flux:accordion.heading>
-                            <span class="flex items-center gap-2 text-teal-700 dark:text-teal-300">
-                                <flux:icon.light-bulb class="size-4 shrink-0" />
-                                {{ __('Insight & action plan') }}
-                                <flux:badge size="sm">{{ count($insight->recommendations) }}</flux:badge>
-                                @if ($isStale && ! $isGenerating)
-                                    <flux:badge size="sm" color="amber">{{ __('Outdated') }}</flux:badge>
-                                @endif
-                            </span>
-                        </flux:accordion.heading>
+            <flux:modal.trigger name="advisor-insight">
+                <flux:button class="w-full" variant="outline" icon="light-bulb">
+                    <span class="flex items-center gap-2">
+                        {{ __('Insight & action plan') }}
+                        <flux:badge size="sm">{{ count($insight->recommendations) }}</flux:badge>
+                        @if ($isStale && ! $isGenerating)
+                            <flux:badge size="sm" color="amber">{{ __('Outdated') }}</flux:badge>
+                        @endif
+                    </span>
+                </flux:button>
+            </flux:modal.trigger>
 
-                        <flux:accordion.content>
-                            {{-- On phones the expanded insight scrolls inside a
-                                 capped region so it can never push the chat off
-                                 screen; pb-4 compensates for the card's slim py-1. --}}
-                            <div class="pb-4 max-lg:max-h-[45dvh] max-lg:overflow-y-auto">
-                                @if ($isStale && ! $isGenerating)
-                                    <flux:callout class="mt-3" color="amber" icon="exclamation-triangle" inline>
-                                        <flux:callout.text>
-                                            {{ __('Your analysis has changed since this was generated.') }}
-                                            <flux:link class="cursor-pointer" wire:click="generate">{{ __('Regenerate') }}</flux:link>
-                                        </flux:callout.text>
-                                    </flux:callout>
-                                @endif
+            <flux:modal name="advisor-insight" variant="flyout" class="w-full md:max-w-md">
+                <div class="space-y-3 text-start">
+                    <flux:heading size="lg" class="flex items-center gap-2">
+                        <flux:icon.light-bulb class="size-5 shrink-0 text-teal-700 dark:text-teal-300" />
+                        {{ __('Insight & action plan') }}
+                    </flux:heading>
 
-                                <flux:callout class="mt-3" color="teal" icon="light-bulb">
-                                    <flux:callout.heading>{{ __('Executive Summary') }}</flux:callout.heading>
-                                    <flux:callout.text>{{ $insight->summary }}</flux:callout.text>
-                                </flux:callout>
+                    @if ($isStale && ! $isGenerating)
+                        <flux:callout color="amber" icon="exclamation-triangle" inline>
+                            <flux:callout.text>
+                                {{ __('Your analysis has changed since this was generated.') }}
+                                <flux:link class="cursor-pointer" wire:click="generate">{{ __('Regenerate') }}</flux:link>
+                            </flux:callout.text>
+                        </flux:callout>
+                    @endif
 
-                                <div class="mt-3 space-y-3">
-                                    @foreach ($insight->recommendations as $index => $recommendation)
-                                        <div
-                                            class="flex flex-col rounded-lg border border-neutral-200/60 bg-neutral-50 p-3 dark:border-neutral-700/60 dark:bg-zinc-800/50">
-                                            <div class="flex items-start justify-between gap-2">
-                                                <flux:heading size="sm">{{ $recommendation['title'] }}</flux:heading>
-                                                <flux:badge size="sm" inset="top bottom"
-                                                    :color="['high' => 'red', 'medium' => 'amber', 'low' => 'zinc'][$recommendation['priority']] ?? 'zinc'">
-                                                    {{ __(ucfirst($recommendation['priority'])) }}</flux:badge>
-                                            </div>
-                                            <flux:text class="mt-1 text-sm">{{ $recommendation['body'] }}</flux:text>
+                    <flux:callout color="teal" icon="light-bulb">
+                        <flux:callout.heading>{{ __('Executive Summary') }}</flux:callout.heading>
+                        <flux:callout.text>{{ $insight->summary }}</flux:callout.text>
+                    </flux:callout>
 
-                                            @if (($recommendation['evidence'] ?? []) !== [])
-                                                <flux:accordion class="mt-2" transition>
-                                                    <flux:accordion.item>
-                                                        <flux:accordion.heading>
-                                                            <span class="text-xs font-medium text-teal-700 dark:text-teal-300">
-                                                                {{ __('Show the math') }}</span>
-                                                        </flux:accordion.heading>
-                                                        <flux:accordion.content>
-                                                            <div class="mt-2 flex flex-wrap gap-1.5">
-                                                                @foreach ($recommendation['evidence'] as $evidence)
-                                                                    {{-- dir=auto keeps Arabic metric names reading right-to-left
-                                                                         while the LTR span stops signs and % from shuffling. --}}
-                                                                    <flux:badge size="sm" dir="auto">
-                                                                        {{ $evidence['metric'] }}: <span dir="ltr">{{ $evidence['value'] }}</span></flux:badge>
-                                                                @endforeach
-                                                            </div>
-                                                        </flux:accordion.content>
-                                                    </flux:accordion.item>
-                                                </flux:accordion>
-                                            @endif
-
-                                            <flux:button class="mt-3 self-start" size="sm" icon="chat-bubble-oval-left"
-                                                wire:click="discuss({{ $index }})" wire:loading.attr="disabled"
-                                                :disabled="$isAwaitingReply">
-                                                {{ __('Discuss this') }}</flux:button>
-                                        </div>
-                                    @endforeach
-                                </div>
+                    @foreach ($insight->recommendations as $index => $recommendation)
+                        <div
+                            class="flex flex-col rounded-lg border border-neutral-200/60 bg-neutral-50 p-3 dark:border-neutral-700/60 dark:bg-zinc-800/50">
+                            <div class="flex items-start justify-between gap-2">
+                                <flux:heading size="sm">{{ $recommendation['title'] }}</flux:heading>
+                                <flux:badge size="sm" inset="top bottom"
+                                    :color="['high' => 'red', 'medium' => 'amber', 'low' => 'zinc'][$recommendation['priority']] ?? 'zinc'">
+                                    {{ __(ucfirst($recommendation['priority'])) }}</flux:badge>
                             </div>
-                        </flux:accordion.content>
-                    </flux:accordion.item>
-                </flux:accordion>
-            </div>
+                            <flux:text class="mt-1 text-sm">{{ $recommendation['body'] }}</flux:text>
+
+                            @if (($recommendation['evidence'] ?? []) !== [])
+                                <flux:accordion class="mt-2" transition>
+                                    <flux:accordion.item>
+                                        <flux:accordion.heading>
+                                            <span class="text-xs font-medium text-teal-700 dark:text-teal-300">
+                                                {{ __('Show the math') }}</span>
+                                        </flux:accordion.heading>
+                                        <flux:accordion.content>
+                                            <div class="mt-2 flex flex-wrap gap-1.5">
+                                                @foreach ($recommendation['evidence'] as $evidence)
+                                                    {{-- dir=auto keeps Arabic metric names reading right-to-left
+                                                         while the LTR span stops signs and % from shuffling. --}}
+                                                    <flux:badge size="sm" dir="auto">
+                                                        {{ $evidence['metric'] }}: <span dir="ltr">{{ $evidence['value'] }}</span></flux:badge>
+                                                @endforeach
+                                            </div>
+                                        </flux:accordion.content>
+                                    </flux:accordion.item>
+                                </flux:accordion>
+                            @endif
+
+                            <flux:button class="mt-3 self-start" size="sm" icon="chat-bubble-oval-left"
+                                wire:click="discuss({{ $index }})" wire:loading.attr="disabled"
+                                :disabled="$isAwaitingReply">
+                                {{ __('Discuss this') }}</flux:button>
+                        </div>
+                    @endforeach
+                </div>
+            </flux:modal>
         @elseif ($isGenerating)
-            <div class="flex flex-col items-center gap-3 card-cta p-10 text-center">
-                <flux:icon.loading class="size-6 text-teal-700 dark:text-teal-300" />
-                <flux:text class="text-sm">{{ __('Analyzing your portfolio…') }}</flux:text>
-                <flux:text class="max-w-56 text-xs">
-                    {{ __('This runs in the background — feel free to keep browsing.') }}</flux:text>
-            </div>
+            @if ($messages->isEmpty())
+                <div class="flex flex-col items-center gap-3 card-cta p-10 text-center">
+                    <flux:icon.loading class="size-6 text-teal-700 dark:text-teal-300" />
+                    <flux:text class="text-sm">{{ __('Analyzing your portfolio…') }}</flux:text>
+                    <flux:text class="max-w-56 text-xs">
+                        {{ __('This runs in the background — feel free to keep browsing.') }}</flux:text>
+                </div>
+            @else
+                {{-- Mid-conversation the generating state is one quiet row. --}}
+                <div class="flex items-center justify-center gap-2">
+                    <flux:icon.loading class="size-4 text-teal-700 dark:text-teal-300" />
+                    <flux:text class="text-sm">{{ __('Analyzing your portfolio…') }}</flux:text>
+                </div>
+            @endif
         @else
-            <div class="flex flex-col items-center gap-4 card-cta p-10 text-center">
-                <flux:text class="max-w-72 text-sm">
-                    {{ __('Generate insights first to start a conversation grounded in your portfolio.') }}
-                </flux:text>
-                <flux:button variant="primary" icon="sparkles" wire:click="generate" wire:loading.attr="disabled"
-                    :disabled="$isGenerating">
+            @if ($messages->isEmpty())
+                <div class="flex flex-col items-center gap-4 card-cta p-10 text-center">
+                    <flux:text class="max-w-72 text-sm">
+                        {{ __('Generate insights first to start a conversation grounded in your portfolio.') }}
+                    </flux:text>
+                    <flux:button variant="primary" icon="sparkles" wire:click="generate" wire:loading.attr="disabled"
+                        :disabled="$isGenerating">
+                        {{ __('Generate Insights') }}</flux:button>
+                </div>
+            @else
+                <flux:button class="w-full" variant="outline" icon="sparkles" wire:click="generate"
+                    wire:loading.attr="disabled" :disabled="$isGenerating">
                     {{ __('Generate Insights') }}</flux:button>
-            </div>
+            @endif
         @endif
 
         {{-- Chat --}}
@@ -467,15 +481,17 @@ new class extends Component {
             @endif
 
             <div class="border-t border-neutral-200 p-3 dark:border-neutral-700">
-                {{-- Enter sends, Shift+Enter adds a newline. --}}
-                <flux:composer wire:model="message" :placeholder="__('Ask about your portfolio…')" maxlength="1000"
+                {{-- Enter sends, Shift+Enter adds a newline. `inline` keeps the
+                     composer one row tall — input and send button side by side —
+                     so the thread keeps the screen. --}}
+                <flux:composer inline wire:model="message" :placeholder="__('Ask about your portfolio…')" maxlength="1000"
                     x-on:keydown.enter="if (! $event.shiftKey) { $event.preventDefault(); $wire.send(); }">
                     <x-slot:actionsTrailing>
                         <flux:button variant="primary" size="sm" icon="paper-airplane" wire:click="send"
                             wire:loading.attr="disabled" :disabled="$isAwaitingReply" :aria-label="__('Send')" />
                     </x-slot:actionsTrailing>
                 </flux:composer>
-                <flux:text class="mt-2 text-center text-xs">
+                <flux:text class="mt-1.5 text-center text-[11px] leading-tight opacity-80">
                     {{ __('AI-generated analysis can be inaccurate — not licensed financial advice.') }}</flux:text>
             </div>
         </div>

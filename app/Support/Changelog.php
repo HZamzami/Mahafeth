@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'improved',
+                        'title' => __('A chat-first advisor'),
+                        'body' => __('The advisor page was rebuilt around the conversation: a one-line message box, the insight and action plan in a slide-over panel that never squeezes the chat, and a thread that runs the full height of your phone screen.'),
+                    ],
+                    [
+                        'type' => 'improved',
                         'title' => __('Clearer, warmer Arabic everywhere'),
                         'body' => __('Every Arabic string in the app was reviewed against one glossary: direct requests instead of stiff boilerplate, active voice, proper Arabic quotes, correct tanween, and one consistent term for every financial concept.'),
                     ],

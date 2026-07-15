@@ -1251,5 +1251,7 @@
     "The demo now shows its progress": "العرض التجريبي يعرض تقدّمه الآن",
     "Tapping Try the demo the instant the page loads used to jump straight into provisioning with no feedback. The building overlay now appears no matter how fast you click.": "النقر على «جرّب العرض التجريبي» فور تحميل الصفحة كان ينتقل مباشرة إلى تجهيز الحساب دون أي مؤشر. الآن تظهر شاشة التجهيز مهما كانت سرعة نقرك.",
     "Clearer, warmer Arabic everywhere": "عربية أوضح وأدفأ في كل مكان",
-    "Every Arabic string in the app was reviewed against one glossary: direct requests instead of stiff boilerplate, active voice, proper Arabic quotes, correct tanween, and one consistent term for every financial concept.": "رُوجعت كل النصوص العربية في التطبيق وفق معجم واحد: طلبات مباشرة بدل الصيغ الجامدة، وصيغة مبنية للمعلوم، وعلامات اقتباس عربية «»، وتنوين صحيح، ومصطلح واحد ثابت لكل مفهوم مالي."
+    "Every Arabic string in the app was reviewed against one glossary: direct requests instead of stiff boilerplate, active voice, proper Arabic quotes, correct tanween, and one consistent term for every financial concept.": "رُوجعت كل النصوص العربية في التطبيق وفق معجم واحد: طلبات مباشرة بدل الصيغ الجامدة، وصيغة مبنية للمعلوم، وعلامات اقتباس عربية «»، وتنوين صحيح، ومصطلح واحد ثابت لكل مفهوم مالي.",
+    "A chat-first advisor": "مستشار محوره المحادثة",
+    "The advisor page was rebuilt around the conversation: a one-line message box, the insight and action plan in a slide-over panel that never squeezes the chat, and a thread that runs the full height of your phone screen.": "أُعيد بناء صفحة المستشار حول المحادثة: صندوق رسائل بسطر واحد، والرؤية وخطة العمل في لوحة جانبية منزلقة لا تزاحم المحادثة أبدًا، وسلسلة رسائل تمتد بكامل ارتفاع شاشة هاتفك."
 }
