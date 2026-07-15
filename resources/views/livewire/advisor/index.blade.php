@@ -236,8 +236,12 @@ new class extends Component {
      the safe-area insets cover the PWA's status bar and home indicator.
      No stagger-children here: this element re-renders on wire:poll while
      a reply generates, and the entrance animation would replay on every
-     poll, making messages blink in and out. --}}
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:h-[calc(100dvh-10.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] max-lg:overflow-y-auto"
+     poll, making messages blink in and out.
+     The -mx-2/px-2/pb-1 on mobile widens the scroll box into flux:main's
+     gutter: overflow-y-auto also clips overflow-x, which would otherwise
+     slice the chat card's side and bottom shadows. Content position is
+     unchanged; the card's shadow now reads like every other card. --}}
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:-mx-2 max-lg:h-[calc(100dvh-10.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] max-lg:overflow-y-auto max-lg:px-2 max-lg:pb-1"
     @if ($isAwaitingReply) wire:poll.1s @elseif ($isGenerating) wire:poll.2s @endif>
     <div class="flex items-start justify-between gap-4">
         <div>
@@ -276,80 +280,85 @@ new class extends Component {
             </flux:callout>
         @endif
 
-        {{-- The insight lives in a drawer, not inline: an overlay can never
-             squeeze the fixed-height chat. The page keeps one slim row. --}}
+        {{-- Insight lives behind a tappable card row (same affordance as a
+             holdings row) that opens the app's standard centered modal, so
+             it never competes with the fixed-height chat for space. --}}
         @if ($insight !== null)
             <flux:modal.trigger name="advisor-insight">
-                <flux:button class="w-full" variant="outline" icon="light-bulb">
-                    <span class="flex items-center gap-2">
-                        {{ __('Insight & action plan') }}
-                        <flux:badge size="sm">{{ count($insight->recommendations) }}</flux:badge>
-                        @if ($isStale && ! $isGenerating)
-                            <flux:badge size="sm" color="amber">{{ __('Outdated') }}</flux:badge>
-                        @endif
-                    </span>
-                </flux:button>
+                <button type="button" class="card flex w-full items-center gap-2.5 px-5 py-3.5 text-start">
+                    <flux:icon.light-bulb class="size-5 shrink-0 text-teal-700 dark:text-teal-300" />
+                    <span class="font-medium">{{ __('Insight & action plan') }}</span>
+                    <flux:badge size="sm">{{ count($insight->recommendations) }}</flux:badge>
+                    @if ($isStale && ! $isGenerating)
+                        <flux:badge size="sm" color="amber">{{ __('Outdated') }}</flux:badge>
+                    @endif
+                    <flux:icon.chevron-right class="ms-auto size-4 shrink-0 text-zinc-400 rtl:rotate-180" />
+                </button>
             </flux:modal.trigger>
 
-            <flux:modal name="advisor-insight" variant="flyout" class="w-full md:max-w-md">
-                <div class="space-y-3 text-start">
+            <flux:modal name="advisor-insight" class="md:w-[32rem]">
+                <div class="space-y-4 text-start">
                     <flux:heading size="lg" class="flex items-center gap-2">
                         <flux:icon.light-bulb class="size-5 shrink-0 text-teal-700 dark:text-teal-300" />
                         {{ __('Insight & action plan') }}
                     </flux:heading>
 
-                    @if ($isStale && ! $isGenerating)
-                        <flux:callout color="amber" icon="exclamation-triangle" inline>
-                            <flux:callout.text>
-                                {{ __('Your analysis has changed since this was generated.') }}
-                                <flux:link class="cursor-pointer" wire:click="generate">{{ __('Regenerate') }}</flux:link>
-                            </flux:callout.text>
+                    {{-- Long insights (summary + up to five cards) scroll inside
+                         the modal rather than overflowing the viewport. --}}
+                    <div class="max-h-[70vh] space-y-4 overflow-y-auto">
+                        @if ($isStale && ! $isGenerating)
+                            <flux:callout color="amber" icon="exclamation-triangle" inline>
+                                <flux:callout.text>
+                                    {{ __('Your analysis has changed since this was generated.') }}
+                                    <flux:link class="cursor-pointer" wire:click="generate">{{ __('Regenerate') }}</flux:link>
+                                </flux:callout.text>
+                            </flux:callout>
+                        @endif
+
+                        <flux:callout color="teal" icon="light-bulb">
+                            <flux:callout.heading>{{ __('Executive Summary') }}</flux:callout.heading>
+                            <flux:callout.text>{{ $insight->summary }}</flux:callout.text>
                         </flux:callout>
-                    @endif
 
-                    <flux:callout color="teal" icon="light-bulb">
-                        <flux:callout.heading>{{ __('Executive Summary') }}</flux:callout.heading>
-                        <flux:callout.text>{{ $insight->summary }}</flux:callout.text>
-                    </flux:callout>
+                        @foreach ($insight->recommendations as $index => $recommendation)
+                            <div
+                                class="flex flex-col rounded-lg border border-neutral-200/60 bg-neutral-50 p-3 dark:border-neutral-700/60 dark:bg-zinc-800/50">
+                                <div class="flex items-start justify-between gap-2">
+                                    <flux:heading size="sm">{{ $recommendation['title'] }}</flux:heading>
+                                    <flux:badge size="sm" inset="top bottom"
+                                        :color="['high' => 'red', 'medium' => 'amber', 'low' => 'zinc'][$recommendation['priority']] ?? 'zinc'">
+                                        {{ __(ucfirst($recommendation['priority'])) }}</flux:badge>
+                                </div>
+                                <flux:text class="mt-1 text-sm">{{ $recommendation['body'] }}</flux:text>
 
-                    @foreach ($insight->recommendations as $index => $recommendation)
-                        <div
-                            class="flex flex-col rounded-lg border border-neutral-200/60 bg-neutral-50 p-3 dark:border-neutral-700/60 dark:bg-zinc-800/50">
-                            <div class="flex items-start justify-between gap-2">
-                                <flux:heading size="sm">{{ $recommendation['title'] }}</flux:heading>
-                                <flux:badge size="sm" inset="top bottom"
-                                    :color="['high' => 'red', 'medium' => 'amber', 'low' => 'zinc'][$recommendation['priority']] ?? 'zinc'">
-                                    {{ __(ucfirst($recommendation['priority'])) }}</flux:badge>
+                                @if (($recommendation['evidence'] ?? []) !== [])
+                                    <flux:accordion class="mt-2" transition>
+                                        <flux:accordion.item>
+                                            <flux:accordion.heading>
+                                                <span class="text-xs font-medium text-teal-700 dark:text-teal-300">
+                                                    {{ __('Show the math') }}</span>
+                                            </flux:accordion.heading>
+                                            <flux:accordion.content>
+                                                <div class="mt-2 flex flex-wrap gap-1.5">
+                                                    @foreach ($recommendation['evidence'] as $evidence)
+                                                        {{-- dir=auto keeps Arabic metric names reading right-to-left
+                                                             while the LTR span stops signs and % from shuffling. --}}
+                                                        <flux:badge size="sm" dir="auto">
+                                                            {{ $evidence['metric'] }}: <span dir="ltr">{{ $evidence['value'] }}</span></flux:badge>
+                                                    @endforeach
+                                                </div>
+                                            </flux:accordion.content>
+                                        </flux:accordion.item>
+                                    </flux:accordion>
+                                @endif
+
+                                <flux:button class="mt-3 self-start" size="sm" icon="chat-bubble-oval-left"
+                                    wire:click="discuss({{ $index }})" wire:loading.attr="disabled"
+                                    :disabled="$isAwaitingReply">
+                                    {{ __('Discuss this') }}</flux:button>
                             </div>
-                            <flux:text class="mt-1 text-sm">{{ $recommendation['body'] }}</flux:text>
-
-                            @if (($recommendation['evidence'] ?? []) !== [])
-                                <flux:accordion class="mt-2" transition>
-                                    <flux:accordion.item>
-                                        <flux:accordion.heading>
-                                            <span class="text-xs font-medium text-teal-700 dark:text-teal-300">
-                                                {{ __('Show the math') }}</span>
-                                        </flux:accordion.heading>
-                                        <flux:accordion.content>
-                                            <div class="mt-2 flex flex-wrap gap-1.5">
-                                                @foreach ($recommendation['evidence'] as $evidence)
-                                                    {{-- dir=auto keeps Arabic metric names reading right-to-left
-                                                         while the LTR span stops signs and % from shuffling. --}}
-                                                    <flux:badge size="sm" dir="auto">
-                                                        {{ $evidence['metric'] }}: <span dir="ltr">{{ $evidence['value'] }}</span></flux:badge>
-                                                @endforeach
-                                            </div>
-                                        </flux:accordion.content>
-                                    </flux:accordion.item>
-                                </flux:accordion>
-                            @endif
-
-                            <flux:button class="mt-3 self-start" size="sm" icon="chat-bubble-oval-left"
-                                wire:click="discuss({{ $index }})" wire:loading.attr="disabled"
-                                :disabled="$isAwaitingReply">
-                                {{ __('Discuss this') }}</flux:button>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
             </flux:modal>
         @elseif ($isGenerating)
@@ -378,9 +387,13 @@ new class extends Component {
                         {{ __('Generate Insights') }}</flux:button>
                 </div>
             @else
-                <flux:button class="w-full" variant="outline" icon="sparkles" wire:click="generate"
-                    wire:loading.attr="disabled" :disabled="$isGenerating">
-                    {{ __('Generate Insights') }}</flux:button>
+                {{-- Same slim card row as the insight trigger, so both states
+                     read as one consistent surface above the chat. --}}
+                <button type="button" class="card flex w-full items-center gap-2.5 px-5 py-3.5 text-start"
+                    wire:click="generate" wire:loading.attr="disabled" @disabled($isGenerating)>
+                    <flux:icon.sparkles class="size-5 shrink-0 text-teal-700 dark:text-teal-300" />
+                    <span class="font-medium">{{ __('Generate Insights') }}</span>
+                </button>
             @endif
         @endif
 
