@@ -241,23 +241,41 @@ new class extends Component {
      it absorbs the leftover height and the message thread scrolls inside
      it. Keeping overflow off the root is what lets mx-auto center cleanly
      and lets the card's shadow render into flux:main's gutter. --}}
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:h-[calc(100dvh-10.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))]"
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:gap-3 max-lg:h-[calc(100dvh-10.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))]"
     @if ($isAwaitingReply) wire:poll.1s @elseif ($isGenerating) wire:poll.2s @endif>
     <div class="flex items-start justify-between gap-4">
         <div>
-            <flux:heading size="xl">{{ __('AI Advisor') }}</flux:heading>
-            {{-- Once a conversation exists, the phone gives every pixel to the
-                 thread; the subtitle stays on desktop where space is free. --}}
+            {{-- Once chatting, the phone shrinks the title so the thread gets
+                 the room; desktop keeps the full heading. --}}
+            <flux:heading size="xl" class="{{ $messages->isNotEmpty() ? 'max-lg:text-xl' : '' }}">
+                {{ __('AI Advisor') }}</flux:heading>
+            {{-- The subtitle stays on desktop where space is free. --}}
             <flux:text class="mt-1 text-balance {{ $messages->isNotEmpty() ? 'max-lg:hidden' : '' }}">
                 {{ __('Ask anything about your unified portfolio — answers are grounded in your own numbers.') }}
             </flux:text>
         </div>
         @if ($messages->isNotEmpty())
-            {{-- Disabled mid-generation: clearing then would let the queued
-                 reply land in an emptied thread. --}}
-            <flux:button size="sm" variant="subtle" icon="trash" wire:click="clearChat"
-                wire:confirm="{{ __('Clear the whole conversation?') }}" :disabled="$isAwaitingReply">
-                {{ __('Clear conversation') }}</flux:button>
+            <div class="flex shrink-0 items-center gap-1">
+                {{-- On phones the insight/generate action collapses into the
+                     header, freeing the full-width row below for the thread;
+                     the row still shows on desktop and on the empty state. --}}
+                @if ($hasSnapshot && $insight !== null)
+                    <flux:modal.trigger name="advisor-insight">
+                        <flux:button class="lg:hidden" size="sm" variant="subtle" icon="light-bulb"
+                            :aria-label="__('Insight & action plan')" />
+                    </flux:modal.trigger>
+                @elseif ($hasSnapshot && ! $isGenerating)
+                    <flux:button class="lg:hidden" size="sm" variant="subtle" icon="sparkles"
+                        wire:click="generate" :aria-label="__('Generate Insights')" />
+                @endif
+                {{-- Icon-only on phones; disabled mid-generation so clearing
+                     can't leave the queued reply landing in an empty thread. --}}
+                <flux:button size="sm" variant="subtle" icon="trash" wire:click="clearChat"
+                    wire:confirm="{{ __('Clear the whole conversation?') }}" :disabled="$isAwaitingReply"
+                    :aria-label="__('Clear conversation')">
+                    <span class="max-lg:hidden">{{ __('Clear conversation') }}</span>
+                </flux:button>
+            </div>
         @endif
     </div>
 
@@ -285,7 +303,11 @@ new class extends Component {
              it never competes with the fixed-height chat for space. --}}
         @if ($insight !== null)
             <flux:modal.trigger name="advisor-insight">
-                <button type="button" class="card flex w-full items-center gap-2.5 px-5 py-3.5 text-start">
+                {{-- Full row on desktop and the empty state; on a phone mid-chat
+                     it collapses to the header icon so the thread gets its
+                     height back. --}}
+                <button type="button"
+                    class="card flex w-full items-center gap-2.5 px-5 py-3.5 text-start {{ $messages->isNotEmpty() ? 'max-lg:hidden' : '' }}">
                     <flux:icon.light-bulb class="size-5 shrink-0 text-teal-700 dark:text-teal-300" />
                     <span class="font-medium">{{ __('Insight & action plan') }}</span>
                     <flux:badge size="sm">{{ count($insight->recommendations) }}</flux:badge>
@@ -387,9 +409,10 @@ new class extends Component {
                         {{ __('Generate Insights') }}</flux:button>
                 </div>
             @else
-                {{-- Same slim card row as the insight trigger, so both states
-                     read as one consistent surface above the chat. --}}
-                <button type="button" class="card flex w-full items-center gap-2.5 px-5 py-3.5 text-start"
+                {{-- Same slim card row as the insight trigger; on a phone mid-chat
+                     it collapses to the header sparkles icon. --}}
+                <button type="button"
+                    class="card flex w-full items-center gap-2.5 px-5 py-3.5 text-start {{ $messages->isNotEmpty() ? 'max-lg:hidden' : '' }}"
                     wire:click="generate" wire:loading.attr="disabled" @disabled($isGenerating)>
                     <flux:icon.sparkles class="size-5 shrink-0 text-teal-700 dark:text-teal-300" />
                     <span class="font-medium">{{ __('Generate Insights') }}</span>
