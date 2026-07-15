@@ -1158,5 +1158,12 @@
     "Passkey removed.": "تمت إزالة مفتاح المرور.",
     "Something went wrong while adding the passkey. Please try again.": "حدث خطأ أثناء إضافة مفتاح المرور. حاول مرة أخرى.",
     "You stay signed in": "تبقى مسجّل الدخول",
-    "Mahafeth now keeps you signed in on your device, so opening the app takes you straight to your portfolio instead of the login screen.": "محافظ يبقيك الآن مسجّل الدخول على جهازك، فيأخذك فتح التطبيق مباشرة إلى محفظتك بدلا من شاشة تسجيل الدخول."
+    "Mahafeth now keeps you signed in on your device, so opening the app takes you straight to your portfolio instead of the login screen.": "محافظ يبقيك الآن مسجّل الدخول على جهازك، فيأخذك فتح التطبيق مباشرة إلى محفظتك بدلا من شاشة تسجيل الدخول.",
+    "Daily Move": "حركة اليوم",
+    "since :date": "منذ :date",
+    ":currency FX": "صرف :currency",
+    "Show all contributions": "عرض كل المساهمات",
+    "Deposits & trades": "الإيداعات والتداولات",
+    "See what moved your portfolio today": "اعرف ما الذي حرّك محفظتك اليوم",
+    "A new Daily Move card on the dashboard breaks each day's change into the holdings and currencies behind it, so you can tell at a glance whether it was Aramco, the dollar, or your own deposits.": "بطاقة حركة اليوم الجديدة في لوحة المعلومات تفصّل تغيّر كل يوم إلى الأصول والعملات التي تقف وراءه، لتعرف بنظرة واحدة إن كان السبب أرامكو أو الدولار أو إيداعاتك."
 }

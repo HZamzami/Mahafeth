@@ -22,6 +22,9 @@
         {{-- Key metrics row --}}
         <livewire:dashboard.stat-cards />
 
+        {{-- What moved the portfolio since the previous snapshot --}}
+        <livewire:dashboard.daily-move />
+
         {{-- Main dashboard grid; on phones the health column leads --}}
         <div class="grid flex-1 items-stretch gap-4 lg:grid-cols-12">
             {{-- Left rail --}}

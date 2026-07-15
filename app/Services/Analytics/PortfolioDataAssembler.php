@@ -30,7 +30,8 @@ class PortfolioDataAssembler
      *     quantities: array<string, float>,
      *     priceSeries: array<string, array<string, float>>,
      *     assets: array<string, array{name: string, asset_class: string, sector: ?string, country: ?string, currency: string, shariah_status: string}>,
-     *     dividends: array<string, float>
+     *     dividends: array<string, float>,
+     *     fxRates: array<string, float>
      * }
      */
     public function forUser(User $user, CarbonInterface $from): array
@@ -65,6 +66,7 @@ class PortfolioDataAssembler
             'priceSeries' => $this->priceSeries($sources, $from),
             'assets' => $assets,
             'dividends' => $this->trailingDividends($user),
+            'fxRates' => array_map(fn (array $source): float => $source['rate'], $sources),
         ];
     }
 

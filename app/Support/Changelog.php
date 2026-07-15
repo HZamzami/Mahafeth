@@ -20,6 +20,16 @@ class Changelog
     {
         return [
             [
+                'date' => '2026-07-15',
+                'items' => [
+                    [
+                        'type' => 'new',
+                        'title' => __('See what moved your portfolio today'),
+                        'body' => __('A new Daily Move card on the dashboard breaks each day\'s change into the holdings and currencies behind it, so you can tell at a glance whether it was Aramco, the dollar, or your own deposits.'),
+                    ],
+                ],
+            ],
+            [
                 'date' => '2026-07-14',
                 'items' => [
                     [

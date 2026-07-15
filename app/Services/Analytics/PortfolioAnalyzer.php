@@ -110,6 +110,7 @@ class PortfolioAnalyzer
             'stress_correlation' => $this->correlationAnalyzer->stressCorrelation($averageCorrelation),
             'pca_first_factor_share' => $this->correlationAnalyzer->firstFactorShare($covariance),
             'weights' => $weights,
+            'holdings' => $this->holdingStates($data, $weights),
             'shariah' => $this->shariahComplianceAnalyzer->analyze($weights, $data['assets'], $data['dividends']),
             'zakat' => $this->zakatCalculator->calculate(
                 array_map(fn (float $weight): float => $weight * $totalValue, $weights),
@@ -170,6 +171,39 @@ class PortfolioAnalyzer
         }
 
         return $snapshot;
+    }
+
+    /**
+     * Per-holding valuation state persisted with each snapshot. FX rates are
+     * only stored as current values (no history table), so snapshots are the
+     * sole source for day-over-day price/FX attribution.
+     *
+     * @param  array{quantities: array<string, float>, priceSeries: array<string, array<string, float>>, assets: array<string, array<string, mixed>>, fxRates: array<string, float>}  $data
+     * @param  array<string, float>  $weights
+     * @return array<string, array{quantity: float, native_close: float, fx_rate: float, value: float, weight: float, currency: string, name: string, price_date: string}>
+     */
+    private function holdingStates(array $data, array $weights): array
+    {
+        $states = [];
+
+        foreach ($data['priceSeries'] as $symbol => $series) {
+            $baseClose = end($series);
+            $rate = $data['fxRates'][$symbol] ?? 1.0;
+            $quantity = $data['quantities'][$symbol] ?? 0.0;
+
+            $states[$symbol] = [
+                'quantity' => $quantity,
+                'native_close' => $rate > 0 ? $baseClose / $rate : $baseClose,
+                'fx_rate' => $rate,
+                'value' => round($quantity * $baseClose, 4),
+                'weight' => $weights[$symbol] ?? 0.0,
+                'currency' => $data['assets'][$symbol]['currency'] ?? config('mahafeth.base_currency'),
+                'name' => $data['assets'][$symbol]['name'] ?? $symbol,
+                'price_date' => array_key_last($series),
+            ];
+        }
+
+        return $states;
     }
 
     /**
