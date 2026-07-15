@@ -141,6 +141,8 @@ new class extends Component {
 
         {{-- Side column --}}
         <div class="stagger-children flex flex-col gap-6">
+            <livewire:instruments.what-if :symbol="$symbol" />
+
             @if ($showFundamentals)
                 <livewire:instruments.analyst-panel :symbol="$symbol" lazy.bundle />
             @endif

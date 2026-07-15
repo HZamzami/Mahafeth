@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
+                        'title' => __('Try the trade before you make it'),
+                        'body' => __('A What if? panel on every instrument and holding page simulates a buy or sell and shows how your health score, concentration, volatility, and correlation would shift before you commit real money.'),
+                    ],
+                    [
+                        'type' => 'new',
                         'title' => __('See your dividend rhythm'),
                         'body' => __('A new income calendar on the Holdings page charts the dividends you received month by month and projects the year ahead from positions you still hold.'),
                     ],

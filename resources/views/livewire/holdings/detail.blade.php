@@ -334,6 +334,9 @@ new class extends Component {
 
         {{-- Side column --}}
         <div class="stagger-children flex flex-col gap-6">
+            {{-- Pre-trade simulation --}}
+            <livewire:instruments.what-if :symbol="$asset->symbol" :owned="true" />
+
             {{-- Position --}}
             <div class="card p-5">
                 <flux:heading class="uppercase tracking-widest !text-neutral-500 dark:!text-neutral-400" size="sm">
