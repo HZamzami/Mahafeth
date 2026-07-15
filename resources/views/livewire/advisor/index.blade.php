@@ -229,19 +229,16 @@ new class extends Component {
     }
 }; ?>
 
-{{-- Fixed height on mobile stretches the thread so the input sits at the
-     bottom of the screen like a native chat. 10.5rem = header (3.5rem) +
-     main top padding (1rem) + main bottom padding (6rem, which clears the
-     bottom nav), so the card ends on the same line as every other page;
-     the safe-area insets cover the PWA's status bar and home indicator.
-     No stagger-children here: this element re-renders on wire:poll while
-     a reply generates, and the entrance animation would replay on every
-     poll, making messages blink in and out.
-     The column itself does not scroll: the chat card is flex-1/min-h-0 so
-     it absorbs the leftover height and the message thread scrolls inside
-     it. Keeping overflow off the root is what lets mx-auto center cleanly
-     and lets the card's shadow render into flux:main's gutter. --}}
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:gap-3 max-lg:h-[calc(100dvh-10.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))]"
+{{-- On mobile this fills flux:main exactly like the dashboard root
+     (h-full), so the shared bottom padding governs the gap to the nav and
+     it stays consistent app-wide — no bespoke height math. The column
+     itself does not scroll: the chat card is flex-1/min-h-0 so it absorbs
+     the leftover height and the message thread scrolls inside it, which
+     also keeps mx-auto centering clean and lets the card shadow render.
+     No stagger-children here: this element re-renders on wire:poll while a
+     reply generates, and the entrance animation would replay on every
+     poll, making messages blink in and out. --}}
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:h-full max-lg:flex-1 max-lg:gap-3"
     @if ($isAwaitingReply) wire:poll.1s @elseif ($isGenerating) wire:poll.2s @endif>
     <div class="flex items-start justify-between gap-4">
         <div>
