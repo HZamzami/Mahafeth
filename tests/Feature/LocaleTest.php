@@ -77,7 +77,7 @@ class LocaleTest extends TestCase
 
         $this->get('/login')
             ->assertOk()
-            ->assertSee('لا تمتلك حساب؟')
+            ->assertSee('لا تمتلك حسابًا؟')
             ->assertDontSee("Don't have an account?");
 
         $this->get('/register')

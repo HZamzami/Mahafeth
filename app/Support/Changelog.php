@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'improved',
+                        'title' => __('Clearer, warmer Arabic everywhere'),
+                        'body' => __('Every Arabic string in the app was reviewed against one glossary: direct requests instead of stiff boilerplate, active voice, proper Arabic quotes, correct tanween, and one consistent term for every financial concept.'),
+                    ],
+                    [
+                        'type' => 'improved',
                         'title' => __('A livelier app, the same focus'),
                         'body' => __('The welcome page\'s polish now runs through the whole app: soft background accents behind every page, key numbers that count up as they appear, content that rises in as you arrive, and warmer invitations where a page is still empty.'),
                     ],
