@@ -21,6 +21,8 @@ class AlertEvaluator
 
     public const STRESS_CORRELATION_THRESHOLD = 0.50;
 
+    public const DRIFT_THRESHOLD = 0.05;
+
     /**
      * Built-in alerts plus the user's own alert rules, sharing one shape
      * so the dashboard, dismissal, and notifications treat them alike.
@@ -74,6 +76,21 @@ class AlertEvaluator
                 'params' => [
                     'volatility' => Number::percentage($metrics['volatility'] * 100, 1),
                     'target' => Number::percentage($target * 100, 1),
+                ],
+            ];
+        }
+
+        $drift = $metrics['drift'] ?? null;
+        if ($drift !== null && $drift['max'] > self::DRIFT_THRESHOLD) {
+            $alerts[] = [
+                'key' => 'Drift alert: :name is :actual of your portfolio versus its :target plan target.',
+                'color' => 'amber',
+                'identity' => 'drift',
+                'fingerprint' => $this->fingerprint('drift', $drift['symbol'], round($drift['max'], 3)),
+                'params' => [
+                    'name' => $drift['name'] ?? $drift['symbol'],
+                    'actual' => Number::percentage($drift['actual'] * 100, 1),
+                    'target' => Number::percentage($drift['target'] * 100, 1),
                 ],
             ];
         }
@@ -151,6 +168,7 @@ class AlertEvaluator
             'volatility' => isset($metrics['volatility']) ? (float) $metrics['volatility'] : null,
             'largest_position' => isset($metrics['largest_position']['weight']) ? (float) $metrics['largest_position']['weight'] : null,
             'max_drawdown' => isset($metrics['max_drawdown']) ? (float) $metrics['max_drawdown'] : null,
+            'allocation_drift' => isset($metrics['drift']['max']) ? (float) $metrics['drift']['max'] : null,
             'health_score' => $snapshot->health_score !== null ? (float) $snapshot->health_score : null,
             default => null,
         };

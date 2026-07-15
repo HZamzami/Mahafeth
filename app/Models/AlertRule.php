@@ -49,6 +49,12 @@ class AlertRule extends Model
             'label' => 'Health score',
             'key' => 'Custom alert: your health score of :value fell below your :threshold floor.',
         ],
+        'allocation_drift' => [
+            'direction' => 'above',
+            'unit' => 'percent',
+            'label' => 'Allocation drift vs plan',
+            'key' => 'Custom alert: your largest drift from the plan is :value — above your :threshold limit.',
+        ],
     ];
 
     protected $fillable = ['metric', 'threshold', 'enabled'];

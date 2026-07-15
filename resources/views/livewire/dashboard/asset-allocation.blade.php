@@ -51,9 +51,12 @@ new class extends Component {
             $index++;
         }
 
+        $drift = $snapshot?->metrics['drift'] ?? null;
+
         return [
             'segments' => $segments,
             'totalValue' => $snapshot?->total_value,
+            'drift' => ($drift['max'] ?? 0) > \App\Services\Analytics\AlertEvaluator::DRIFT_THRESHOLD ? $drift : null,
         ];
     }
 }; ?>
@@ -110,6 +113,16 @@ new class extends Component {
                 </button>
             @endforeach
         </div>
+        @if ($drift !== null)
+            <flux:text class="mt-3 flex items-center gap-1.5 text-xs !text-amber-600 dark:!text-amber-400">
+                <flux:icon.arrows-right-left class="size-3.5 shrink-0" />
+                {{ __('Largest drift vs plan: :name at :actual (target :target)', [
+                    'name' => $drift['name'] ?? $drift['symbol'],
+                    'actual' => Number::percentage($drift['actual'] * 100, 1),
+                    'target' => Number::percentage($drift['target'] * 100, 1),
+                ]) }}
+            </flux:text>
+        @endif
         </div>
     @else
         <div class="flex grow flex-col items-center justify-center gap-3 py-12">

@@ -1180,5 +1180,11 @@
     "FX rates from :time": "أسعار الصرف من :time",
     "Stale": "غير محدّث",
     "Honest about data age": "شفافية حول حداثة البيانات",
-    "The Open Banking card now shows how current your prices and exchange rates are, with a clear badge when either falls behind, so you always know what the numbers are built on.": "بطاقة الخدمات المصرفية المفتوحة تعرض الآن مدى حداثة الأسعار وأسعار الصرف لديك، مع شارة واضحة عند تأخر أي منها، لتعرف دائما على ماذا بُنيت الأرقام."
+    "The Open Banking card now shows how current your prices and exchange rates are, with a clear badge when either falls behind, so you always know what the numbers are built on.": "بطاقة الخدمات المصرفية المفتوحة تعرض الآن مدى حداثة الأسعار وأسعار الصرف لديك، مع شارة واضحة عند تأخر أي منها، لتعرف دائما على ماذا بُنيت الأرقام.",
+    "Drift alert: :name is :actual of your portfolio versus its :target plan target.": "تنبيه انحراف: :name يشكّل :actual من محفظتك مقابل هدف الخطة :target.",
+    "Custom alert: your largest drift from the plan is :value — above your :threshold limit.": "تنبيه مخصص: أكبر انحراف عن خطتك هو :value، أعلى من حدك :threshold.",
+    "Allocation drift vs plan": "انحراف التوزيع عن الخطة",
+    "Largest drift vs plan: :name at :actual (target :target)": "أكبر انحراف عن الخطة: :name عند :actual (الهدف :target)",
+    "Your plan keeps watch": "خطتك تبقى تحت المراقبة",
+    "Mahafeth now compares your live allocation to your investment plan every day and raises an alert when any position drifts more than five points off target, so rebalancing becomes something the platform remembers for you.": "يقارن محافظ الآن توزيعك الفعلي بخطتك الاستثمارية يوميا ويرفع تنبيها عند انحراف أي مركز أكثر من خمس نقاط عن الهدف، لتصبح إعادة التوازن أمرا تتذكره المنصة نيابة عنك."
 }

@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
+                        'title' => __('Your plan keeps watch'),
+                        'body' => __('Mahafeth now compares your live allocation to your investment plan every day and raises an alert when any position drifts more than five points off target, so rebalancing becomes something the platform remembers for you.'),
+                    ],
+                    [
+                        'type' => 'new',
                         'title' => __('Honest about data age'),
                         'body' => __('The Open Banking card now shows how current your prices and exchange rates are, with a clear badge when either falls behind, so you always know what the numbers are built on.'),
                     ],

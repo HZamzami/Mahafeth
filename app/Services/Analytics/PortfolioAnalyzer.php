@@ -4,6 +4,7 @@ namespace App\Services\Analytics;
 
 use App\Enums\ActivityType;
 use App\Models\ActivityEvent;
+use App\Models\InvestmentPlan;
 use App\Models\PortfolioSnapshot;
 use App\Models\User;
 use Carbon\CarbonInterface;
@@ -112,6 +113,7 @@ class PortfolioAnalyzer
             'pca_first_factor_share' => $this->correlationAnalyzer->firstFactorShare($covariance),
             'weights' => $weights,
             'holdings' => $this->holdingStates($data, $weights),
+            'drift' => $this->planDrift($user, $weights, $data['assets']),
             'shariah' => $this->shariahComplianceAnalyzer->analyze($weights, $data['assets'], $data['dividends']),
             'zakat' => $this->zakatCalculator->calculate(
                 array_map(fn (float $weight): float => $weight * $totalValue, $weights),
@@ -181,6 +183,41 @@ class PortfolioAnalyzer
         }
 
         return $snapshot;
+    }
+
+    /**
+     * How far current weights have drifted from the investment plan's
+     * targets, over the union of held and planned symbols. Null without a
+     * saved plan: there is no course to be off of.
+     *
+     * @param  array<string, float>  $weights
+     * @param  array<string, array<string, mixed>>  $assets
+     * @return array{max: float, symbol: string, name: string, target: float, actual: float, by_symbol: array<string, float>}|null
+     */
+    private function planDrift(User $user, array $weights, array $assets): ?array
+    {
+        $targets = InvestmentPlan::whereBelongsTo($user)->first()?->weights;
+
+        if ($targets === null || $targets === []) {
+            return null;
+        }
+
+        $bySymbol = [];
+
+        foreach (array_keys($weights + $targets) as $symbol) {
+            $bySymbol[$symbol] = ($weights[$symbol] ?? 0.0) - ($targets[$symbol] ?? 0.0);
+        }
+
+        $worst = array_search(max(array_map('abs', $bySymbol)), array_map('abs', $bySymbol), true);
+
+        return [
+            'max' => abs($bySymbol[$worst]),
+            'symbol' => $worst,
+            'name' => $assets[$worst]['name'] ?? $worst,
+            'target' => $targets[$worst] ?? 0.0,
+            'actual' => $weights[$worst] ?? 0.0,
+            'by_symbol' => $bySymbol,
+        ];
     }
 
     /**
