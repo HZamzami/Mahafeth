@@ -32,13 +32,15 @@
                         {{ __('Mahafeth securely connects your investment accounts through Open Banking, unifies them into a single portfolio, and uses institutional-grade analytics with AI to uncover hidden risks and tell you exactly what to do about them.') }}
                     </p>
 
-                    <div class="flex flex-wrap items-center gap-3">
-                        <flux:button href="{{ route('register') }}" variant="primary">{{ __('Create account') }}</flux:button>
-                        <flux:button href="{{ route('login') }}" variant="ghost">{{ __('Log in') }}</flux:button>
-                        <form method="POST" action="{{ route('demo.start') }}" data-demo-form
+                    {{-- Stacked full-width on phones so the trio never wraps 2+1;
+                         inline row from sm up. --}}
+                    <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+                        <flux:button class="w-full sm:w-auto" href="{{ route('register') }}" variant="primary">{{ __('Create account') }}</flux:button>
+                        <flux:button class="w-full sm:w-auto" href="{{ route('login') }}" variant="ghost">{{ __('Log in') }}</flux:button>
+                        <form class="w-full sm:w-auto" method="POST" action="{{ route('demo.start') }}" data-demo-form
                             data-steps='@json([__('Connecting accounts…'), __('Syncing prices…'), __('Running the analysis…')])'>
                             @csrf
-                            <flux:button type="submit" variant="subtle" icon="play">
+                            <flux:button class="w-full sm:w-auto" type="submit" variant="subtle" icon="play">
                                 {{ __('Try the demo') }}</flux:button>
                             @include('partials.demo-building')
                         </form>
@@ -242,13 +244,13 @@
                 {{ __('Your portfolios already hold the answers. See them together.') }}
             </h2>
 
-            <div class="relative mt-8 flex flex-wrap items-center justify-center gap-3">
-                <flux:button href="{{ route('register') }}" variant="primary">{{ __('Create account') }}</flux:button>
-                <flux:button href="{{ route('login') }}" variant="ghost">{{ __('Log in') }}</flux:button>
-                <form method="POST" action="{{ route('demo.start') }}" data-demo-form
+            <div class="relative mx-auto mt-8 flex w-full max-w-xs flex-col gap-3 sm:w-auto sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
+                <flux:button class="w-full sm:w-auto" href="{{ route('register') }}" variant="primary">{{ __('Create account') }}</flux:button>
+                <flux:button class="w-full sm:w-auto" href="{{ route('login') }}" variant="ghost">{{ __('Log in') }}</flux:button>
+                <form class="w-full sm:w-auto" method="POST" action="{{ route('demo.start') }}" data-demo-form
                     data-steps='@json([__('Connecting accounts…'), __('Syncing prices…'), __('Running the analysis…')])'>
                     @csrf
-                    <flux:button type="submit" variant="subtle" icon="play">
+                    <flux:button class="w-full sm:w-auto" type="submit" variant="subtle" icon="play">
                         {{ __('Try the demo') }}</flux:button>
                     @include('partials.demo-building')
                 </form>
