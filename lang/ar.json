@@ -1190,5 +1190,16 @@
     "Resolved: :alert": "تم حله: :alert",
     "Nice work — resolved: :alert": "أحسنت، تم حله: :alert",
     "Credit where it's due": "الفضل لمن يستحقه",
-    "When an alert clears — you trimmed a position, risk came back in line — Mahafeth now says so, with a green note on the dashboard and an entry in your activity feed instead of silently dropping the warning.": "عند زوال تنبيه، سواء قلّصت مركزا أو عادت المخاطر إلى مستواها، يخبرك محافظ الآن بذلك عبر إشعار أخضر في لوحة المعلومات وسجل في نشاطك بدلا من إسقاط التحذير بصمت."
+    "When an alert clears — you trimmed a position, risk came back in line — Mahafeth now says so, with a green note on the dashboard and an entry in your activity feed instead of silently dropping the warning.": "عند زوال تنبيه، سواء قلّصت مركزا أو عادت المخاطر إلى مستواها، يخبرك محافظ الآن بذلك عبر إشعار أخضر في لوحة المعلومات وسجل في نشاطك بدلا من إسقاط التحذير بصمت.",
+    "Settled": "مسدّد",
+    "Impure income received since your last purification, to be donated to charity.": "الدخل غير المتوافق الذي استلمته منذ آخر تطهير، ويُتبرع به للأعمال الخيرية.",
+    "Mark as purified": "تسجيل التطهير",
+    "Purified through :date — nothing outstanding.": "تم التطهير حتى :date، ولا مستحقات متبقية.",
+    "Purification history": "سجل التطهير",
+    "Record the amount you donated. Purification restarts from today: only new impure income will accrue.": "سجّل المبلغ الذي تبرعت به. يبدأ التطهير من جديد اعتبارا من اليوم: لن يتراكم إلا الدخل غير المتوافق الجديد.",
+    "Amount donated (SAR)": "المبلغ المتبرع به (ريال)",
+    "Confirm": "تأكيد",
+    "amount": "المبلغ",
+    "Purification that knows what you paid": "تطهير يعرف ما دفعته",
+    "Stock purification is now a ledger, not a running total: mark what you donated and the card resets, accruing only new impure income since that date. Assets with a published purification rate accrue just their impure share.": "أصبح تطهير الأسهم سجلا وليس مجموعا جاريا: سجّل ما تبرعت به وستُصفّر البطاقة، ولا يتراكم بعدها إلا الدخل غير المتوافق الجديد منذ ذلك التاريخ. والأصول التي لها نسبة تطهير معلنة يتراكم عليها نصيبها غير المتوافق فقط."
 }

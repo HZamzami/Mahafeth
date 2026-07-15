@@ -3,6 +3,7 @@
 namespace App\Services\Analytics;
 
 use App\Enums\ActivityType;
+use App\Enums\ObligationKind;
 use App\Models\ActivityEvent;
 use App\Models\InvestmentPlan;
 use App\Models\PortfolioSnapshot;
@@ -114,7 +115,7 @@ class PortfolioAnalyzer
             'weights' => $weights,
             'holdings' => $this->holdingStates($data, $weights),
             'drift' => $this->planDrift($user, $weights, $data['assets']),
-            'shariah' => $this->shariahComplianceAnalyzer->analyze($weights, $data['assets'], $data['dividends']),
+            'shariah' => $this->shariahAnalysis($user, $weights, $data),
             'zakat' => $this->zakatCalculator->calculate(
                 array_map(fn (float $weight): float => $weight * $totalValue, $weights),
                 $data['assets'],
@@ -183,6 +184,33 @@ class PortfolioAnalyzer
         }
 
         return $snapshot;
+    }
+
+    /**
+     * Shariah screening with settlement-aware purification: outstanding
+     * amounts accrue from dividends received after the user's last
+     * "mark as purified" date.
+     *
+     * @param  array<string, float>  $weights
+     * @param  array{assets: array<string, array<string, mixed>>, dividends: array<string, float>}  $data
+     * @return array<string, mixed>
+     */
+    private function shariahAnalysis(User $user, array $weights, array $data): array
+    {
+        $settledThrough = $user->settledThrough(ObligationKind::Purification);
+
+        $shariah = $this->shariahComplianceAnalyzer->analyze(
+            $weights,
+            $data['assets'],
+            $data['dividends'],
+            $settledThrough !== null
+                ? $this->assembler->dividendsSince($user, $settledThrough->endOfDay())
+                : null,
+        );
+
+        $shariah['last_purified_through'] = $settledThrough?->toDateString();
+
+        return $shariah;
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\ObligationKind;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use Spatie\LaravelPasskeys\Models\Concerns\HasPasskeys;
@@ -99,6 +101,21 @@ class User extends Authenticatable implements HasLocalePreference, HasPasskeys /
     public function portfolioSnapshots(): HasMany
     {
         return $this->hasMany(PortfolioSnapshot::class);
+    }
+
+    public function obligationSettlements(): HasMany
+    {
+        return $this->hasMany(ObligationSettlement::class);
+    }
+
+    /**
+     * The date through which an obligation kind was last settled.
+     */
+    public function settledThrough(ObligationKind $kind): ?Carbon
+    {
+        $latest = $this->obligationSettlements()->where('kind', $kind)->max('settled_through');
+
+        return $latest !== null ? Carbon::parse($latest) : null;
     }
 
     /**

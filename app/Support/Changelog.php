@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
+                        'title' => __('Purification that knows what you paid'),
+                        'body' => __('Stock purification is now a ledger, not a running total: mark what you donated and the card resets, accruing only new impure income since that date. Assets with a published purification rate accrue just their impure share.'),
+                    ],
+                    [
+                        'type' => 'new',
                         'title' => __('Credit where it\'s due'),
                         'body' => __('When an alert clears — you trimmed a position, risk came back in line — Mahafeth now says so, with a green note on the dashboard and an entry in your activity feed instead of silently dropping the warning.'),
                     ],

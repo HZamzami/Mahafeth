@@ -1,13 +1,43 @@
 <?php
 
+use App\Enums\ObligationKind;
+use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Number;
 use Livewire\Volt\Component;
 
 new class extends Component {
+    protected $listeners = ['portfolio-analyzed' => '$refresh'];
+
+    public ?string $purifiedAmount = null;
+
     public function placeholder(): \Illuminate\Contracts\View\View
     {
         return view('partials.skeleton-card');
+    }
+
+    /**
+     * Record a purification settlement through today and refresh the
+     * analysis so the outstanding amount reads zero immediately.
+     */
+    public function markPurified(PortfolioAnalyzer $analyzer): void
+    {
+        $this->validate(
+            ['purifiedAmount' => ['required', 'numeric', 'min:0.01']],
+            attributes: ['purifiedAmount' => __('amount')],
+        );
+
+        Auth::user()->obligationSettlements()->create([
+            'kind' => ObligationKind::Purification,
+            'amount' => (float) $this->purifiedAmount,
+            'settled_through' => today()->toDateString(),
+        ]);
+
+        $analyzer->analyze(Auth::user());
+
+        $this->modal('mark-purified')->close();
+        $this->purifiedAmount = null;
+        $this->dispatch('portfolio-analyzed');
     }
 
     /**
@@ -24,6 +54,15 @@ new class extends Component {
             'compliantPct' => $shariah !== null ? $shariah['compliant_weight'] * 100 : null,
             'nonCompliantPct' => $shariah !== null ? $shariah['non_compliant_weight'] * 100 : null,
             'unknownPct' => $shariah !== null ? $shariah['unknown_weight'] * 100 : null,
+            // Snapshots from before the settlement ledger only carry the
+            // trailing-year amount; treat it as the outstanding balance.
+            'outstanding' => $shariah === null ? 0.0 : ($shariah['purification_outstanding'] ?? $shariah['purification_amount'] ?? 0.0),
+            'purifiedThrough' => $shariah['last_purified_through'] ?? null,
+            'settlements' => Auth::user()->obligationSettlements()
+                ->where('kind', ObligationKind::Purification)
+                ->latest('settled_through')
+                ->limit(5)
+                ->get(),
         ];
     }
 }; ?>
@@ -96,23 +135,77 @@ new class extends Component {
             </div>
         @endif
 
-        @if (($shariah['purification_amount'] ?? 0) > 0)
+        @if ($outstanding > 0 || $purifiedThrough !== null || $settlements->isNotEmpty())
             <div class="mt-4 rounded-lg bg-neutral-50 p-3 dark:bg-zinc-800/50">
                 <div class="flex items-center justify-between">
                     <flux:text class="text-xs font-medium uppercase tracking-widest">
                         {{ __('Stock Purification') }}</flux:text>
-                    <flux:text class="text-sm font-semibold !text-red-600 dark:!text-red-400" dir="ltr" data-amount>
-                        ⃁ {{ Number::format($shariah['purification_amount'], 2) }}</flux:text>
+                    @if ($outstanding > 0)
+                        <flux:text class="text-sm font-semibold !text-red-600 dark:!text-red-400" dir="ltr" data-amount>
+                            ⃁ {{ Number::format($outstanding, 2) }}</flux:text>
+                    @else
+                        <flux:badge color="emerald" size="sm">{{ __('Settled') }}</flux:badge>
+                    @endif
                 </div>
-                <flux:text class="mt-1 text-xs">
-                    {{ __('Dividends received from non-compliant holdings over the past year, to be donated to charity.') }}
-                </flux:text>
-                <a class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-teal-700 hover:underline dark:text-teal-300"
-                    href="https://ehsan.sa/stockspurification" target="_blank" rel="noopener">
-                    {{ __('Donate via Ehsan') }}
-                    <flux:icon.arrow-top-right-on-square class="size-3" />
-                </a>
+
+                @if ($outstanding > 0)
+                    <flux:text class="mt-1 text-xs">
+                        {{ __('Impure income received since your last purification, to be donated to charity.') }}
+                    </flux:text>
+                    <div class="mt-2 flex items-center gap-3">
+                        <flux:modal.trigger name="mark-purified">
+                            <flux:button size="xs" variant="primary"
+                                x-on:click="$wire.purifiedAmount = '{{ number_format($outstanding, 2, '.', '') }}'">
+                                {{ __('Mark as purified') }}</flux:button>
+                        </flux:modal.trigger>
+                        <a class="inline-flex items-center gap-1 text-xs font-medium text-teal-700 hover:underline dark:text-teal-300"
+                            href="https://ehsan.sa/stockspurification" target="_blank" rel="noopener">
+                            {{ __('Donate via Ehsan') }}
+                            <flux:icon.arrow-top-right-on-square class="size-3" />
+                        </a>
+                    </div>
+                @elseif ($purifiedThrough !== null)
+                    <flux:text class="mt-1 text-xs">
+                        {{ __('Purified through :date — nothing outstanding.', ['date' => \Illuminate\Support\Carbon::parse($purifiedThrough)->translatedFormat('j M Y')]) }}
+                    </flux:text>
+                @endif
+
+                @if ($settlements->isNotEmpty())
+                    <div class="mt-2" x-data="{ open: false }">
+                        <button type="button" class="flex items-center gap-1 text-xs text-zinc-500 hover:underline"
+                            x-on:click="open = ! open">
+                            {{ __('Purification history') }}
+                            <flux:icon.chevron-down class="size-3 transition-transform" x-bind:class="open && 'rotate-180'" />
+                        </button>
+                        <div class="mt-1 space-y-0.5" x-cloak x-show="open">
+                            @foreach ($settlements as $settlement)
+                                <div class="flex items-center justify-between text-xs text-zinc-500">
+                                    <span>{{ $settlement->settled_through->translatedFormat('j M Y') }}</span>
+                                    <span dir="ltr" data-amount>⃁ {{ Number::format($settlement->amount, 2) }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
+
+            <flux:modal name="mark-purified" class="md:w-96">
+                <form wire:submit="markPurified" class="space-y-4 text-start">
+                    <flux:heading size="lg">{{ __('Mark as purified') }}</flux:heading>
+                    <flux:text class="text-sm">
+                        {{ __('Record the amount you donated. Purification restarts from today: only new impure income will accrue.') }}
+                    </flux:text>
+                    <flux:input wire:model="purifiedAmount" type="number" step="0.01" min="0.01" dir="ltr"
+                        :label="__('Amount donated (SAR)')" />
+                    <div class="flex justify-end gap-2">
+                        <flux:modal.close>
+                            <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                        </flux:modal.close>
+                        <flux:button type="submit" variant="primary" wire:loading.attr="disabled">
+                            {{ __('Confirm') }}</flux:button>
+                    </div>
+                </form>
+            </flux:modal>
         @endif
 
         @if ($zakat !== null)

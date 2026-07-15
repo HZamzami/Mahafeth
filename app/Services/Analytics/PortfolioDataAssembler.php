@@ -58,6 +58,7 @@ class PortfolioDataAssembler
                 'country' => $holding->asset->country,
                 'currency' => $holding->asset->currency,
                 'shariah_status' => $holding->asset->shariah_status->value,
+                'purification_rate' => $holding->asset->purification_rate,
             ];
         }
 
@@ -77,9 +78,21 @@ class PortfolioDataAssembler
      */
     private function trailingDividends(User $user): array
     {
+        return $this->dividendsSince($user, now()->subYear());
+    }
+
+    /**
+     * Dividends received per symbol since a given moment (or ever, when
+     * null), in base currency. Purification accrues from the user's last
+     * settlement date, not a fixed window.
+     *
+     * @return array<string, float>
+     */
+    public function dividendsSince(User $user, ?CarbonInterface $since): array
+    {
         $dividends = Transaction::with('asset')
             ->where('type', TransactionType::Dividend)
-            ->where('executed_at', '>=', now()->subYear())
+            ->when($since !== null, fn ($query) => $query->where('executed_at', '>', $since))
             ->whereHas('account.connection', fn ($query) => $query
                 ->whereBelongsTo($user)
                 ->where('status', ConnectionStatus::Connected))

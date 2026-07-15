@@ -28,6 +28,7 @@ class Asset extends Model
         'country',
         'currency',
         'shariah_status',
+        'purification_rate',
         'is_benchmark',
     ];
 
@@ -41,6 +42,7 @@ class Asset extends Model
         return [
             'asset_class' => AssetClass::class,
             'shariah_status' => ShariahStatus::class,
+            'purification_rate' => 'float',
             'is_benchmark' => 'boolean',
         ];
     }
