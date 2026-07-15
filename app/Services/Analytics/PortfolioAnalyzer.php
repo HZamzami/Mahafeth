@@ -30,6 +30,7 @@ class PortfolioAnalyzer
         private RiskDecomposer $riskDecomposer,
         private ShariahComplianceAnalyzer $shariahComplianceAnalyzer,
         private ZakatCalculator $zakatCalculator,
+        private HealthDeltaExplainer $healthDeltaExplainer,
     ) {}
 
     /**
@@ -154,7 +155,10 @@ class PortfolioAnalyzer
             $attributes['health_score'] = $health['overall'];
         }
 
-        $previousScore = $user->latestSnapshot()?->health_score;
+        // Captured before updateOrCreate so it keeps the pre-analysis state
+        // even when today's row is being overwritten in place.
+        $previousSnapshot = $user->latestSnapshot();
+        $previousScore = $previousSnapshot?->health_score;
 
         $snapshot = $user->portfolioSnapshots()->updateOrCreate(
             ['as_of' => today()->toDateString()],
@@ -164,10 +168,16 @@ class PortfolioAnalyzer
         // Every analysis path (dashboard refresh, consent flow, background
         // job) logs score movements to the activity feed.
         if ($previousScore !== null && $snapshot->health_score !== null && $previousScore !== $snapshot->health_score) {
-            ActivityEvent::record($user, ActivityType::ScoreChanged, [
-                'from' => $previousScore,
-                'to' => $snapshot->health_score,
-            ]);
+            $params = ['from' => $previousScore, 'to' => $snapshot->health_score];
+
+            $movers = $this->healthDeltaExplainer->explain($snapshot, $previousSnapshot);
+
+            if ($movers !== [] && $movers[0]['driver_key'] !== null) {
+                $params['driver_key'] = $movers[0]['driver_key'];
+                $params['driver_params'] = $movers[0]['driver_params'];
+            }
+
+            ActivityEvent::record($user, ActivityType::ScoreChanged, $params);
         }
 
         return $snapshot;

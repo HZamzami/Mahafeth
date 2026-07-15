@@ -1165,5 +1165,15 @@
     "Show all contributions": "عرض كل المساهمات",
     "Deposits & trades": "الإيداعات والتداولات",
     "See what moved your portfolio today": "اعرف ما الذي حرّك محفظتك اليوم",
-    "A new Daily Move card on the dashboard breaks each day's change into the holdings and currencies behind it, so you can tell at a glance whether it was Aramco, the dollar, or your own deposits.": "بطاقة حركة اليوم الجديدة في لوحة المعلومات تفصّل تغيّر كل يوم إلى الأصول والعملات التي تقف وراءه، لتعرف بنظرة واحدة إن كان السبب أرامكو أو الدولار أو إيداعاتك."
+    "A new Daily Move card on the dashboard breaks each day's change into the holdings and currencies behind it, so you can tell at a glance whether it was Aramco, the dollar, or your own deposits.": "بطاقة حركة اليوم الجديدة في لوحة المعلومات تفصّل تغيّر كل يوم إلى الأصول والعملات التي تقف وراءه، لتعرف بنظرة واحدة إن كان السبب أرامكو أو الدولار أو إيداعاتك.",
+    "What changed": "ما الذي تغيّر",
+    "Effective holdings moved from :from to :to.": "عدد الأصول الفعّالة تغيّر من :from إلى :to.",
+    "Portfolio volatility moved from :from to :to.": "تقلّب المحفظة تغيّر من :from إلى :to.",
+    "Average correlation moved from :from to :to.": "متوسط الارتباط تغيّر من :from إلى :to.",
+    "The Sharpe ratio moved from :from to :to.": "نسبة شارب تغيّرت من :from إلى :to.",
+    "Maximum drawdown moved from :from to :to.": "أقصى تراجع تغيّر من :from إلى :to.",
+    ":name is now :weight of the portfolio.": ":name يشكّل الآن :weight من المحفظة.",
+    "The compliant share of your portfolio moved from :from to :to.": "النسبة المتوافقة مع الشريعة في محفظتك تغيّرت من :from إلى :to.",
+    "Know why your score moved": "اعرف لماذا تغيّرت درجتك",
+    "When your health score changes, the score card now explains which components moved and the metric behind each one, so a drop from 74 to 68 comes with a reason instead of a mystery.": "عند تغيّر درجة صحة محفظتك، تشرح البطاقة الآن أي المكوّنات تحرّكت والمقياس الذي يقف وراء كل منها، فيأتي الانخفاض من 74 إلى 68 مصحوبا بسبب واضح بدلا من الغموض."
 }

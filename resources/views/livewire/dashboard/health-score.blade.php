@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Analytics\HealthDeltaExplainer;
 use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
@@ -19,8 +20,18 @@ new class extends Component {
 
     public function with(): array
     {
-        $snapshot = Auth::user()->latestSnapshot();
+        $snapshots = Auth::user()->portfolioSnapshots()
+            ->orderByDesc('as_of')
+            ->limit(2)
+            ->get();
+
+        $snapshot = $snapshots->first();
+        $previous = $snapshots->get(1);
         $score = $snapshot?->health_score;
+
+        $scoreDelta = ($score !== null && $previous?->health_score !== null)
+            ? $score - $previous->health_score
+            : 0;
 
         return [
             'score' => $score,
@@ -29,6 +40,12 @@ new class extends Component {
             'components' => $snapshot?->component_scores,
             'hasSnapshot' => $snapshot !== null,
             'hasProfile' => Auth::user()->riskProfile !== null,
+            'scoreDelta' => $scoreDelta,
+            'movers' => $scoreDelta === 0 ? [] : array_slice(
+                app(HealthDeltaExplainer::class)->explain($snapshot, $previous),
+                0,
+                2,
+            ),
         ];
     }
 
@@ -93,6 +110,25 @@ new class extends Component {
             @endif
         </div>
     </div>
+
+    @if ($movers !== [])
+        <div class="mb-6 w-full rounded-lg bg-neutral-50 p-3 text-start dark:bg-zinc-800/60">
+            <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">
+                {{ __('What changed') }}
+                <span dir="ltr"
+                    class="{{ $scoreDelta >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+                    {{ ($scoreDelta >= 0 ? '+' : '') . $scoreDelta }}</span>
+            </flux:text>
+            @foreach ($movers as $mover)
+                <flux:text class="text-sm">
+                    {{ __($mover['label']) }}
+                    <span dir="ltr"
+                        class="tabular-nums {{ $mover['delta'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+                        {{ ($mover['delta'] >= 0 ? '+' : '') . $mover['delta'] }}</span>@if ($mover['driver_key'] !== null) · {{ __($mover['driver_key'], $mover['driver_params']) }}@endif
+                </flux:text>
+            @endforeach
+        </div>
+    @endif
 
     <div class="grid w-full grid-cols-3 gap-4 border-t border-neutral-200 pt-6 dark:border-neutral-700">
         @foreach ([

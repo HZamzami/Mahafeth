@@ -49,7 +49,10 @@ enum ActivityType: string
             // Alert events store the alert's own translation key + params.
             self::AlertRaised => __($params['key'] ?? '', $params['params'] ?? []),
             self::ScoreDropAlerted => __('Your health score dropped from :from to :to.', $params),
-            self::ScoreChanged => __('Health score moved from :from to :to after a new analysis.', $params),
+            self::ScoreChanged => trim(
+                __('Health score moved from :from to :to after a new analysis.', ['from' => $params['from'] ?? '', 'to' => $params['to'] ?? ''])
+                .(isset($params['driver_key']) ? ' '.__($params['driver_key'], $params['driver_params'] ?? []) : ''),
+            ),
             self::ConnectionSynced => __(':institution synced — :count holdings imported.', $params),
             self::ConnectionDisconnected => __(':institution was disconnected and its consent revoked.', $params),
             self::InsightGenerated => __('A new AI insight report was generated for your portfolio.'),

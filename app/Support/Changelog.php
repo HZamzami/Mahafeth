@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
+                        'title' => __('Know why your score moved'),
+                        'body' => __('When your health score changes, the score card now explains which components moved and the metric behind each one, so a drop from 74 to 68 comes with a reason instead of a mystery.'),
+                    ],
+                    [
+                        'type' => 'new',
                         'title' => __('See what moved your portfolio today'),
                         'body' => __('A new Daily Move card on the dashboard breaks each day\'s change into the holdings and currencies behind it, so you can tell at a glance whether it was Aramco, the dollar, or your own deposits.'),
                     ],
