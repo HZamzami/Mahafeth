@@ -229,8 +229,10 @@ new class extends Component {
 {{-- min-h on mobile stretches the thread so the input sits at the bottom of
      the screen like a native chat; 12rem ≈ header + main padding + bottom
      nav, and the safe-area insets cover the PWA's status bar and home
-     indicator. --}}
-<div class="stagger-children mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:h-[calc(100dvh-12rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] max-lg:overflow-y-auto"
+     indicator. No stagger-children here: this element re-renders on
+     wire:poll while a reply generates, and the entrance animation would
+     replay on every poll, making messages blink in and out. --}}
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:h-[calc(100dvh-12rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] max-lg:overflow-y-auto"
     @if ($isAwaitingReply) wire:poll.1s @elseif ($isGenerating) wire:poll.2s @endif>
     <div class="flex items-start justify-between gap-4">
         <div>
@@ -363,7 +365,7 @@ new class extends Component {
         <div class="flex flex-col card max-lg:min-h-0 max-lg:flex-1">
             {{-- Only pin to the bottom when a conversation exists; doing it on
                  the empty state scrolled the starter chips' title out of view. --}}
-            <div class="min-h-40 space-y-3 overflow-y-auto p-5 max-lg:min-h-0 max-lg:flex-1 lg:max-h-[55vh]" x-data
+            <div class="min-h-40 space-y-3 overflow-y-auto p-5 max-lg:min-h-0 max-lg:flex-1 lg:max-h-[70vh]" x-data
                 x-init="@if ($messages->isNotEmpty()) $el.scrollTop = $el.scrollHeight @endif"
                 @chat-updated.window="$nextTick(() => $el.scrollTop = $el.scrollHeight)">
                 @forelse ($messages as $chatMessage)
