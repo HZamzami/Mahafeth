@@ -62,6 +62,31 @@ class AnalyzePortfolioJob implements ShouldBeUnique, ShouldQueue
             ]);
         }
 
+        // Alerts that stopped firing are worth celebrating too: the user
+        // acted (or the market did) and the issue cleared. Custom alerts
+        // only count while their rule is still enabled, so switching a
+        // rule off is not mistaken for progress.
+        if ($previous !== null) {
+            $enabledRuleIds = $this->user->alertRules()->where('enabled', true)->pluck('id')->all();
+            $activeIdentities = array_column($alerts, 'identity');
+
+            $resolved = array_filter($previousAlerts, function (array $alert) use ($activeIdentities, $enabledRuleIds): bool {
+                if (in_array($alert['identity'], $activeIdentities, true)) {
+                    return false;
+                }
+
+                return ! str_starts_with($alert['identity'], 'custom:')
+                    || in_array((int) substr($alert['identity'], 7), $enabledRuleIds, true);
+            });
+
+            foreach ($resolved as $alert) {
+                ActivityEvent::record($this->user, ActivityType::AlertResolved, [
+                    'key' => $alert['key'],
+                    'params' => $alert['params'],
+                ]);
+            }
+        }
+
         $drop = $previous !== null && $previous->health_score !== null && $snapshot->health_score !== null
             ? $previous->health_score - $snapshot->health_score
             : 0;

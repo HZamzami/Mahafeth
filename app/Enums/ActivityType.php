@@ -5,6 +5,7 @@ namespace App\Enums;
 enum ActivityType: string
 {
     case AlertRaised = 'alert_raised';
+    case AlertResolved = 'alert_resolved';
     case ScoreDropAlerted = 'score_drop_alerted';
     case ScoreChanged = 'score_changed';
     case ConnectionSynced = 'connection_synced';
@@ -23,6 +24,7 @@ enum ActivityType: string
             self::AlertRaised,
             self::ScoreDropAlerted => ActivityCategory::Notifications,
 
+            self::AlertResolved,
             self::ScoreChanged,
             self::ConnectionSynced,
             self::ConnectionDisconnected,
@@ -48,6 +50,7 @@ enum ActivityType: string
         return match ($this) {
             // Alert events store the alert's own translation key + params.
             self::AlertRaised => __($params['key'] ?? '', $params['params'] ?? []),
+            self::AlertResolved => __('Resolved: :alert', ['alert' => __($params['key'] ?? '', $params['params'] ?? [])]),
             self::ScoreDropAlerted => __('Your health score dropped from :from to :to.', $params),
             self::ScoreChanged => trim(
                 __('Health score moved from :from to :to after a new analysis.', ['from' => $params['from'] ?? '', 'to' => $params['to'] ?? ''])
@@ -69,6 +72,7 @@ enum ActivityType: string
     {
         return match ($this) {
             self::AlertRaised, self::ScoreDropAlerted => 'exclamation-triangle',
+            self::AlertResolved => 'check-circle',
             self::ScoreChanged => 'chart-bar',
             self::ConnectionSynced => 'arrow-path',
             self::ConnectionDisconnected => 'link-slash',
@@ -85,7 +89,7 @@ enum ActivityType: string
         return match ($this) {
             self::AlertRaised, self::ScoreDropAlerted => 'red',
             self::ConnectionDisconnected, self::GoalDeleted => 'amber',
-            self::ConsentGranted, self::InsightGenerated => 'emerald',
+            self::ConsentGranted, self::InsightGenerated, self::AlertResolved => 'emerald',
             default => 'zinc',
         };
     }

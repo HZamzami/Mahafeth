@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
+                        'title' => __('Credit where it\'s due'),
+                        'body' => __('When an alert clears — you trimmed a position, risk came back in line — Mahafeth now says so, with a green note on the dashboard and an entry in your activity feed instead of silently dropping the warning.'),
+                    ],
+                    [
+                        'type' => 'new',
                         'title' => __('Your plan keeps watch'),
                         'body' => __('Mahafeth now compares your live allocation to your investment plan every day and raises an alert when any position drifts more than five points off target, so rebalancing becomes something the platform remembers for you.'),
                     ],
