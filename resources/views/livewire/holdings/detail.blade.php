@@ -175,6 +175,10 @@ new class extends Component {
                         <flux:badge color="emerald" size="sm">{{ $asset->shariah_status->label() }}</flux:badge>
                     @elseif ($asset->shariah_status === ShariahStatus::NonCompliant)
                         <flux:badge color="red" size="sm">{{ $asset->shariah_status->label() }}</flux:badge>
+                    @else
+                        <flux:tooltip :content="__('Not in our curated Islamic catalog yet — screen it with your own reference before relying on it.')">
+                            <flux:badge color="zinc" size="sm" icon="question-mark-circle">{{ __('Compliance not screened') }}</flux:badge>
+                        </flux:tooltip>
                     @endif
                 </div>
             </div>

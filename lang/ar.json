@@ -1313,6 +1313,8 @@
     "Delete this transaction? Your holdings will be recalculated.": "حذف هذه العملية؟ ستُعاد حسبة أصولك المملوكة.",
     "This account is empty — record a transaction or import a CSV to get started.": "هذا الحساب فارغ — سجّل عملية أو استورد ملف CSV للبدء.",
     "Upload a holdings statement exported from your broker — each position is added as an opening buy.": "ارفع كشف أصول مُصدَّرًا من وسيطك، وتُضاف كل مركز عملية شراء افتتاحية.",
+    "Compliance not screened": "لم تُفحَص المطابقة",
+    "Not in our curated Islamic catalog yet — screen it with your own reference before relying on it.": "ليست بعد ضمن كتالوجنا الشرعي المنسَّق — افحصها بمرجعك الخاص قبل الاعتماد عليها.",
     "Any stock, and a real ledger": "أي سهم، ودفتر عمليات حقيقي",
     "Manual accounts now search the whole market — add any listed stock, fund, or crypto, not just a short list. And instead of a flat quantity, you record dated buys, sells, deposits, and withdrawals; Mahafeth derives each position and its average cost from the ledger, so your own accounts carry cost basis and history like the rest of the app.": "حساباتك اليدوية صارت تبحث في السوق كله — أضِف أي سهم أو صندوق أو عملة رقمية مدرجة، لا قائمة قصيرة فحسب. وبدل كمية ثابتة، تسجّل عمليات شراء وبيع وإيداع وسحب بتواريخها، ويستخرج «محافظ» كل مركز ومتوسط تكلفته من دفتر العمليات، فتحمل حساباتك أساس التكلفة والتاريخ مثل بقية التطبيق."
 }
