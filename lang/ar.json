@@ -1175,5 +1175,10 @@
     ":name is now :weight of the portfolio.": ":name يشكّل الآن :weight من المحفظة.",
     "The compliant share of your portfolio moved from :from to :to.": "النسبة المتوافقة مع الشريعة في محفظتك تغيّرت من :from إلى :to.",
     "Know why your score moved": "اعرف لماذا تغيّرت درجتك",
-    "When your health score changes, the score card now explains which components moved and the metric behind each one, so a drop from 74 to 68 comes with a reason instead of a mystery.": "عند تغيّر درجة صحة محفظتك، تشرح البطاقة الآن أي المكوّنات تحرّكت والمقياس الذي يقف وراء كل منها، فيأتي الانخفاض من 74 إلى 68 مصحوبا بسبب واضح بدلا من الغموض."
+    "When your health score changes, the score card now explains which components moved and the metric behind each one, so a drop from 74 to 68 comes with a reason instead of a mystery.": "عند تغيّر درجة صحة محفظتك، تشرح البطاقة الآن أي المكوّنات تحرّكت والمقياس الذي يقف وراء كل منها، فيأتي الانخفاض من 74 إلى 68 مصحوبا بسبب واضح بدلا من الغموض.",
+    "Prices as of :date": "الأسعار كما في :date",
+    "FX rates from :time": "أسعار الصرف من :time",
+    "Stale": "غير محدّث",
+    "Honest about data age": "شفافية حول حداثة البيانات",
+    "The Open Banking card now shows how current your prices and exchange rates are, with a clear badge when either falls behind, so you always know what the numbers are built on.": "بطاقة الخدمات المصرفية المفتوحة تعرض الآن مدى حداثة الأسعار وأسعار الصرف لديك، مع شارة واضحة عند تأخر أي منها، لتعرف دائما على ماذا بُنيت الأرقام."
 }

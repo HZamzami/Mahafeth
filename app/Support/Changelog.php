@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
+                        'title' => __('Honest about data age'),
+                        'body' => __('The Open Banking card now shows how current your prices and exchange rates are, with a clear badge when either falls behind, so you always know what the numbers are built on.'),
+                    ],
+                    [
+                        'type' => 'new',
                         'title' => __('Know why your score moved'),
                         'body' => __('When your health score changes, the score card now explains which components moved and the metric behind each one, so a drop from 74 to 68 comes with a reason instead of a mystery.'),
                     ],

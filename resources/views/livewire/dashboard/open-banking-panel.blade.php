@@ -2,6 +2,7 @@
 
 use App\Enums\ConnectionStatus;
 use App\Models\Institution;
+use App\Services\DataFreshness;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
 
@@ -22,6 +23,7 @@ new class extends Component {
             'connectedCount' => $connections->where('status', ConnectionStatus::Connected)->count(),
             'institutionsCount' => Institution::count(),
             'lastSyncedAt' => $connections->max('last_synced_at'),
+            'freshness' => app(DataFreshness::class)->forUser(Auth::user()),
         ];
     }
 }; ?>
@@ -49,6 +51,28 @@ new class extends Component {
             </flux:text>
         </div>
     </div>
+    @if ($freshness !== null)
+        <div class="mt-3 space-y-1">
+            <div class="flex items-center justify-between">
+                <flux:text class="text-xs">
+                    {{ __('Prices as of :date', ['date' => $freshness['prices_as_of']->translatedFormat('j M')]) }}
+                </flux:text>
+                @if ($freshness['stale_prices'])
+                    <flux:badge color="amber" size="sm">{{ __('Stale') }}</flux:badge>
+                @endif
+            </div>
+            @if ($freshness['fx_fetched_at'] !== null)
+                <div class="flex items-center justify-between">
+                    <flux:text class="text-xs">
+                        {{ __('FX rates from :time', ['time' => $freshness['fx_fetched_at']->diffForHumans()]) }}
+                    </flux:text>
+                    @if ($freshness['stale_fx'])
+                        <flux:badge color="amber" size="sm">{{ __('Stale') }}</flux:badge>
+                    @endif
+                </div>
+            @endif
+        </div>
+    @endif
     <flux:button class="mt-4 w-full" size="sm" variant="outline" :href="route('connections')" wire:navigate>
         {{ __('Manage Sources') }}</flux:button>
 </div>

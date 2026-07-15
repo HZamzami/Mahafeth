@@ -52,6 +52,13 @@ return [
     // Trailing window (in years) of price history used by the analyzer.
     'analysis_window_years' => 1,
 
+    // When dashboard data earns a "stale" badge. Prices tolerate a market
+    // closure gap (Saudi Fri/Sat plus US Sat/Sun); FX is fetched daily.
+    'freshness' => [
+        'price_stale_days' => env('MAHAFETH_PRICE_STALE_DAYS', 4),
+        'fx_stale_hours' => env('MAHAFETH_FX_STALE_HOURS', 48),
+    ],
+
     // Zakat on the unified portfolio: rate applies to zakatable wealth at
     // market value once it meets the nisab threshold (SAR, approximates
     // the value of 85 grams of gold; adjust as the gold price moves).
