@@ -172,9 +172,7 @@ new class extends Component {
                     {{ isset($components[$key]) ? $components[$key].'/100' : '—' }}</flux:heading>
                 @if (isset($components[$key]))
                     <div class="mx-auto mt-2 h-1.5 w-full max-w-24 overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
-                        <div class="bar-fill h-full rounded-full {{ $barColor }}" style="width: 0%"
-                            data-width="{{ max(2, $components[$key]) }}" x-data
-                            x-intersect.once="$el.style.width = $el.dataset.width + '%'"></div>
+                        <div class="bar-fill bar-grow h-full rounded-full {{ $barColor }}" style="width: {{ max(2, $components[$key]) }}%"></div>
                     </div>
                 @endif
             </div>

@@ -49,9 +49,7 @@ new class extends Component {
                             {{ $row['symbol'] }} &bull; {{ Number::percentage($row['weight'] * 100, 1) }}
                         </flux:text>
                         <div class="mt-1.5 h-1 w-full max-w-40 overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
-                            <div class="bar-fill h-full bg-teal-600 dark:bg-teal-400" style="width: 0%"
-                                data-width="{{ round($row['weight'] * 100) }}" x-data
-                                x-intersect.once="$el.style.width = $el.dataset.width + '%'"></div>
+                            <div class="bar-fill bar-grow h-full bg-teal-600 dark:bg-teal-400" style="width: {{ round($row['weight'] * 100) }}%"></div>
                         </div>
                     </div>
 

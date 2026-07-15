@@ -42,6 +42,20 @@ html {
         transition: width 800ms ease-out;
     }
 
+    /* One-time intro sweep for meter bars whose resting width is rendered
+       server-side (style="width: N%"). CSS animations override the inline
+       width only while running, then rest on the real value — so unlike a
+       JS-set width, a Livewire re-render can't collapse the bar back to 0. */
+    .bar-grow {
+        animation: bar-grow 800ms ease-out;
+    }
+
+    @keyframes bar-grow {
+        from {
+            width: 0;
+        }
+    }
+
     .gauge-fill {
         transition: stroke-dashoffset 1.2s cubic-bezier(0.33, 1, 0.68, 1);
     }

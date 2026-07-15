@@ -261,9 +261,7 @@ new class extends Component {
                                 <flux:text class="text-xs">{{ __('52-Week Range') }}</flux:text>
                             </div>
                             <div class="relative mt-2 h-1.5 w-full rounded-full bg-neutral-100 dark:bg-zinc-800" dir="ltr">
-                                <div class="bar-fill h-full rounded-full bg-gradient-to-r from-red-400 via-amber-400 to-emerald-500"
-                                    style="width: 0%" data-width="{{ round($week52Position * 100) }}" x-data
-                                    x-intersect.once="$el.style.width = $el.dataset.width + '%'"></div>
+                                <div class="bar-fill bar-grow h-full rounded-full bg-gradient-to-r from-red-400 via-amber-400 to-emerald-500" style="width: {{ round($week52Position * 100) }}%"></div>
                                 <span class="absolute top-1/2 size-3 -translate-y-1/2 rounded-full border-2 border-white bg-zinc-800 dark:border-zinc-900 dark:bg-white"
                                     style="left: calc({{ round($week52Position * 100) }}% - 6px)"></span>
                             </div>
@@ -381,9 +379,7 @@ new class extends Component {
                                 {{ Number::percentage($weight * 100, 1) }}</flux:text>
                         </div>
                         <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
-                            <div class="bar-fill h-full bg-teal-600 dark:bg-teal-400" style="width: 0%"
-                                data-width="{{ round($weight * 100) }}" x-data
-                                x-intersect.once="$el.style.width = $el.dataset.width + '%'"></div>
+                            <div class="bar-fill bar-grow h-full bg-teal-600 dark:bg-teal-400" style="width: {{ round($weight * 100) }}%"></div>
                         </div>
                     </div>
                     @if ($sectorExposure !== null && $asset->sector !== null)

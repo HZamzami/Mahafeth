@@ -490,12 +490,9 @@ new class extends Component {
                     <flux:text class="mb-4 mt-1 text-sm">
                         {{ __('Systematic risk follows the market and cannot be diversified away; unsystematic risk can.') }}
                     </flux:text>
-                    <div class="flex h-3 w-full overflow-hidden rounded-full" dir="ltr" x-data
-                        x-intersect.once="[...$el.children].forEach((bar) => bar.style.width = bar.dataset.width + '%')">
-                        <div class="bar-fill bg-teal-600 dark:bg-teal-400" style="width: 0%"
-                            data-width="{{ round($decomposition['systematic_share'] * 100) }}"></div>
-                        <div class="bar-fill bg-amber-500 dark:bg-amber-400" style="width: 0%"
-                            data-width="{{ round($decomposition['unsystematic_share'] * 100) }}"></div>
+                    <div class="flex h-3 w-full overflow-hidden rounded-full" dir="ltr">
+                        <div class="bar-fill bar-grow bg-teal-600 dark:bg-teal-400" style="width: {{ round($decomposition['systematic_share'] * 100) }}%"></div>
+                        <div class="bar-fill bar-grow bg-amber-500 dark:bg-amber-400" style="width: {{ round($decomposition['unsystematic_share'] * 100) }}%"></div>
                     </div>
                     <div class="mt-3 flex justify-between">
                         <span class="flex items-center gap-2">
@@ -527,9 +524,7 @@ new class extends Component {
                                     {{ number_format($share * 100, 1) }}%</flux:text>
                             </div>
                             <div class="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-zinc-800">
-                                <div class="bar-fill h-full bg-teal-600 dark:bg-teal-400" style="width: 0%"
-                                    data-width="{{ min(100, round($share * 100)) }}" x-data
-                                    x-intersect.once="$el.style.width = $el.dataset.width + '%'"></div>
+                                <div class="bar-fill bar-grow h-full bg-teal-600 dark:bg-teal-400" style="width: {{ min(100, round($share * 100)) }}%"></div>
                             </div>
                         </div>
                     @endforeach

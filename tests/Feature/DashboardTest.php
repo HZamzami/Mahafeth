@@ -237,7 +237,10 @@ class DashboardTest extends TestCase
             ->call('refresh')
             ->assertSee(__('Diversification'))
             ->assertSeeHtml('gauge-fill')
-            ->assertSeeHtml('data-width');
+            // The component bars render their width server-side (bar-grow),
+            // so a re-render like this refresh keeps them filled instead of
+            // collapsing to 0 the way the old JS-set width did.
+            ->assertSeeHtml('bar-grow');
 
         $this->assertSame(1, $user->portfolioSnapshots()->count());
     }
