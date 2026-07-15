@@ -2,6 +2,7 @@
 
 namespace App\Services\Markets;
 
+use App\Jobs\TranslateCompanySummaryJob;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -11,6 +12,10 @@ use RuntimeException;
  * Renders the Yahoo Finance company profile (English-only) in Arabic by
  * translating it once through the Claude API and caching the result for
  * the summary's lifetime. Any failure falls back to the English text.
+ *
+ * The Claude call can take seconds, so it runs on the queue rather than
+ * inline: the page serves the English summary immediately and swaps to the
+ * cached Arabic once the job lands.
  */
 class CompanySummaryTranslator
 {
@@ -18,36 +23,63 @@ class CompanySummaryTranslator
 
     private const API_VERSION = '2023-06-01';
 
-    public function toArabic(string $symbol, string $summary): string
+    /**
+     * Return the Arabic summary if it is cached, otherwise queue the
+     * translation and serve English for now.
+     *
+     * @return array{text: string, pending: bool}
+     */
+    public function toArabic(string $symbol, string $summary): array
     {
         $config = config('mahafeth.ai');
 
         if ($config['fake'] || empty($config['api_key'])) {
-            return $summary;
+            return ['text' => $summary, 'pending' => false];
         }
 
-        // Keyed on the content hash so a revised profile re-translates while
-        // the previous translation keeps serving until then.
-        $key = 'company-summary-ar:'.$symbol.':'.md5($summary);
+        $key = $this->cacheKey($symbol, $summary);
         $cached = Cache::get($key);
 
         if ($cached !== null) {
-            return $cached;
+            return ['text' => $cached, 'pending' => false];
         }
 
-        try {
-            $translation = $this->requestTranslation($summary);
-            Cache::forever($key, $translation);
+        // Queue the translation once (the lock stops repeat views and the
+        // card's poll from piling up jobs) and serve English meanwhile.
+        if (Cache::add($key.':queued', true, now()->addMinutes(10))) {
+            TranslateCompanySummaryJob::dispatch($symbol, $summary);
+        }
 
-            return $translation;
+        return ['text' => $summary, 'pending' => true];
+    }
+
+    /**
+     * Translate and cache the summary. Runs on the queue. A failure caches
+     * the English text briefly so the card stops waiting and retries later.
+     */
+    public function translate(string $symbol, string $summary): void
+    {
+        $key = $this->cacheKey($symbol, $summary);
+
+        try {
+            // Keyed on the content hash so a revised profile re-translates
+            // while the previous translation keeps serving until then.
+            Cache::forever($key, $this->requestTranslation($summary));
         } catch (\Throwable $exception) {
             Log::warning('Company summary translation failed, serving English.', [
                 'symbol' => $symbol,
                 'error' => $exception->getMessage(),
             ]);
 
-            return $summary;
+            Cache::put($key, $summary, now()->addMinutes(30));
+        } finally {
+            Cache::forget($key.':queued');
         }
+    }
+
+    private function cacheKey(string $symbol, string $summary): string
+    {
+        return 'company-summary-ar:'.$symbol.':'.md5($summary);
     }
 
     private function requestTranslation(string $summary): string
