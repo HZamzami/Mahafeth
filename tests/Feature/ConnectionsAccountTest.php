@@ -22,6 +22,13 @@ class ConnectionsAccountTest extends TestCase
         return app(CreateManualAccount::class)->handle($user, 'My Sahm', AccountType::Brokerage, 'SAR');
     }
 
+    private function holdingQuantity(Account $account, string $symbol): ?float
+    {
+        $holding = $account->holdings()->whereHas('asset', fn ($query) => $query->where('symbol', $symbol))->first();
+
+        return $holding?->quantity;
+    }
+
     public function test_guests_and_foreign_users_cannot_view_an_account(): void
     {
         $account = $this->manualAccount(User::factory()->create());
@@ -41,82 +48,182 @@ class ConnectionsAccountTest extends TestCase
             ->get(route('connections.account', $account))
             ->assertOk()
             ->assertSee('My Sahm')
-            ->assertSee(__('Add to this account'));
+            ->assertSee(__('Record transaction'));
     }
 
-    public function test_adding_a_holding_and_cash(): void
+    public function test_a_buy_derives_a_holding_with_cost_basis(): void
     {
         $user = User::factory()->create();
         $account = $this->manualAccount($user);
         $this->actingAs($user);
 
         Volt::test('connections.account', ['account' => $account])
-            ->set('addSymbol', 'AAPL')
-            ->set('addQuantity', '25')
-            ->set('addAvgCost', '130')
-            ->call('addHolding')
-            ->assertHasNoErrors()
-            ->set('cashCurrency', 'SAR')
-            ->set('cashAmount', '50000')
-            ->call('addCash')
+            ->set('txnType', 'buy')
+            ->call('selectInstrument', 'AAPL', 'Apple Inc.')
+            ->set('txnQuantity', '25')
+            ->set('txnPrice', '130')
+            ->set('txnDate', '2026-01-05')
+            ->call('recordTransaction')
             ->assertHasNoErrors();
 
-        $symbols = $account->holdings()->with('asset')->get()->pluck('asset.symbol');
-        $this->assertCount(2, $symbols);
-        $this->assertTrue($symbols->contains('AAPL'));
-        $this->assertTrue($symbols->contains('CASH-SAR'));
+        $holding = $account->holdings()->with('asset')->firstOrFail();
+        $this->assertSame('AAPL', $holding->asset->symbol);
+        $this->assertEqualsWithDelta(25.0, $holding->quantity, 1e-9);
+        $this->assertEqualsWithDelta(130.0, $holding->avg_cost, 1e-9);
         $this->assertNotNull($user->latestSnapshot());
     }
 
-    public function test_an_uncatalogued_symbol_is_rejected(): void
+    public function test_a_second_buy_recomputes_the_average_cost(): void
+    {
+        $user = User::factory()->create();
+        $account = $this->manualAccount($user);
+        $this->actingAs($user);
+
+        $component = Volt::test('connections.account', ['account' => $account]);
+
+        foreach ([['25', '130'], ['25', '150']] as [$quantity, $price]) {
+            $component->set('txnType', 'buy')
+                ->call('selectInstrument', 'AAPL', 'Apple Inc.')
+                ->set('txnQuantity', $quantity)
+                ->set('txnPrice', $price)
+                ->set('txnDate', '2026-01-05')
+                ->call('recordTransaction')
+                ->assertHasNoErrors();
+        }
+
+        $holding = $account->holdings()->firstOrFail();
+        $this->assertEqualsWithDelta(50.0, $holding->quantity, 1e-9);
+        $this->assertEqualsWithDelta(140.0, $holding->avg_cost, 1e-9);
+    }
+
+    public function test_a_sell_reduces_quantity_and_closes_the_position_at_zero(): void
+    {
+        $user = User::factory()->create();
+        $account = $this->manualAccount($user);
+        $this->actingAs($user);
+
+        $component = Volt::test('connections.account', ['account' => $account])
+            ->set('txnType', 'buy')
+            ->call('selectInstrument', 'AAPL', 'Apple Inc.')
+            ->set('txnQuantity', '25')
+            ->set('txnPrice', '130')
+            ->set('txnDate', '2026-01-05')
+            ->call('recordTransaction')
+            ->assertHasNoErrors();
+
+        $component->set('txnType', 'sell')
+            ->call('selectInstrument', 'AAPL', 'Apple Inc.')
+            ->set('txnQuantity', '10')
+            ->set('txnPrice', '160')
+            ->set('txnDate', '2026-02-05')
+            ->call('recordTransaction')
+            ->assertHasNoErrors();
+
+        $this->assertEqualsWithDelta(15.0, $this->holdingQuantity($account, 'AAPL'), 1e-9);
+
+        $component->set('txnType', 'sell')
+            ->call('selectInstrument', 'AAPL', 'Apple Inc.')
+            ->set('txnQuantity', '15')
+            ->set('txnPrice', '170')
+            ->set('txnDate', '2026-03-05')
+            ->call('recordTransaction')
+            ->assertHasNoErrors();
+
+        $this->assertNull($this->holdingQuantity($account, 'AAPL'));
+    }
+
+    public function test_deposits_and_withdrawals_drive_cash(): void
+    {
+        $user = User::factory()->create();
+        $account = $this->manualAccount($user);
+        $this->actingAs($user);
+
+        $component = Volt::test('connections.account', ['account' => $account])
+            ->set('txnType', 'deposit')
+            ->set('txnCurrency', 'SAR')
+            ->set('txnAmount', '50000')
+            ->set('txnDate', '2026-01-05')
+            ->call('recordTransaction')
+            ->assertHasNoErrors();
+
+        $this->assertEqualsWithDelta(50000.0, $this->holdingQuantity($account, 'CASH-SAR'), 1e-9);
+
+        $component->set('txnType', 'withdrawal')
+            ->set('txnCurrency', 'SAR')
+            ->set('txnAmount', '20000')
+            ->set('txnDate', '2026-02-05')
+            ->call('recordTransaction')
+            ->assertHasNoErrors();
+
+        $this->assertEqualsWithDelta(30000.0, $this->holdingQuantity($account, 'CASH-SAR'), 1e-9);
+    }
+
+    public function test_any_listed_symbol_can_be_added(): void
     {
         $user = User::factory()->create();
         $account = $this->manualAccount($user);
         $this->actingAs($user);
 
         Volt::test('connections.account', ['account' => $account])
-            ->set('addSymbol', 'ZZZZ')
-            ->set('addQuantity', '10')
-            ->call('addHolding')
-            ->assertHasErrors('addSymbol');
-
-        $this->assertSame(0, $account->holdings()->count());
-    }
-
-    public function test_editing_and_removing_a_holding(): void
-    {
-        $user = User::factory()->create();
-        $account = $this->manualAccount($user);
-        $this->actingAs($user);
-
-        $component = Volt::test('connections.account', ['account' => $account])
-            ->set('addSymbol', 'AAPL')
-            ->set('addQuantity', '25')
-            ->call('addHolding');
-
-        $holding = $account->holdings()->firstOrFail();
-
-        $component->call('startEdit', $holding->id)
-            ->set('editQuantity', '40')
-            ->call('saveEdit')
+            ->set('txnType', 'buy')
+            ->call('selectInstrument', 'TSLA', 'Tesla, Inc.', [
+                'symbol' => 'TSLA',
+                'name' => 'Tesla, Inc.',
+                'exchange' => 'NASDAQ',
+                'country' => 'United States',
+                'currency' => 'USD',
+                'type' => 'Common Stock',
+            ])
+            ->set('txnQuantity', '10')
+            ->set('txnPrice', '240')
+            ->set('txnDate', '2026-01-05')
+            ->call('recordTransaction')
             ->assertHasNoErrors();
 
-        $this->assertEqualsWithDelta(40.0, $holding->refresh()->quantity, 1e-9);
-
-        $component->call('removeHolding', $holding->id);
-        $this->assertDatabaseMissing('holdings', ['id' => $holding->id]);
+        $holding = $account->holdings()->with('asset')->firstOrFail();
+        $this->assertSame('TSLA', $holding->asset->symbol);
+        $this->assertGreaterThanOrEqual(2, $holding->asset->priceHistories()->count());
     }
 
-    public function test_a_csv_import_merges_into_the_account(): void
+    public function test_deleting_a_transaction_rebuilds_the_holding(): void
+    {
+        $user = User::factory()->create();
+        $account = $this->manualAccount($user);
+        $this->actingAs($user);
+
+        $component = Volt::test('connections.account', ['account' => $account]);
+
+        foreach ([['25', '130'], ['25', '150']] as [$quantity, $price]) {
+            $component->set('txnType', 'buy')
+                ->call('selectInstrument', 'AAPL', 'Apple Inc.')
+                ->set('txnQuantity', $quantity)
+                ->set('txnPrice', $price)
+                ->set('txnDate', '2026-01-05')
+                ->call('recordTransaction')
+                ->assertHasNoErrors();
+        }
+
+        $second = $account->transactions()->orderByDesc('id')->firstOrFail();
+        $component->call('deleteTransaction', $second->id);
+
+        $holding = $account->holdings()->firstOrFail();
+        $this->assertEqualsWithDelta(25.0, $holding->quantity, 1e-9);
+        $this->assertEqualsWithDelta(130.0, $holding->avg_cost, 1e-9);
+    }
+
+    public function test_a_csv_import_adds_opening_buys(): void
     {
         $user = User::factory()->create();
         $account = $this->manualAccount($user);
         $this->actingAs($user);
 
         $component = Volt::test('connections.account', ['account' => $account])
-            ->set('addSymbol', 'AAPL')
-            ->set('addQuantity', '25')
-            ->call('addHolding');
+            ->set('txnType', 'buy')
+            ->call('selectInstrument', 'AAPL', 'Apple Inc.')
+            ->set('txnQuantity', '25')
+            ->set('txnPrice', '130')
+            ->set('txnDate', '2026-01-05')
+            ->call('recordTransaction');
 
         $component->set('statement', UploadedFile::fake()->createWithContent('holdings.csv', "symbol,quantity,avg_cost\n2222.SR,800,8.10"))
             ->call('importCsv')
@@ -125,6 +232,7 @@ class ConnectionsAccountTest extends TestCase
         $symbols = $account->holdings()->with('asset')->get()->pluck('asset.symbol');
         $this->assertTrue($symbols->contains('AAPL'), 'existing holding was kept');
         $this->assertTrue($symbols->contains('2222.SR'), 'imported holding was added');
+        $this->assertEqualsWithDelta(800.0, $this->holdingQuantity($account, '2222.SR'), 1e-9);
     }
 
     public function test_a_demo_account_is_view_only(): void
@@ -137,7 +245,7 @@ class ConnectionsAccountTest extends TestCase
             ->get(route('connections.account', $account))
             ->assertOk()
             ->assertSee(__('Demo — sample data'))
-            ->assertDontSee(__('Add to this account'));
+            ->assertDontSee(__('Record transaction'));
     }
 
     public function test_deleting_a_manual_account_removes_it(): void

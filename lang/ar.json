@@ -1298,5 +1298,21 @@
     "Add an account for each broker or bank, name it yourself, and fill it either by uploading a CSV statement or by adding stocks, crypto, and cash by hand. Open any account to see exactly what it holds. Ready-made sample portfolios now live under a clearly labelled Demo accounts section.": "أضِف حسابًا لكل وسيط أو بنك، وسمِّه بنفسك، واملأه إما برفع كشف CSV أو بإضافة الأسهم والعملات الرقمية والنقد يدويًا. افتح أي حساب لترى ما يحتويه بالضبط. والمحافظ النموذجية الجاهزة صارت الآن ضمن قسم «حسابات تجريبية» واضح.",
     "Total value": "القيمة الإجمالية",
     "Remove": "إزالة",
-    "Delete this account? This cannot be undone.": "حذف هذا الحساب؟ لا يمكن التراجع عن ذلك."
+    "Delete this account? This cannot be undone.": "حذف هذا الحساب؟ لا يمكن التراجع عن ذلك.",
+    "Record transaction": "تسجيل عملية",
+    "No transactions yet.": "لا توجد عمليات بعد.",
+    "Transaction recorded.": "تم تسجيل العملية.",
+    "Transaction deleted.": "تم حذف العملية.",
+    "Sale price": "سعر البيع",
+    "Withdraw": "سحب",
+    "Currency": "العملة",
+    "Date": "التاريخ",
+    "Change instrument": "تغيير الأداة",
+    "Search a stock, fund, or crypto…": "ابحث عن سهم أو صندوق أو عملة رقمية…",
+    "Buys and sells build your positions with cost basis; deposits and withdrawals track cash separately.": "عمليات الشراء والبيع تبني مراكزك مع أساس التكلفة، والإيداعات والسحوبات تتابع النقد على حدة.",
+    "Delete this transaction? Your holdings will be recalculated.": "حذف هذه العملية؟ ستُعاد حسبة أصولك المملوكة.",
+    "This account is empty — record a transaction or import a CSV to get started.": "هذا الحساب فارغ — سجّل عملية أو استورد ملف CSV للبدء.",
+    "Upload a holdings statement exported from your broker — each position is added as an opening buy.": "ارفع كشف أصول مُصدَّرًا من وسيطك، وتُضاف كل مركز عملية شراء افتتاحية.",
+    "Any stock, and a real ledger": "أي سهم، ودفتر عمليات حقيقي",
+    "Manual accounts now search the whole market — add any listed stock, fund, or crypto, not just a short list. And instead of a flat quantity, you record dated buys, sells, deposits, and withdrawals; Mahafeth derives each position and its average cost from the ledger, so your own accounts carry cost basis and history like the rest of the app.": "حساباتك اليدوية صارت تبحث في السوق كله — أضِف أي سهم أو صندوق أو عملة رقمية مدرجة، لا قائمة قصيرة فحسب. وبدل كمية ثابتة، تسجّل عمليات شراء وبيع وإيداع وسحب بتواريخها، ويستخرج «محافظ» كل مركز ومتوسط تكلفته من دفتر العمليات، فتحمل حساباتك أساس التكلفة والتاريخ مثل بقية التطبيق."
 }

@@ -57,6 +57,31 @@ class PriceSeriesGenerator
     }
 
     /**
+     * A generic one-year daily series for an arbitrary symbol, seeded around
+     * a known price. Used as a fallback when no real market history is
+     * available (no Twelve Data key, an API failure, or an uncatalogued
+     * symbol under the simulated provider) so the analytics engine always has
+     * at least two closes to work with. Real history overrides this whenever
+     * the price provider returns a series.
+     *
+     * @return array<string, float> [Y-m-d => close]
+     */
+    public function synthetic(string $symbol, float $seedPrice): array
+    {
+        $seedPrice = $seedPrice > 0 ? $seedPrice : 1.0;
+
+        return $this->generate(
+            symbol: $symbol,
+            from: Carbon::now()->subYear()->startOfDay(),
+            to: Carbon::now()->startOfDay(),
+            startPrice: $seedPrice,
+            drift: 0.08,
+            volatility: 0.28,
+            factorLoading: 0.5,
+        );
+    }
+
+    /**
      * @return list<string> Y-m-d strings for Monday–Friday between the bounds
      */
     private function businessDays(CarbonInterface $from, CarbonInterface $to): array

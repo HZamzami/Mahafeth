@@ -2,12 +2,15 @@
 
 namespace App\Actions;
 
+use App\Enums\AssetClass;
 use App\Enums\ConnectionStatus;
+use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Asset;
 use App\Models\Connection;
 use App\Models\Institution;
 use App\Models\User;
+use App\Services\Markets\AssetResolver;
 use App\Services\OpenBanking\AssetCatalog;
 use Illuminate\Support\Facades\DB;
 
@@ -15,14 +18,17 @@ use Illuminate\Support\Facades\DB;
  * Writes statement-imported holdings into the portfolio, then syncs prices
  * so the analytics pipeline can value the positions. Two entry points:
  * the institution flow (used by the demo seeder) replaces the account's
- * holdings wholesale; the account flow (user-owned manual accounts) merges,
- * so an upload composes with hand-entered positions.
+ * holdings wholesale; the account flow (user-owned manual accounts) appends
+ * each row as an opening transaction, so an upload composes with hand-entered
+ * positions on one shared ledger.
  */
 class ImportHoldings
 {
     public function __construct(
         private AssetCatalog $assetCatalog,
+        private AssetResolver $assetResolver,
         private SyncPrices $syncPrices,
+        private RebuildAccountHoldings $rebuildAccountHoldings,
     ) {}
 
     /**
@@ -62,22 +68,57 @@ class ImportHoldings
     }
 
     /**
-     * Merge statement rows into a user-owned account: existing positions are
-     * updated, new ones added, nothing removed.
+     * Append statement rows to a user-owned account as opening transactions —
+     * a Buy for each security position, a Deposit for each cash balance — then
+     * rederive the affected holdings so CSV and hand-entry share one ledger.
      *
      * @param  list<array{symbol: string, quantity: float, avg_cost: float}>  $rows
      */
     public function intoAccount(Account $account, array $rows): void
     {
-        $symbols = DB::transaction(function () use ($account, $rows): array {
-            $symbols = $this->writeRows($account, $rows);
+        /** @var array<int, Asset> $assets */
+        $assets = [];
+        $seedPrices = [];
+
+        DB::transaction(function () use ($account, $rows, &$assets, &$seedPrices): void {
+            foreach ($rows as $row) {
+                $asset = $this->assetResolver->resolve($row['symbol']);
+                $quantity = (float) $row['quantity'];
+                $price = (float) ($row['avg_cost'] ?? 0);
+
+                if ($asset->asset_class === AssetClass::Cash) {
+                    $account->transactions()->create([
+                        'asset_id' => $asset->id,
+                        'type' => TransactionType::Deposit,
+                        'quantity' => $quantity,
+                        'price' => 1.0,
+                        'amount' => $quantity,
+                        'executed_at' => now(),
+                    ]);
+                    $seedPrices[$asset->symbol] = 1.0;
+                } else {
+                    $account->transactions()->create([
+                        'asset_id' => $asset->id,
+                        'type' => TransactionType::Buy,
+                        'quantity' => $quantity,
+                        'price' => $price,
+                        'amount' => $quantity * $price,
+                        'executed_at' => now(),
+                    ]);
+                    $seedPrices[$asset->symbol] = $price > 0 ? $price : 1.0;
+                }
+
+                $assets[$asset->id] = $asset;
+            }
 
             $account->connection->update(['last_synced_at' => now()]);
-
-            return $symbols;
         });
 
-        $this->syncPrices->handle($symbols);
+        $this->syncPrices->handle(array_keys($seedPrices), $seedPrices);
+
+        foreach ($assets as $asset) {
+            $this->rebuildAccountHoldings->forAsset($account, $asset);
+        }
     }
 
     /**

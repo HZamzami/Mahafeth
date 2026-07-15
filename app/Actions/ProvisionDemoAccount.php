@@ -38,7 +38,9 @@ class ProvisionDemoAccount
         // chain on the simulated provider explicitly, leaving the global
         // env-driven binding untouched.
         $syncConnection = app()->make(SyncConnection::class, [
-            'syncPrices' => new SyncPrices(app(SimulatedPriceProvider::class)),
+            'syncPrices' => app()->make(SyncPrices::class, [
+                'provider' => app(SimulatedPriceProvider::class),
+            ]),
         ]);
 
         return $this->provision($syncConnection);

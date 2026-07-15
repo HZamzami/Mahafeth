@@ -20,6 +20,16 @@ class Changelog
     {
         return [
             [
+                'date' => '2026-07-16',
+                'items' => [
+                    [
+                        'type' => 'new',
+                        'title' => __('Any stock, and a real ledger'),
+                        'body' => __('Manual accounts now search the whole market — add any listed stock, fund, or crypto, not just a short list. And instead of a flat quantity, you record dated buys, sells, deposits, and withdrawals; Mahafeth derives each position and its average cost from the ledger, so your own accounts carry cost basis and history like the rest of the app.'),
+                    ],
+                ],
+            ],
+            [
                 'date' => '2026-07-15',
                 'items' => [
                     [
