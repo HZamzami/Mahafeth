@@ -27,7 +27,6 @@ class ChangelogTest extends TestCase
             ->assertSee(__('The Explore page'))
             ->assertSee(__('New'))
             ->assertSee(__('Improved'))
-            ->assertSee(__('Fixed'))
             // The unseen-dot stamp for the latest release.
             ->assertSee(Changelog::latestDate());
     }

@@ -23,31 +23,6 @@ class Changelog
                 'date' => '2026-07-15',
                 'items' => [
                     [
-                        'type' => 'improved',
-                        'title' => __('A chat-first advisor'),
-                        'body' => __('The advisor page was rebuilt around the conversation: a one-line message box, the insight and action plan in a slide-over panel that never squeezes the chat, and a thread that runs the full height of your phone screen.'),
-                    ],
-                    [
-                        'type' => 'improved',
-                        'title' => __('Clearer, warmer Arabic everywhere'),
-                        'body' => __('Every Arabic string in the app was reviewed against one glossary: direct requests instead of stiff boilerplate, active voice, proper Arabic quotes, correct tanween, and one consistent term for every financial concept.'),
-                    ],
-                    [
-                        'type' => 'improved',
-                        'title' => __('A livelier app, the same focus'),
-                        'body' => __('The welcome page\'s polish now runs through the whole app: soft background accents behind every page, key numbers that count up as they appear, content that rises in as you arrive, and warmer invitations where a page is still empty.'),
-                    ],
-                    [
-                        'type' => 'fixed',
-                        'title' => __('The demo now shows its progress'),
-                        'body' => __('Tapping Try the demo the instant the page loads used to jump straight into provisioning with no feedback. The building overlay now appears no matter how fast you click.'),
-                    ],
-                    [
-                        'type' => 'improved',
-                        'title' => __('Tidier controls everywhere'),
-                        'body' => __('Buttons now match the height of the fields they sit beside — like the zakat hawl date row — and the appearance switcher fits phone screens instead of overflowing.'),
-                    ],
-                    [
                         'type' => 'new',
                         'title' => __('Try the trade before you make it'),
                         'body' => __('A What if? panel on every instrument and holding page simulates a buy or sell and shows how your health score, concentration, volatility, and correlation would shift before you commit real money.'),
@@ -74,18 +49,8 @@ class Changelog
                     ],
                     [
                         'type' => 'new',
-                        'title' => __('Credit where it\'s due'),
-                        'body' => __('When an alert clears — you trimmed a position, risk came back in line — Mahafeth now says so, with a green note on the dashboard and an entry in your activity feed instead of silently dropping the warning.'),
-                    ],
-                    [
-                        'type' => 'new',
                         'title' => __('Your plan keeps watch'),
                         'body' => __('Mahafeth now compares your live allocation to your investment plan every day and raises an alert when any position drifts more than five points off target, so rebalancing becomes something the platform remembers for you.'),
-                    ],
-                    [
-                        'type' => 'new',
-                        'title' => __('Honest about data age'),
-                        'body' => __('The Open Banking card now shows how current your prices and exchange rates are, with a clear badge when either falls behind, so you always know what the numbers are built on.'),
                     ],
                     [
                         'type' => 'new',
@@ -97,25 +62,35 @@ class Changelog
                         'title' => __('See what moved your portfolio today'),
                         'body' => __('A new Daily Move card on the dashboard breaks each day\'s change into the holdings and currencies behind it, so you can tell at a glance whether it was Aramco, the dollar, or your own deposits.'),
                     ],
+                    [
+                        'type' => 'improved',
+                        'title' => __('Clearer, warmer Arabic everywhere'),
+                        'body' => __('Every Arabic string in the app was reviewed against one glossary: direct requests instead of stiff boilerplate, active voice, proper Arabic quotes, correct tanween, and one consistent term for every financial concept.'),
+                    ],
                 ],
             ],
             [
                 'date' => '2026-07-14',
                 'items' => [
                     [
-                        'type' => 'improved',
-                        'title' => __('Insights, ready when you arrive'),
-                        'body' => __('Mahafeth now prepares your AI insight in the background the moment an analysis finishes, so the advisor and dashboard usually have it waiting instead of making you watch a spinner.'),
-                    ],
-                    [
-                        'type' => 'improved',
-                        'title' => __('A faster demo with live progress'),
-                        'body' => __('Try the demo now builds your sample portfolio in seconds and shows its progress while it works, in your language and direction.'),
-                    ],
-                    [
                         'type' => 'new',
                         'title' => __('Take Mahafeth for a spin'),
                         'body' => __('A Try the demo button on the welcome page opens a ready-made portfolio, complete with history, alerts, and a health score. No signup, and demo accounts clean themselves up after two days.'),
+                    ],
+                    [
+                        'type' => 'new',
+                        'title' => __('Sign in with Face ID or fingerprint'),
+                        'body' => __('Add a passkey from Settings and sign in with your face, fingerprint, or device screen lock. Faster than a password, and safer too.'),
+                    ],
+                    [
+                        'type' => 'new',
+                        'title' => __('Custom alerts'),
+                        'body' => __('Set your own limits on volatility, concentration, drawdown, or the health score from your profile settings — Mahafeth watches them with every analysis and notifies you the moment one is crossed.'),
+                    ],
+                    [
+                        'type' => 'new',
+                        'title' => __('Your dashboard, even offline'),
+                        'body' => __('The installed app now remembers your latest dashboard, so opening it without a connection shows your last portfolio view with a clear offline notice instead of an error page.'),
                     ],
                     [
                         'type' => 'new',
@@ -134,68 +109,13 @@ class Changelog
                     ],
                     [
                         'type' => 'improved',
-                        'title' => __('Analytics, ready when you are'),
-                        'body' => __('The analytics page now remembers its heavy calculations between visits, so charts appear instantly and refresh automatically after every new sync or analysis.'),
-                    ],
-                    [
-                        'type' => 'improved',
-                        'title' => __('A more polished app'),
-                        'body' => __('Across the app, cards now settle in one after another, totals count up when a page opens, and cards respond gently under the pointer. Same numbers, better presence.'),
-                    ],
-                    [
-                        'type' => 'improved',
                         'title' => __('A brand-new front door'),
                         'body' => __('The welcome page was rebuilt from scratch with a live product preview, floating health-score and alert cards, and a lot more personality. Signed-in users skip it entirely and land on their dashboard.'),
-                    ],
-                    [
-                        'type' => 'new',
-                        'title' => __('Sign in with Face ID or fingerprint'),
-                        'body' => __('Add a passkey from Settings and sign in with your face, fingerprint, or device screen lock. Faster than a password, and safer too.'),
-                    ],
-                    [
-                        'type' => 'new',
-                        'title' => __('Your dashboard, even offline'),
-                        'body' => __('The installed app now remembers your latest dashboard, so opening it without a connection shows your last portfolio view with a clear offline notice instead of an error page.'),
-                    ],
-                    [
-                        'type' => 'improved',
-                        'title' => __('A faster-feeling dashboard'),
-                        'body' => __('Heavier cards now load in the background behind smooth placeholders, so the dashboard and analytics pages appear instantly instead of waiting for every chart.'),
-                    ],
-                    [
-                        'type' => 'improved',
-                        'title' => __('You stay signed in'),
-                        'body' => __('Mahafeth now keeps you signed in on your device, so opening the app takes you straight to your portfolio instead of the login screen.'),
-                    ],
-                    [
-                        'type' => 'new',
-                        'title' => __('Custom alerts'),
-                        'body' => __('Set your own limits on volatility, concentration, drawdown, or the health score from your profile settings — Mahafeth watches them with every analysis and notifies you the moment one is crossed.'),
                     ],
                     [
                         'type' => 'improved',
                         'title' => __('The advisor writes its answers live'),
                         'body' => __('Mahafeth AI now streams its reply into the chat as it thinks, so you start reading the answer within seconds instead of waiting for the whole response.'),
-                    ],
-                    [
-                        'type' => 'improved',
-                        'title' => __('A snappier AI advisor'),
-                        'body' => __('Your question now appears in the chat instantly and the answer is composed in the background — keep browsing while Mahafeth AI thinks, and retry with one tap if it fails.'),
-                    ],
-                    [
-                        'type' => 'fixed',
-                        'title' => __('More reliable insight generation'),
-                        'body' => __('Generating insights no longer fails after a long wait, and asking Mahafeth AI from a stock or news item no longer sends the question twice.'),
-                    ],
-                    [
-                        'type' => 'fixed',
-                        'title' => __('Native-app polish'),
-                        'body' => __('On installed phones the bottom bar now keeps proper spacing from the page, and switching pages visibly acknowledges every tap — the pressed tab tints, the page dims, and a progress strip shows below the status bar.'),
-                    ],
-                    [
-                        'type' => 'fixed',
-                        'title' => __('Stability sweep across the app'),
-                        'body' => __('Greetings now follow Saudi time, a delisted holding can no longer break your portfolio analysis, and every page was verified against empty accounts and Arabic.'),
                     ],
                 ],
             ],
@@ -218,14 +138,14 @@ class Changelog
                         'body' => __('Quarterly reports, annual reports, and material events now come live from official SEC EDGAR filings, linked to the actual documents.'),
                     ],
                     [
-                        'type' => 'improved',
-                        'title' => __('News you can trust'),
-                        'body' => __('The news feed now shows live market headlines only — every story links to its source.'),
+                        'type' => 'new',
+                        'title' => __('Financials & analyst ratings on stock pages'),
+                        'body' => __('Every stock page now shows quarterly revenue and profit, the company profile, analyst buy/hold/sell consensus, and 12-month price targets.'),
                     ],
                     [
-                        'type' => 'improved',
-                        'title' => __('Faster everywhere'),
-                        'body' => __('Pages preload as you reach for them, the app answers every tap instantly, and the holdings list renders more than ten times faster.'),
+                        'type' => 'new',
+                        'title' => __('Activity log'),
+                        'body' => __('One place for everything that happens in your account: alerts, syncs, health-score changes, and security events.'),
                     ],
                     [
                         'type' => 'improved',
@@ -239,16 +159,6 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
-                        'title' => __('Financials & analyst ratings on stock pages'),
-                        'body' => __('Every stock page now shows quarterly revenue and profit, the company profile, analyst buy/hold/sell consensus, and 12-month price targets.'),
-                    ],
-                    [
-                        'type' => 'new',
-                        'title' => __('Activity log'),
-                        'body' => __('One place for everything that happens in your account: alerts, syncs, health-score changes, and security events.'),
-                    ],
-                    [
-                        'type' => 'new',
                         'title' => __('A better-grounded AI advisor'),
                         'body' => __('The advisor answers from your actual portfolio analysis and can look up current market facts when it needs them.'),
                     ],
@@ -257,10 +167,20 @@ class Changelog
                         'title' => __('Native currency prices'),
                         'body' => __('Instruments quote in their own market currency by default, with a one-tap toggle to riyals.'),
                     ],
+                ],
+            ],
+            [
+                'date' => '2026-07-11',
+                'items' => [
                     [
-                        'type' => 'fixed',
-                        'title' => __('Arabic polish'),
-                        'body' => __('Cleaner Arabic across sign-in, registration, and market pages.'),
+                        'type' => 'new',
+                        'title' => __('Your holdings, in one place'),
+                        'body' => __('A holdings page lists every position across your connected accounts, each opening a full instrument screen with a live market chart and the details behind it.'),
+                    ],
+                    [
+                        'type' => 'improved',
+                        'title' => __('A phone-first experience'),
+                        'body' => __('A bottom tab bar, interactive charts, and native-feeling touches make Mahafeth read like an app built for your phone, not a website squeezed onto it.'),
                     ],
                 ],
             ],
