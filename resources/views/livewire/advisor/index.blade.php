@@ -408,7 +408,7 @@ new class extends Component {
                 @chat-updated.window="$nextTick(() => $el.scrollTop = $el.scrollHeight)">
                 @forelse ($messages as $chatMessage)
                     <div wire:key="chat-message-{{ $chatMessage->id }}" wire:transition @class([
-                        'w-fit max-w-[85%] rounded-2xl px-4 py-2.5 text-sm',
+                        'w-fit max-w-[85%] rounded-2xl px-4 py-2.5 text-base',
                         'ms-auto bg-teal-600 text-white dark:bg-teal-500' => $chatMessage->role === 'user',
                         'me-auto bg-neutral-100 text-neutral-800 dark:bg-zinc-800 dark:text-neutral-100' => $chatMessage->role !== 'user',
                     ])>
@@ -454,7 +454,7 @@ new class extends Component {
                      the dots and grows with every poll. --}}
                 @if ($isAwaitingReply)
                     @if ($partialReply !== '')
-                        <div class="me-auto w-fit max-w-[85%] rounded-2xl bg-neutral-100 px-4 py-2.5 text-sm text-neutral-800 dark:bg-zinc-800 dark:text-neutral-100">
+                        <div class="me-auto w-fit max-w-[85%] rounded-2xl bg-neutral-100 px-4 py-2.5 text-base text-neutral-800 dark:bg-zinc-800 dark:text-neutral-100">
                             <div class="break-words [&_li]:mt-1 [&_ol]:list-decimal [&_ol]:ps-5 [&_p:not(:last-child)]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ps-5"
                                 dir="auto">
                                 {!! Illuminate\Support\Str::markdown($partialReply, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
