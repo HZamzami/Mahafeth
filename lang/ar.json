@@ -1243,5 +1243,7 @@
     "buying": "الشراء",
     "selling": "البيع",
     "Try the trade before you make it": "جرّب الصفقة قبل تنفيذها",
-    "A What if? panel on every instrument and holding page simulates a buy or sell and shows how your health score, concentration, volatility, and correlation would shift before you commit real money.": "لوحة \"ماذا لو؟\" في كل صفحة أداة ومقتنى تحاكي شراء أو بيعا وتعرض كيف ستتغير درجة صحتك والتركز والتقلب والارتباط قبل أن تلتزم بمال حقيقي."
+    "A What if? panel on every instrument and holding page simulates a buy or sell and shows how your health score, concentration, volatility, and correlation would shift before you commit real money.": "لوحة \"ماذا لو؟\" في كل صفحة أداة ومقتنى تحاكي شراء أو بيعا وتعرض كيف ستتغير درجة صحتك والتركز والتقلب والارتباط قبل أن تلتزم بمال حقيقي.",
+    "Tidier controls everywhere": "عناصر تحكم أكثر اتساقا",
+    "Buttons now match the height of the fields they sit beside — like the zakat hawl date row — and the appearance switcher fits phone screens instead of overflowing.": "أصبحت الأزرار الآن بارتفاع الحقول المجاورة لها، كما في صف تاريخ حول الزكاة، ومبدّل المظهر يلائم شاشات الهواتف بدلا من تجاوز حدودها."
 }

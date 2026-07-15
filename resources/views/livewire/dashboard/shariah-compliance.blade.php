@@ -207,7 +207,7 @@ new class extends Component {
                     </flux:text>
                     <div class="mt-2 flex items-center gap-3">
                         <flux:modal.trigger name="mark-purified">
-                            <flux:button size="xs" variant="primary"
+                            <flux:button size="sm" variant="primary"
                                 x-on:click="$wire.purifiedAmount = '{{ number_format($outstanding, 2, '.', '') }}'">
                                 {{ __('Mark as purified') }}</flux:button>
                         </flux:modal.trigger>
@@ -290,7 +290,7 @@ new class extends Component {
                         </flux:text>
                         @if (! $zakat['below_nisab'])
                             <flux:modal.trigger name="mark-zakat-paid">
-                                <flux:button class="mt-2" size="xs" variant="outline"
+                                <flux:button class="mt-2" size="sm" variant="outline"
                                     x-on:click="$wire.zakatPaidAmount = '{{ number_format($zakat['zakat_due'], 2, '.', '') }}'">
                                     {{ __('Mark zakat paid') }}</flux:button>
                             </flux:modal.trigger>

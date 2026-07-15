@@ -23,6 +23,11 @@ class Changelog
                 'date' => '2026-07-15',
                 'items' => [
                     [
+                        'type' => 'improved',
+                        'title' => __('Tidier controls everywhere'),
+                        'body' => __('Buttons now match the height of the fields they sit beside — like the zakat hawl date row — and the appearance switcher fits phone screens instead of overflowing.'),
+                    ],
+                    [
                         'type' => 'new',
                         'title' => __('Try the trade before you make it'),
                         'body' => __('A What if? panel on every instrument and holding page simulates a buy or sell and shows how your health score, concentration, volatility, and correlation would shift before you commit real money.'),

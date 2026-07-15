@@ -112,7 +112,7 @@ new class extends Component {
         <div class="flex items-end gap-2">
             <flux:input wire:model="amount" type="number" step="any" min="1" dir="ltr" class="flex-1"
                 :label="__('Amount (SAR)')" placeholder="10000" />
-            <flux:button type="submit" variant="primary" size="sm" class="mb-0.5" wire:loading.attr="disabled">
+            <flux:button type="submit" variant="primary" wire:loading.attr="disabled">
                 <span wire:loading.remove wire:target="simulate">{{ __('Simulate') }}</span>
                 <span wire:loading wire:target="simulate">{{ __('Computing…') }}</span>
             </flux:button>

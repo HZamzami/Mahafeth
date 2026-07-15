@@ -101,7 +101,7 @@ new class extends Component {
                 <span class="text-4xl font-bold text-neutral-300 dark:text-zinc-600">—</span>
                 <flux:text class="mt-1 max-w-40 text-xs">{{ __('Complete your investor profile to unlock scoring') }}
                 </flux:text>
-                <flux:button class="mt-3" size="xs" variant="primary" :href="route('investor-profile')"
+                <flux:button class="mt-3" size="sm" variant="primary" :href="route('investor-profile')"
                     wire:navigate>{{ __('Start') }}</flux:button>
             @else
                 <span class="text-4xl font-bold text-neutral-300 dark:text-zinc-600">—</span>

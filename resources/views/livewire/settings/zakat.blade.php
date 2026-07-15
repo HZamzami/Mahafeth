@@ -67,10 +67,10 @@ new class extends Component {
                 <flux:select.option value="{{ $number }}">{{ $name }}</flux:select.option>
             @endforeach
         </flux:select>
-        <flux:button size="sm" variant="primary" wire:click="save" wire:loading.attr="disabled">
+        <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">
             {{ __('Save') }}</flux:button>
         @if (Auth::user()->zakat_hawl_month !== null)
-            <flux:button size="sm" variant="ghost" wire:click="clear" wire:loading.attr="disabled">
+            <flux:button variant="ghost" wire:click="clear" wire:loading.attr="disabled">
                 {{ __('Clear') }}</flux:button>
         @endif
     </div>
