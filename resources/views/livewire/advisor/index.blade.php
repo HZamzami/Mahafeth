@@ -361,8 +361,10 @@ new class extends Component {
 
         {{-- Chat --}}
         <div class="flex flex-col card max-lg:min-h-0 max-lg:flex-1">
+            {{-- Only pin to the bottom when a conversation exists; doing it on
+                 the empty state scrolled the starter chips' title out of view. --}}
             <div class="min-h-40 space-y-3 overflow-y-auto p-5 max-lg:min-h-0 max-lg:flex-1 lg:max-h-[55vh]" x-data
-                x-init="$el.scrollTop = $el.scrollHeight"
+                x-init="@if ($messages->isNotEmpty()) $el.scrollTop = $el.scrollHeight @endif"
                 @chat-updated.window="$nextTick(() => $el.scrollTop = $el.scrollHeight)">
                 @forelse ($messages as $chatMessage)
                     <div wire:key="chat-message-{{ $chatMessage->id }}" wire:transition @class([
@@ -385,7 +387,7 @@ new class extends Component {
                         @endif
                     </div>
                 @empty
-                    <div class="flex flex-col items-center gap-3 py-6 text-center">
+                    <div class="flex h-full flex-col items-center justify-center gap-3 py-6 text-center">
                         <flux:text class="text-sm">
                             {{ __('Start with one of these, or ask your own question.') }}</flux:text>
                         <x-scroll-hint class="w-full lg:hidden" surface="card">
