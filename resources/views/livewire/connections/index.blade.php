@@ -2,14 +2,9 @@
 
 use App\Actions\CreateManualAccount;
 use App\Enums\AccountType;
-use App\Enums\ActivityType;
 use App\Enums\ConnectionStatus;
-use App\Enums\ConsentStatus;
-use App\Models\ActivityEvent;
 use App\Models\Institution;
 use App\Services\Analytics\HoldingsSummarizer;
-use App\Actions\SyncConnection;
-use App\Services\Analytics\PortfolioAnalyzer;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
 
@@ -37,55 +32,6 @@ new class extends Component {
         );
 
         $this->redirectRoute('connections.account', $account, navigate: true);
-    }
-
-    /**
-     * Re-sync a demo (institution-backed) connection to re-pull its data.
-     */
-    public function sync(int $connectionId, SyncConnection $syncConnection, PortfolioAnalyzer $analyzer): void
-    {
-        $connection = Auth::user()->connections()->with('latestConsent')->findOrFail($connectionId);
-
-        // API-backed demo connections need a live Open Banking consent, exactly
-        // as a real re-sync would.
-        if ($connection->source === 'api' && ! ($connection->latestConsent?->isActive() ?? false)) {
-            session()->flash('error', __('The consent for this connection has expired. Please reauthorize access.'));
-
-            return;
-        }
-
-        $syncConnection->handle($connection);
-        $analyzer->analyze(Auth::user());
-
-        $this->dispatch('toast', message: __('Synced and re-analyzed.'));
-    }
-
-    /**
-     * Remove an account. A manual account is deleted outright; a demo
-     * connection is disconnected and its consent revoked, mirroring an Open
-     * Banking revocation.
-     */
-    public function remove(int $connectionId, PortfolioAnalyzer $analyzer): void
-    {
-        $connection = Auth::user()->connections()->findOrFail($connectionId);
-
-        if ($connection->isManual()) {
-            $connection->delete();
-        } else {
-            $connection->update(['status' => ConnectionStatus::Disconnected]);
-
-            Auth::user()->consents()
-                ->where('connection_id', $connection->id)
-                ->where('status', ConsentStatus::Active)
-                ->update(['status' => ConsentStatus::Revoked, 'revoked_at' => now()]);
-
-            ActivityEvent::record(Auth::user(), ActivityType::ConnectionDisconnected, [
-                'institution' => $connection->institution->localizedName(),
-            ]);
-        }
-
-        $analyzer->analyze(Auth::user());
-        $this->dispatch('toast', message: __('Access revoked.'));
     }
 
     public function with(HoldingsSummarizer $summarizer): array
@@ -156,12 +102,10 @@ new class extends Component {
                     <flux:icon.wallet class="size-5 text-teal-700 dark:text-teal-300" />
                 </div>
                 <div class="min-w-0 flex-1">
-                    <flux:heading size="lg">{{ $item['name'] }}</flux:heading>
+                    <flux:heading size="lg" class="truncate">{{ $item['name'] }}</flux:heading>
                     <flux:text class="text-sm">{{ $item['account']?->type->label() }}</flux:text>
                 </div>
-                <div class="text-end" dir="ltr">
-                    <flux:heading>⃁ {{ Number::format($item['value'], 0) }}</flux:heading>
-                </div>
+                <flux:heading class="shrink-0" dir="ltr">⃁ {{ Number::format($item['value'], 0) }}</flux:heading>
                 <flux:icon.chevron-right class="size-4 shrink-0 text-zinc-400 rtl:rotate-180" />
             </a>
         @empty
@@ -187,24 +131,23 @@ new class extends Component {
         </div>
 
         @foreach ($demoAccounts as $item)
-            <div wire:key="demo-{{ $item['connectionId'] }}" class="flex items-center gap-4 card p-5">
+            <a href="{{ $item['account'] ? route('connections.account', $item['account']) : '#' }}" wire:navigate
+                wire:key="demo-{{ $item['connectionId'] }}"
+                class="flex items-center gap-4 card p-5 transition-colors hover:bg-neutral-50 dark:hover:bg-zinc-800/60">
                 <div class="flex size-11 shrink-0 items-center justify-center rounded-lg"
                     style="background-color: {{ $item['institution']->color }}20">
                     <flux:icon.building-library class="size-5" style="color: {{ $item['institution']->color }}" />
                 </div>
-                <a href="{{ $item['account'] ? route('connections.account', $item['account']) : '#' }}" wire:navigate
-                    class="min-w-0 flex-1">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <flux:heading size="lg">{{ $item['institution']->localizedName() }}</flux:heading>
-                        <flux:badge size="sm" color="zinc">{{ __('Demo') }}</flux:badge>
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                        <flux:heading size="lg" class="truncate">{{ $item['institution']->localizedName() }}</flux:heading>
+                        <flux:badge size="sm" color="zinc" class="shrink-0">{{ __('Demo') }}</flux:badge>
                     </div>
-                    <flux:text class="text-sm" dir="ltr">⃁ {{ Number::format($item['value'], 0) }}</flux:text>
-                </a>
-                <flux:button size="sm" variant="subtle" wire:click="sync({{ $item['connectionId'] }})"
-                    wire:loading.attr="disabled">{{ __('Sync') }}</flux:button>
-                <flux:button size="sm" variant="subtle" icon="x-mark" wire:click="remove({{ $item['connectionId'] }})"
-                    wire:confirm="{{ __('Remove this demo account?') }}" :aria-label="__('Remove')" />
-            </div>
+                    <flux:text class="text-sm">{{ $item['account']?->type->label() }}</flux:text>
+                </div>
+                <flux:heading class="shrink-0" dir="ltr">⃁ {{ Number::format($item['value'], 0) }}</flux:heading>
+                <flux:icon.chevron-right class="size-4 shrink-0 text-zinc-400 rtl:rotate-180" />
+            </a>
         @endforeach
 
         @foreach ($availableDemos as $institution)

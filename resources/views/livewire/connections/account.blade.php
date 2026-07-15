@@ -1,8 +1,13 @@
 <?php
 
 use App\Actions\ImportHoldings;
+use App\Actions\SyncConnection;
+use App\Enums\ActivityType;
 use App\Enums\AssetClass;
+use App\Enums\ConnectionStatus;
+use App\Enums\ConsentStatus;
 use App\Models\Account;
+use App\Models\ActivityEvent;
 use App\Models\Holding;
 use App\Services\Analytics\HoldingsSummarizer;
 use App\Services\Analytics\PortfolioAnalyzer;
@@ -180,6 +185,55 @@ new class extends Component {
         $this->dispatch('toast', message: __(':count holdings imported.', ['count' => count($result['rows'])]));
     }
 
+    /**
+     * Re-pull a demo (institution-backed) account's canned data.
+     */
+    public function sync(SyncConnection $syncConnection, PortfolioAnalyzer $analyzer): void
+    {
+        $connection = $this->account->connection->load('latestConsent');
+
+        if ($connection->isManual()) {
+            return;
+        }
+
+        if ($connection->source === 'api' && ! ($connection->latestConsent?->isActive() ?? false)) {
+            $this->dispatch('toast', message: __('The consent for this connection has expired. Please reauthorize access.'));
+
+            return;
+        }
+
+        $syncConnection->handle($connection);
+        $analyzer->analyze(Auth::user());
+        $this->dispatch('toast', message: __('Synced and re-analyzed.'));
+    }
+
+    /**
+     * Delete a manual account outright, or disconnect a demo account and
+     * revoke its consent as an Open Banking revocation would.
+     */
+    public function deleteAccount(PortfolioAnalyzer $analyzer): void
+    {
+        $connection = $this->account->connection;
+
+        if ($connection->isManual()) {
+            $connection->delete();
+        } else {
+            $connection->update(['status' => ConnectionStatus::Disconnected]);
+
+            Auth::user()->consents()
+                ->where('connection_id', $connection->id)
+                ->where('status', ConsentStatus::Active)
+                ->update(['status' => ConsentStatus::Revoked, 'revoked_at' => now()]);
+
+            ActivityEvent::record(Auth::user(), ActivityType::ConnectionDisconnected, [
+                'institution' => $connection->institution->localizedName(),
+            ]);
+        }
+
+        $analyzer->analyze(Auth::user());
+        $this->redirectRoute('connections', navigate: true);
+    }
+
     private function ownedHolding(int $holdingId): Holding
     {
         return $this->account->holdings()->findOrFail($holdingId);
@@ -206,20 +260,31 @@ new class extends Component {
         <flux:button size="sm" variant="ghost" icon="arrow-right" class="hidden rtl:inline-flex" :href="route('connections')" wire:navigate>
             {{ __('Accounts') }}</flux:button>
 
-        <div class="mt-2 flex items-start justify-between gap-4">
-            <div>
-                <flux:heading size="xl" class="flex items-center gap-2">
-                    {{ $account->name }}
+        <div class="mt-3 flex items-start justify-between gap-3">
+            <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                    <flux:heading size="xl" class="text-balance">{{ $account->name }}</flux:heading>
                     @unless ($manual)
                         <flux:badge size="sm" color="zinc">{{ __('Demo — sample data') }}</flux:badge>
                     @endunless
-                </flux:heading>
+                </div>
                 <flux:text class="mt-1">{{ $account->type->label() }} · {{ $account->currency }}</flux:text>
             </div>
-            <div class="text-end">
-                <flux:text class="text-xs uppercase tracking-widest">{{ __('Total') }}</flux:text>
-                <flux:heading size="lg" dir="ltr">⃁ {{ Number::format($summary['totalValue'], 0) }}</flux:heading>
+            <div class="flex shrink-0 items-center gap-1">
+                @unless ($manual)
+                    <flux:button size="sm" variant="subtle" icon="arrow-path" wire:click="sync"
+                        wire:loading.attr="disabled" :tooltip="__('Sync')" :aria-label="__('Sync')" />
+                @endunless
+                <flux:button size="sm" variant="subtle" icon="trash" wire:click="deleteAccount"
+                    wire:confirm="{{ $manual ? __('Delete this account? This cannot be undone.') : __('Remove this demo account?') }}"
+                    :tooltip="$manual ? __('Delete account') : __('Remove')"
+                    :aria-label="$manual ? __('Delete account') : __('Remove')" />
             </div>
+        </div>
+
+        <div class="mt-4 flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-3 dark:bg-zinc-800/60">
+            <flux:text class="text-xs font-medium uppercase tracking-widest">{{ __('Total value') }}</flux:text>
+            <flux:heading size="lg" dir="ltr">⃁ {{ Number::format($summary['totalValue'], 0) }}</flux:heading>
         </div>
     </div>
 

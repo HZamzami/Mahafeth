@@ -2,13 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Actions\CreateManualAccount;
-use App\Enums\AccountType;
 use App\Enums\ConnectionStatus;
-use App\Models\Connection;
 use App\Models\Institution;
 use App\Models\User;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
@@ -55,34 +51,6 @@ class ConnectionsPageTest extends TestCase
         $test->assertRedirect(route('connections.account', $connection->accounts->first()));
     }
 
-    public function test_removing_a_manual_account_deletes_it(): void
-    {
-        $user = User::factory()->create();
-        $account = app(CreateManualAccount::class)->handle($user, 'My Sahm', AccountType::Brokerage, 'SAR');
-
-        $this->actingAs($user);
-
-        Volt::test('connections.index')
-            ->call('remove', $account->connection->id)
-            ->assertDispatched('toast');
-
-        $this->assertDatabaseMissing('connections', ['id' => $account->connection->id]);
-    }
-
-    public function test_removing_a_demo_connection_disconnects_it(): void
-    {
-        $user = User::factory()->create();
-        $connection = Connection::factory()->create(['user_id' => $user->id]);
-
-        $this->actingAs($user);
-
-        Volt::test('connections.index')
-            ->call('remove', $connection->id)
-            ->assertDispatched('toast');
-
-        $this->assertSame(ConnectionStatus::Disconnected, $connection->refresh()->status);
-    }
-
     public function test_approving_consent_creates_and_syncs_a_demo_connection(): void
     {
         $user = User::factory()->create();
@@ -97,21 +65,5 @@ class ConnectionsPageTest extends TestCase
         $this->assertSame(ConnectionStatus::Connected, $connection->status);
         $this->assertCount(1, $connection->accounts);
         $this->assertCount(2, $connection->accounts->first()->holdings);
-    }
-
-    public function test_users_cannot_remove_another_users_connection(): void
-    {
-        $connection = Connection::factory()->create();
-
-        $this->actingAs(User::factory()->create());
-
-        try {
-            Volt::test('connections.index')->call('remove', $connection->id);
-            $this->fail('Expected a ModelNotFoundException for a foreign connection.');
-        } catch (ModelNotFoundException) {
-            // Scoping the lookup to the authenticated user rejects foreign IDs.
-        }
-
-        $this->assertSame(ConnectionStatus::Connected, $connection->refresh()->status);
     }
 }

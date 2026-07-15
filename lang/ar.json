@@ -1295,5 +1295,8 @@
     "This demo account has no holdings.": "لا توجد أصول في هذا الحساب التجريبي.",
     "Pick an instrument from the list.": "اختر أداة من القائمة.",
     "Build your accounts your way": "ابنِ حساباتك بطريقتك",
-    "Add an account for each broker or bank, name it yourself, and fill it either by uploading a CSV statement or by adding stocks, crypto, and cash by hand. Open any account to see exactly what it holds. Ready-made sample portfolios now live under a clearly labelled Demo accounts section.": "أضِف حسابًا لكل وسيط أو بنك، وسمِّه بنفسك، واملأه إما برفع كشف CSV أو بإضافة الأسهم والعملات الرقمية والنقد يدويًا. افتح أي حساب لترى ما يحتويه بالضبط. والمحافظ النموذجية الجاهزة صارت الآن ضمن قسم «حسابات تجريبية» واضح."
+    "Add an account for each broker or bank, name it yourself, and fill it either by uploading a CSV statement or by adding stocks, crypto, and cash by hand. Open any account to see exactly what it holds. Ready-made sample portfolios now live under a clearly labelled Demo accounts section.": "أضِف حسابًا لكل وسيط أو بنك، وسمِّه بنفسك، واملأه إما برفع كشف CSV أو بإضافة الأسهم والعملات الرقمية والنقد يدويًا. افتح أي حساب لترى ما يحتويه بالضبط. والمحافظ النموذجية الجاهزة صارت الآن ضمن قسم «حسابات تجريبية» واضح.",
+    "Total value": "القيمة الإجمالية",
+    "Remove": "إزالة",
+    "Delete this account? This cannot be undone.": "حذف هذا الحساب؟ لا يمكن التراجع عن ذلك."
 }

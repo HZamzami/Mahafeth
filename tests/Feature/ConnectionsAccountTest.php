@@ -139,4 +139,29 @@ class ConnectionsAccountTest extends TestCase
             ->assertSee(__('Demo — sample data'))
             ->assertDontSee(__('Add to this account'));
     }
+
+    public function test_deleting_a_manual_account_removes_it(): void
+    {
+        $user = User::factory()->create();
+        $account = $this->manualAccount($user);
+        $this->actingAs($user);
+
+        Volt::test('connections.account', ['account' => $account])
+            ->call('deleteAccount')
+            ->assertRedirect(route('connections'));
+
+        $this->assertDatabaseMissing('connections', ['id' => $account->connection->id]);
+    }
+
+    public function test_removing_a_demo_account_disconnects_it(): void
+    {
+        $user = User::factory()->create();
+        $connection = Connection::factory()->create(['user_id' => $user->id, 'status' => ConnectionStatus::Connected]);
+        $account = Account::factory()->create(['connection_id' => $connection->id]);
+        $this->actingAs($user);
+
+        Volt::test('connections.account', ['account' => $account])->call('deleteAccount');
+
+        $this->assertSame(ConnectionStatus::Disconnected, $connection->refresh()->status);
+    }
 }

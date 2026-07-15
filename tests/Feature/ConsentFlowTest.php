@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\ConnectionStatus;
 use App\Enums\ConsentStatus;
+use App\Models\Account;
 use App\Models\Connection;
 use App\Models\Consent;
 use App\Models\Institution;
@@ -81,9 +82,9 @@ class ConsentFlowTest extends TestCase
         $this->actingAs($user);
         Volt::test('connections.consent', ['institution' => $institution])->call('approve');
 
-        $connection = $user->connections()->firstOrFail();
+        $connection = $user->connections()->with('accounts')->firstOrFail();
 
-        Volt::test('connections.index')->call('remove', $connection->id);
+        Volt::test('connections.account', ['account' => $connection->accounts->first()])->call('deleteAccount');
 
         $this->assertSame(ConnectionStatus::Disconnected, $connection->fresh()->status);
         $this->assertSame(ConsentStatus::Revoked, $user->consents()->firstOrFail()->status);
@@ -94,6 +95,7 @@ class ConsentFlowTest extends TestCase
     {
         $user = User::factory()->create();
         $connection = Connection::factory()->create(['user_id' => $user->id]);
+        $account = Account::factory()->create(['connection_id' => $connection->id]);
 
         Consent::factory()->expired()->create([
             'user_id' => $user->id,
@@ -105,7 +107,7 @@ class ConsentFlowTest extends TestCase
 
         $lastSynced = $connection->last_synced_at;
 
-        Volt::test('connections.index')->call('sync', $connection->id);
+        Volt::test('connections.account', ['account' => $account])->call('sync');
 
         $this->assertSame($lastSynced?->toIso8601String(), $connection->fresh()->last_synced_at?->toIso8601String());
     }
