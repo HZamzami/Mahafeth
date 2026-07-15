@@ -145,7 +145,7 @@ new class extends Component {
             @endif
 
             @foreach ($rows as $row)
-                <div class="flex items-center justify-between px-1">
+                <div class="flex items-center justify-between px-1 py-1">
                     <flux:text class="text-sm">{{ $row['label'] }}</flux:text>
                     <span class="flex items-center gap-1.5 text-sm tabular-nums" dir="ltr">
                         <span class="text-zinc-400">{{ $row['before'] }}</span>

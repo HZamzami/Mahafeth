@@ -209,10 +209,13 @@ class DemoPortfolioSeeder extends Seeder
         }
 
         // One acted-on alert from yesterday, so the dashboard opens with a
-        // "nice work" moment alongside the live warnings.
+        // "nice work" moment alongside the live warnings. It is a
+        // concentration alert on the (now trimmed) oversized Apple position:
+        // a type the demo is not currently firing, so it never collides with
+        // a live warning of the same kind.
         $resolved = ActivityEvent::record($user, ActivityType::AlertResolved, [
-            'key' => 'Risk alert: portfolio volatility of :volatility is well above your :target target.',
-            'params' => ['volatility' => '23.8%', 'target' => '15.0%'],
+            'key' => 'Concentration alert: :name is :weight of your portfolio — above the :threshold threshold.',
+            'params' => ['name' => 'Apple', 'weight' => '34.0%', 'threshold' => '30%'],
         ]);
         $resolved->forceFill(['created_at' => now()->subDay()])->save();
     }
