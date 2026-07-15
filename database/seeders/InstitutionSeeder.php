@@ -18,8 +18,6 @@ class InstitutionSeeder extends Seeder
             ['slug' => 'alinma-capital', 'name' => 'Alinma Capital', 'name_ar' => 'الإنماء المالية', 'type' => InstitutionType::Brokerage, 'provider' => 'import', 'color' => '#a16207'],
             ['slug' => 'derayah', 'name' => 'Derayah Financial', 'name_ar' => 'دراية المالية', 'type' => InstitutionType::Brokerage, 'provider' => 'fake', 'color' => '#6d28d9'],
             ['slug' => 'alrajhi-capital', 'name' => 'Al Rajhi Capital', 'name_ar' => 'الراجحي المالية', 'type' => InstitutionType::Brokerage, 'provider' => 'fake', 'color' => '#1d4ed8'],
-            ['slug' => 'snb-capital', 'name' => 'SNB Capital', 'name_ar' => 'الأهلي المالية', 'type' => InstitutionType::Brokerage, 'provider' => 'import', 'color' => '#065f46'],
-            ['slug' => 'sahm', 'name' => 'Sahm', 'name_ar' => 'سهم', 'type' => InstitutionType::Brokerage, 'provider' => 'import', 'color' => '#b45309'],
             ['slug' => 'rain', 'name' => 'Rain', 'name_ar' => 'رين', 'type' => InstitutionType::CryptoExchange, 'provider' => 'fake', 'color' => '#0891b2'],
         ];
 

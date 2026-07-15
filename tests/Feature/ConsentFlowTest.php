@@ -83,7 +83,7 @@ class ConsentFlowTest extends TestCase
 
         $connection = $user->connections()->firstOrFail();
 
-        Volt::test('connections.index')->call('disconnect', $connection->id);
+        Volt::test('connections.index')->call('remove', $connection->id);
 
         $this->assertSame(ConnectionStatus::Disconnected, $connection->fresh()->status);
         $this->assertSame(ConsentStatus::Revoked, $user->consents()->firstOrFail()->status);

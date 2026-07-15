@@ -24,6 +24,11 @@ class Changelog
                 'items' => [
                     [
                         'type' => 'new',
+                        'title' => __('Build your accounts your way'),
+                        'body' => __('Add an account for each broker or bank, name it yourself, and fill it either by uploading a CSV statement or by adding stocks, crypto, and cash by hand. Open any account to see exactly what it holds. Ready-made sample portfolios now live under a clearly labelled Demo accounts section.'),
+                    ],
+                    [
+                        'type' => 'new',
                         'title' => __('Try the trade before you make it'),
                         'body' => __('A What if? panel on every instrument and holding page simulates a buy or sell and shows how your health score, concentration, volatility, and correlation would shift before you commit real money.'),
                     ],

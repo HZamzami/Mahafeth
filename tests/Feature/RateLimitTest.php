@@ -2,7 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Institution;
+use App\Actions\CreateManualAccount;
+use App\Enums\AccountType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -26,7 +27,7 @@ class RateLimitTest extends TestCase
     public function test_statement_imports_are_rate_limited_per_user(): void
     {
         $user = User::factory()->create();
-        $institution = Institution::factory()->import()->create(['slug' => 'alinma-capital']);
+        $account = app(CreateManualAccount::class)->handle($user, 'My Sahm', AccountType::Brokerage, 'SAR');
 
         $this->actingAs($user);
 
@@ -34,11 +35,11 @@ class RateLimitTest extends TestCase
             RateLimiter::hit('import-holdings:'.$user->id);
         }
 
-        Volt::test('connections.index')
+        Volt::test('connections.account', ['account' => $account])
             ->set('statement', UploadedFile::fake()->createWithContent('holdings.csv', "symbol,quantity,avg_cost\n2222.SR,800,8.10"))
-            ->call('import', $institution->id)
+            ->call('importCsv')
             ->assertHasErrors('statement');
 
-        $this->assertSame(0, $user->connections()->count());
+        $this->assertSame(0, $account->holdings()->count());
     }
 }

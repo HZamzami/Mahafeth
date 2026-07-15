@@ -1,36 +1,53 @@
 <?php
 
-use App\Actions\ImportHoldings;
-use App\Actions\SyncConnection;
+use App\Actions\CreateManualAccount;
+use App\Enums\AccountType;
 use App\Enums\ActivityType;
 use App\Enums\ConnectionStatus;
 use App\Enums\ConsentStatus;
 use App\Models\ActivityEvent;
-use App\Enums\InstitutionType;
 use App\Models\Institution;
+use App\Services\Analytics\HoldingsSummarizer;
+use App\Actions\SyncConnection;
 use App\Services\Analytics\PortfolioAnalyzer;
-use App\Services\Imports\HoldingsStatementParser;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Volt\Component;
-use Livewire\WithFileUploads;
 
 new class extends Component {
-    use WithFileUploads;
+    // Create-account form.
+    public string $createName = '';
 
-    public $statement;
+    public string $createType = 'brokerage';
 
-    /** @var list<string> */
-    public array $importNotices = [];
+    public string $createCurrency = 'SAR';
+
+    public function createAccount(CreateManualAccount $createManualAccount): void
+    {
+        $this->validate([
+            'createName' => ['required', 'string', 'max:60'],
+            'createType' => ['required', 'in:brokerage,retirement,crypto,fund,savings,cash'],
+            'createCurrency' => ['required', 'in:SAR,USD'],
+        ]);
+
+        $account = $createManualAccount->handle(
+            Auth::user(),
+            trim($this->createName),
+            AccountType::from($this->createType),
+            $this->createCurrency,
+        );
+
+        $this->redirectRoute('connections.account', $account, navigate: true);
+    }
 
     /**
-     * Re-sync an existing connection. API connections require an active
-     * Open Banking consent.
+     * Re-sync a demo (institution-backed) connection to re-pull its data.
      */
     public function sync(int $connectionId, SyncConnection $syncConnection, PortfolioAnalyzer $analyzer): void
     {
         $connection = Auth::user()->connections()->with('latestConsent')->findOrFail($connectionId);
 
+        // API-backed demo connections need a live Open Banking consent, exactly
+        // as a real re-sync would.
         if ($connection->source === 'api' && ! ($connection->latestConsent?->isActive() ?? false)) {
             session()->flash('error', __('The consent for this connection has expired. Please reauthorize access.'));
 
@@ -44,238 +61,198 @@ new class extends Component {
     }
 
     /**
-     * Import a holdings statement for institutions without API access.
+     * Remove an account. A manual account is deleted outright; a demo
+     * connection is disconnected and its consent revoked, mirroring an Open
+     * Banking revocation.
      */
-    public function import(
-        int $institutionId,
-        HoldingsStatementParser $parser,
-        ImportHoldings $importHoldings,
-        PortfolioAnalyzer $analyzer,
-    ): void {
-        $this->validate(
-            ['statement' => ['required', 'file', 'max:1024']],
-            ['statement.required' => __('Choose a statement file to import.')],
-        );
-
-        // Validate by extension rather than a strict MIME rule: browsers
-        // report .csv files as anything from text/csv to
-        // application/vnd.ms-excel, and a real statement must never be
-        // rejected on stage over a MIME mismatch.
-        if (! in_array(strtolower($this->statement->getClientOriginalExtension()), ['csv', 'txt'], true)) {
-            $this->addError('statement', __('Upload a CSV or text file exported from your broker.'));
-
-            return;
-        }
-
-        if (! RateLimiter::attempt('import-holdings:'.Auth::id(), maxAttempts: 10, callback: fn () => true)) {
-            $this->addError('statement', __('Too many imports. Please wait a minute and try again.'));
-
-            return;
-        }
-
-        $institution = Institution::findOrFail($institutionId);
-        $result = $parser->parse($this->statement->get());
-
-        if ($result['rows'] === []) {
-            $this->addError('statement', $result['errors'][0] ?? __('No holdings found in the file.'));
-
-            return;
-        }
-
-        $importHoldings->handle(Auth::user(), $institution, $result['rows']);
-        $analyzer->analyze(Auth::user());
-
-        $this->importNotices = $result['errors'];
-        $this->reset('statement');
-        $this->modal('import-'.$institution->id)->close();
-
-        $this->dispatch('toast', message: __(':count holdings imported.', ['count' => count($result['rows'])]));
-    }
-
-    /**
-     * Revoke access: the consent is marked revoked and the connection
-     * disconnected, exactly as an Open Banking revocation would behave.
-     */
-    public function disconnect(int $connectionId, PortfolioAnalyzer $analyzer): void
+    public function remove(int $connectionId, PortfolioAnalyzer $analyzer): void
     {
         $connection = Auth::user()->connections()->findOrFail($connectionId);
 
-        $connection->update(['status' => ConnectionStatus::Disconnected]);
+        if ($connection->isManual()) {
+            $connection->delete();
+        } else {
+            $connection->update(['status' => ConnectionStatus::Disconnected]);
 
-        Auth::user()->consents()
-            ->where('connection_id', $connection->id)
-            ->where('status', ConsentStatus::Active)
-            ->update(['status' => ConsentStatus::Revoked, 'revoked_at' => now()]);
+            Auth::user()->consents()
+                ->where('connection_id', $connection->id)
+                ->where('status', ConsentStatus::Active)
+                ->update(['status' => ConsentStatus::Revoked, 'revoked_at' => now()]);
 
-        ActivityEvent::record(Auth::user(), ActivityType::ConnectionDisconnected, [
-            'institution' => $connection->institution->localizedName(),
-        ]);
+            ActivityEvent::record(Auth::user(), ActivityType::ConnectionDisconnected, [
+                'institution' => $connection->institution->localizedName(),
+            ]);
+        }
 
         $analyzer->analyze(Auth::user());
-
         $this->dispatch('toast', message: __('Access revoked.'));
     }
 
-    public function with(): array
+    public function with(HoldingsSummarizer $summarizer): array
     {
+        $connections = Auth::user()->connections()
+            ->with(['accounts', 'institution', 'latestConsent'])
+            ->get();
+
+        $value = fn ($account): float => $account === null ? 0.0 : $summarizer->forAccount($account)['totalValue'];
+
+        $yourAccounts = $connections
+            ->filter(fn ($connection): bool => $connection->isManual())
+            ->map(fn ($connection): array => [
+                'connectionId' => $connection->id,
+                'account' => $connection->accounts->first(),
+                'name' => $connection->displayName(),
+                'value' => $value($connection->accounts->first()),
+            ])
+            ->values();
+
+        $demoAccounts = $connections
+            ->filter(fn ($connection): bool => ! $connection->isManual() && $connection->status === ConnectionStatus::Connected)
+            ->map(fn ($connection): array => [
+                'connectionId' => $connection->id,
+                'account' => $connection->accounts->first(),
+                'institution' => $connection->institution,
+                'value' => $value($connection->accounts->first()),
+            ])
+            ->values();
+
+        $connectedInstitutionIds = $connections->pluck('institution_id')->filter()->all();
+
         return [
-            'institutions' => Institution::orderBy('name')->get(),
-            'connections' => Auth::user()->connections()->with(['accounts', 'latestConsent'])->get()->keyBy('institution_id'),
+            'yourAccounts' => $yourAccounts,
+            'demoAccounts' => $demoAccounts,
+            // Ready-made institutions the user hasn't loaded yet. Import-only
+            // brokerages are retired in favour of user-named accounts.
+            'availableDemos' => Institution::where('provider', '!=', 'import')
+                ->whereNotIn('id', $connectedInstitutionIds)
+                ->orderBy('name')
+                ->get(),
+            'accountTypes' => AccountType::cases(),
         ];
     }
 }; ?>
 
-<div class="stagger-children mx-auto flex w-full max-w-3xl flex-col gap-6">
+<div class="stagger-children relative mx-auto flex w-full max-w-3xl flex-col gap-8">
     <div>
-        <flux:heading size="xl">{{ __('Connected Sources') }}</flux:heading>
+        <flux:heading size="xl">{{ __('Accounts') }}</flux:heading>
         <flux:text class="mt-1 text-balance">
-            {{ __('Securely link your investment accounts via Open Banking to build your unified portfolio.') }}
+            {{ __('Add each of your investment accounts — name it, then fill it by uploading a statement or entering positions by hand.') }}
         </flux:text>
     </div>
 
-    @if (session('status'))
-        <flux:callout color="emerald" icon="check-circle">
-            <flux:callout.text>{{ session('status') }}</flux:callout.text>
-        </flux:callout>
-    @endif
+    {{-- Your accounts --}}
+    <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+            <flux:heading size="lg">{{ __('Your accounts') }}</flux:heading>
+            <flux:modal.trigger name="new-account">
+                <flux:button size="sm" variant="primary" icon="plus">{{ __('New account') }}</flux:button>
+            </flux:modal.trigger>
+        </div>
 
-    @if (session('error'))
-        <flux:callout color="red" icon="exclamation-triangle">
-            <flux:callout.text>{{ session('error') }}</flux:callout.text>
-        </flux:callout>
-    @endif
-
-    @if ($importNotices !== [])
-        <flux:callout wire:transition color="amber" icon="exclamation-triangle">
-            <flux:callout.heading>{{ __('Some statement lines were skipped') }}</flux:callout.heading>
-            <flux:callout.text>
-                @foreach ($importNotices as $notice)
-                    <div>{{ $notice }}</div>
-                @endforeach
-            </flux:callout.text>
-        </flux:callout>
-    @endif
-
-    <div class="stagger-children flex flex-col gap-4">
-        @foreach ($institutions as $institution)
-            @php($connection = $connections->get($institution->id))
-            @php($isConnected = $connection?->status === \App\Enums\ConnectionStatus::Connected)
-            {{-- No Saudi brokerage exposes a live Open Banking API yet, so every
-                 brokerage takes its holdings by CSV import; the user picks which
-                 broker their statement is from. Banks and crypto keep the
-                 live/consent connect flow. --}}
-            @php($isImportable = $institution->type === InstitutionType::Brokerage)
-
-            <div
-                class="flex flex-col gap-4 card p-5 sm:flex-row sm:items-center">
-                <div class="flex min-w-0 flex-1 items-center gap-4">
-                    <div class="flex size-12 shrink-0 items-center justify-center rounded-lg"
-                        style="background-color: {{ $institution->color }}20">
-                        <flux:icon.building-library class="size-6" style="color: {{ $institution->color }}" />
-                    </div>
-
-                    <div class="min-w-0 flex-1">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <flux:heading size="lg">{{ $institution->localizedName() }}</flux:heading>
-                            @if ($isConnected)
-                                <flux:badge color="emerald" size="sm">{{ __('Connected') }}</flux:badge>
-                            @elseif ($connection?->status === \App\Enums\ConnectionStatus::Disconnected)
-                                <flux:badge color="zinc" size="sm">{{ __('Disconnected') }}</flux:badge>
-                            @endif
-                        </div>
-                        <flux:text class="text-sm">
-                            {{ $institution->type->label() }}
-                            @if ($isConnected && $connection->last_synced_at !== null)
-                                &bull; {{ __('Last sync: :time', ['time' => $connection->last_synced_at->diffForHumans()]) }}
-                            @endif
-                            @if ($isConnected && $connection->latestConsent?->isActive())
-                                &bull;
-                                <span class="{{ $connection->latestConsent->daysUntilExpiry() < 14 ? 'text-amber-600 dark:text-amber-400' : '' }}">
-                                    {{ __('Consent expires in :days days', ['days' => $connection->latestConsent->daysUntilExpiry()]) }}
-                                </span>
-                            @endif
-                        </flux:text>
-                    </div>
+        @forelse ($yourAccounts as $item)
+            <a href="{{ route('connections.account', $item['account']) }}" wire:navigate wire:key="acct-{{ $item['connectionId'] }}"
+                class="flex items-center gap-4 card p-5 transition-colors hover:bg-neutral-50 dark:hover:bg-zinc-800/60">
+                <div class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-teal-500/10">
+                    <flux:icon.wallet class="size-5 text-teal-700 dark:text-teal-300" />
                 </div>
-
-                <div class="flex shrink-0 flex-wrap gap-2">
-                @if ($isConnected)
-                        @if ($isImportable)
-                            <flux:modal.trigger name="import-{{ $institution->id }}">
-                                <flux:button size="sm" variant="outline">{{ __('Import statement') }}</flux:button>
-                            </flux:modal.trigger>
-                        @else
-                            <flux:button size="sm" variant="outline" wire:click="sync({{ $connection->id }})"
-                                wire:loading.attr="disabled">
-                                {{ __('Sync') }}
-                            </flux:button>
-                        @endif
-                        <flux:button size="sm" variant="subtle" wire:click="disconnect({{ $connection->id }})"
-                            wire:loading.attr="disabled">
-                            {{ $isImportable ? __('Disconnect') : __('Revoke access') }}
-                        </flux:button>
-                    @elseif ($isImportable)
-                        <flux:modal.trigger name="import-{{ $institution->id }}">
-                            <flux:button size="sm" variant="primary">{{ __('Import statement') }}</flux:button>
-                        </flux:modal.trigger>
-                    @else
-                        <flux:button size="sm" variant="primary"
-                            :href="route('connections.consent', $institution)" wire:navigate>
-                            {{ __('Connect') }}</flux:button>
-                    @endif
+                <div class="min-w-0 flex-1">
+                    <flux:heading size="lg">{{ $item['name'] }}</flux:heading>
+                    <flux:text class="text-sm">{{ $item['account']?->type->label() }}</flux:text>
                 </div>
+                <div class="text-end" dir="ltr">
+                    <flux:heading>⃁ {{ Number::format($item['value'], 0) }}</flux:heading>
+                </div>
+                <flux:icon.chevron-right class="size-4 shrink-0 text-zinc-400 rtl:rotate-180" />
+            </a>
+        @empty
+            <div class="flex flex-col items-center gap-3 card-cta p-10 text-center">
+                <flux:icon.wallet class="size-6 text-teal-700 dark:text-teal-300" />
+                <flux:text class="max-w-72 text-sm">
+                    {{ __('No accounts yet. Add your first — call it whatever your broker is — and fill it in.') }}
+                </flux:text>
+                <flux:modal.trigger name="new-account">
+                    <flux:button size="sm" variant="primary" icon="plus">{{ __('New account') }}</flux:button>
+                </flux:modal.trigger>
             </div>
+        @endforelse
+    </div>
 
-            @if ($isImportable)
-                <flux:modal name="import-{{ $institution->id }}" class="md:w-96">
-                    <div class="space-y-6">
-                        <div>
-                            <flux:heading size="lg">
-                                {{ __('Import :institution statement', ['institution' => $institution->localizedName()]) }}
-                            </flux:heading>
-                            <flux:text class="mt-2">
-                                {{ __('Brokerage APIs are not yet part of Saudi Open Banking, so upload your holdings statement as CSV and Mahafeth will fold it into your unified portfolio.') }}
-                            </flux:text>
-                        </div>
+    {{-- Demo accounts --}}
+    <div class="flex flex-col gap-3">
+        <div>
+            <flux:heading size="lg">{{ __('Demo accounts') }}</flux:heading>
+            <flux:text class="mt-1 text-sm">
+                {{ __('Ready-made sample portfolios to explore the app instantly. View-only.') }}
+            </flux:text>
+        </div>
 
-                        <flux:file-upload wire:model="statement" accept=".csv,text/csv"
-                            :label="__('Holdings statement (CSV)')">
-                            <flux:file-upload.dropzone icon="document-arrow-up"
-                                :heading="__('Drop your CSV here or click to browse')"
-                                :text="__('Up to 1 MB')" />
-                        </flux:file-upload>
-                        @if ($statement)
-                            <flux:file-item icon="document-text" :heading="$statement->getClientOriginalName()"
-                                :size="$statement->getSize()">
-                                <x-slot:actions>
-                                    <flux:button size="xs" variant="subtle" icon="x-mark"
-                                        wire:click="$set('statement', null)" :aria-label="__('Dismiss')" />
-                                </x-slot:actions>
-                            </flux:file-item>
-                        @endif
-                        <flux:error name="statement" />
-
-                        <flux:text class="text-xs">
-                            {{ __('Needs a symbol and quantity column — average cost is optional. Common header names (ticker, qty, cost) and Arabic headers are understood.') }}
-                            <a class="underline" href="{{ asset('samples/holdings-template.csv') }}" download>
-                                {{ __('Download a template') }}</a>
-                        </flux:text>
-
-                        <div class="flex gap-2">
-                            <flux:spacer />
-                            <flux:modal.close>
-                                <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
-                            </flux:modal.close>
-                            <flux:button variant="primary" wire:click="import({{ $institution->id }})"
-                                wire:loading.attr="disabled">
-                                <span wire:loading.remove wire:target="import, statement">{{ __('Import') }}</span>
-                                <span wire:loading wire:target="import, statement">{{ __('Importing…') }}</span>
-                            </flux:button>
-                        </div>
+        @foreach ($demoAccounts as $item)
+            <div wire:key="demo-{{ $item['connectionId'] }}" class="flex items-center gap-4 card p-5">
+                <div class="flex size-11 shrink-0 items-center justify-center rounded-lg"
+                    style="background-color: {{ $item['institution']->color }}20">
+                    <flux:icon.building-library class="size-5" style="color: {{ $item['institution']->color }}" />
+                </div>
+                <a href="{{ $item['account'] ? route('connections.account', $item['account']) : '#' }}" wire:navigate
+                    class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <flux:heading size="lg">{{ $item['institution']->localizedName() }}</flux:heading>
+                        <flux:badge size="sm" color="zinc">{{ __('Demo') }}</flux:badge>
                     </div>
-                </flux:modal>
-            @endif
+                    <flux:text class="text-sm" dir="ltr">⃁ {{ Number::format($item['value'], 0) }}</flux:text>
+                </a>
+                <flux:button size="sm" variant="subtle" wire:click="sync({{ $item['connectionId'] }})"
+                    wire:loading.attr="disabled">{{ __('Sync') }}</flux:button>
+                <flux:button size="sm" variant="subtle" icon="x-mark" wire:click="remove({{ $item['connectionId'] }})"
+                    wire:confirm="{{ __('Remove this demo account?') }}" :aria-label="__('Remove')" />
+            </div>
+        @endforeach
 
+        @foreach ($availableDemos as $institution)
+            <div wire:key="avail-{{ $institution->id }}" class="flex items-center gap-4 card p-5">
+                <div class="flex size-11 shrink-0 items-center justify-center rounded-lg"
+                    style="background-color: {{ $institution->color }}20">
+                    <flux:icon.building-library class="size-5" style="color: {{ $institution->color }}" />
+                </div>
+                <div class="min-w-0 flex-1">
+                    <flux:heading size="lg">{{ $institution->localizedName() }}</flux:heading>
+                    <flux:text class="text-sm">{{ $institution->type->label() }}</flux:text>
+                </div>
+                <flux:button size="sm" variant="outline" :href="route('connections.consent', $institution)" wire:navigate>
+                    {{ __('Load demo account') }}</flux:button>
+            </div>
         @endforeach
     </div>
+
+    {{-- Create-account modal --}}
+    <flux:modal name="new-account" class="md:w-96">
+        <form wire:submit="createAccount" class="space-y-5">
+            <div>
+                <flux:heading size="lg">{{ __('New account') }}</flux:heading>
+                <flux:text class="mt-1 text-sm">
+                    {{ __('Name it after the broker or bank it represents.') }}
+                </flux:text>
+            </div>
+
+            <flux:input wire:model="createName" :label="__('Account name')" :placeholder="__('e.g. My Sahm account')"
+                maxlength="60" />
+            <flux:error name="createName" />
+
+            <div class="grid grid-cols-2 gap-3">
+                <flux:select wire:model="createType" :label="__('Type')">
+                    @foreach ($accountTypes as $type)
+                        <flux:select.option value="{{ $type->value }}">{{ $type->label() }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+                <flux:select wire:model="createCurrency" :label="__('Base currency')">
+                    <flux:select.option value="SAR">SAR</flux:select.option>
+                    <flux:select.option value="USD">USD</flux:select.option>
+                </flux:select>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <flux:modal.close><flux:button variant="ghost">{{ __('Cancel') }}</flux:button></flux:modal.close>
+                <flux:button type="submit" variant="primary">{{ __('Create account') }}</flux:button>
+            </div>
+        </form>
+    </flux:modal>
 </div>

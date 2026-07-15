@@ -27,6 +27,7 @@ class AssetCatalog
         'BTC' => ['name' => 'Bitcoin', 'name_ar' => 'بيتكوين', 'asset_class' => 'crypto', 'sector' => null, 'country' => null, 'currency' => 'USD', 'shariah_status' => 'unknown', 'start' => 28000.0, 'drift' => 0.40, 'vol' => 0.65, 'loading' => 0.35],
         'ETH' => ['name' => 'Ethereum', 'name_ar' => 'إيثيريوم', 'asset_class' => 'crypto', 'sector' => null, 'country' => null, 'currency' => 'USD', 'shariah_status' => 'unknown', 'start' => 1800.0, 'drift' => 0.35, 'vol' => 0.75, 'loading' => 0.40],
         'CASH-SAR' => ['name' => 'Cash (SAR)', 'name_ar' => 'نقد (ريال سعودي)', 'asset_class' => 'cash', 'sector' => null, 'country' => 'SA', 'currency' => 'SAR', 'shariah_status' => 'compliant', 'start' => 1.0, 'drift' => 0.0, 'vol' => 0.0, 'loading' => 0.0],
+        'CASH-USD' => ['name' => 'Cash (USD)', 'name_ar' => 'نقد (دولار أمريكي)', 'asset_class' => 'cash', 'sector' => null, 'country' => 'US', 'currency' => 'USD', 'shariah_status' => 'compliant', 'start' => 1.0, 'drift' => 0.0, 'vol' => 0.0, 'loading' => 0.0],
         'SPY' => ['name' => 'S&P 500 Index', 'name_ar' => 'مؤشر ستاندرد آند بورز 500', 'asset_class' => 'fund', 'sector' => null, 'country' => 'US', 'currency' => 'USD', 'shariah_status' => 'unknown', 'start' => 380.0, 'drift' => 0.10, 'vol' => 0.16, 'loading' => 1.00],
         'TASI' => ['name' => 'Tadawul All Share Index', 'name_ar' => 'مؤشر تداول العام', 'asset_class' => 'fund', 'sector' => null, 'country' => 'SA', 'currency' => 'SAR', 'shariah_status' => 'unknown', 'start' => 11000.0, 'drift' => 0.08, 'vol' => 0.14, 'loading' => 0.50],
     ];
@@ -34,6 +35,46 @@ class AssetCatalog
     public function has(string $symbol): bool
     {
         return isset(self::ASSETS[$symbol]);
+    }
+
+    /**
+     * The catalogued instruments a user can add to a manual account — the
+     * priceable universe minus benchmarks and cash (cash is added through a
+     * dedicated affordance). Optionally filtered by a case-insensitive query
+     * against the symbol or either name.
+     *
+     * @return list<array{symbol: string, name: string, name_ar: ?string, asset_class: string}>
+     */
+    public function investable(string $query = ''): array
+    {
+        $query = trim(mb_strtolower($query));
+        $results = [];
+
+        foreach (self::ASSETS as $symbol => $params) {
+            if (in_array($params['asset_class'], ['cash'], true) || str_starts_with($symbol, 'CASH-')) {
+                continue;
+            }
+
+            // SPY and TASI are index benchmarks, not investable positions.
+            if (in_array($symbol, ['SPY', 'TASI'], true)) {
+                continue;
+            }
+
+            $haystack = mb_strtolower($symbol.' '.$params['name'].' '.($params['name_ar'] ?? ''));
+
+            if ($query !== '' && ! str_contains($haystack, $query)) {
+                continue;
+            }
+
+            $results[] = [
+                'symbol' => $symbol,
+                'name' => $params['name'],
+                'name_ar' => $params['name_ar'],
+                'asset_class' => $params['asset_class'],
+            ];
+        }
+
+        return $results;
     }
 
     /**

@@ -2,8 +2,10 @@
 
 namespace App\Services\Analytics;
 
+use App\Enums\AssetClass;
 use App\Enums\ConnectionStatus;
 use App\Enums\ShariahStatus;
+use App\Models\Account;
 use App\Models\Holding;
 use App\Models\PriceHistory;
 use App\Models\User;
@@ -100,6 +102,50 @@ class HoldingsSummarizer
             'totalValue' => $totalValue,
             'totalCost' => array_sum(array_column($rows, 'cost')),
         ];
+    }
+
+    /**
+     * One account's positions as editable rows: each holding kept distinct
+     * (with its id) and valued at the latest close, weighted within the
+     * account. Positions without a stored close yet still list, valued at 0,
+     * so a just-added holding never vanishes from the editor.
+     *
+     * @return array{rows: list<array{holdingId: int, symbol: string, name: string, assetClass: AssetClass, quantity: float, avgCost: float, value: float, weight: float}>, totalValue: float}
+     */
+    public function forAccount(Account $account): array
+    {
+        $fxRates = $this->fxRates->all();
+        $holdings = $account->holdings()->with('asset')->get();
+        $closes = $this->latestCloses($holdings->pluck('asset_id')->all());
+
+        $rows = [];
+
+        foreach ($holdings as $holding) {
+            $rate = $fxRates[$holding->asset->currency] ?? 1.0;
+            $close = $closes[$holding->asset_id] ?? 0.0;
+
+            $rows[] = [
+                'holdingId' => $holding->id,
+                'symbol' => $holding->asset->symbol,
+                'name' => $holding->asset->localizedName(),
+                'assetClass' => $holding->asset->asset_class,
+                'quantity' => (float) $holding->quantity,
+                'avgCost' => (float) $holding->avg_cost,
+                'value' => $holding->quantity * $close * $rate,
+            ];
+        }
+
+        usort($rows, fn (array $a, array $b): int => $b['value'] <=> $a['value']);
+
+        $totalValue = array_sum(array_column($rows, 'value'));
+
+        $rows = array_map(function (array $row) use ($totalValue): array {
+            $row['weight'] = $totalValue > 0 ? $row['value'] / $totalValue : 0.0;
+
+            return $row;
+        }, $rows);
+
+        return ['rows' => $rows, 'totalValue' => $totalValue];
     }
 
     /**

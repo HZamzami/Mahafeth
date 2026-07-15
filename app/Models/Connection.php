@@ -23,12 +23,31 @@ class Connection extends Model
     protected $fillable = [
         'user_id',
         'institution_id',
+        'label',
         'status',
         'source',
         'access_token',
         'refresh_token',
         'last_synced_at',
     ];
+
+    /**
+     * A manual account is user-created and has no linked institution — its
+     * holdings are entered by CSV or by hand rather than fetched.
+     */
+    public function isManual(): bool
+    {
+        return $this->institution_id === null;
+    }
+
+    /**
+     * The name shown on the card: the user's label for a manual account, or
+     * the linked institution's localized name for a demo/API connection.
+     */
+    public function displayName(): string
+    {
+        return $this->label ?? $this->institution?->localizedName() ?? '';
+    }
 
     /**
      * Get the attributes that should be cast.
