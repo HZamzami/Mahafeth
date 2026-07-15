@@ -450,10 +450,28 @@ body.offline .offline-banner {
     @apply rounded-xl border border-neutral-200/80 bg-white shadow-card print:shadow-none dark:border-neutral-700/60 dark:bg-zinc-900 dark:shadow-none;
 }
 
-/* Ambient background accent adapted from the welcome hero blobs; pair
-   with a color/size and keep it behind content on a `relative` parent. */
-@utility glow {
-    @apply pointer-events-none absolute rounded-full blur-3xl print:hidden;
+/* Ambient page accents adapted from the welcome hero, painted as radial
+   gradients rather than blurred elements: the tint fades out on its own,
+   so nothing gets clipped into a visible box and nothing can overflow.
+   Positions mirror in RTL so the teal stays on the title side. */
+.page-glow {
+    --glow-a: color-mix(in srgb, var(--color-teal-500) 11%, transparent);
+    --glow-b: color-mix(in srgb, var(--color-purple-500) 7%, transparent);
+    --glow-a-x: 8%;
+    --glow-b-x: 100%;
+    background:
+        radial-gradient(42rem 30rem at var(--glow-a-x) -8rem, var(--glow-a), transparent 70%),
+        radial-gradient(46rem 32rem at var(--glow-b-x) 16rem, var(--glow-b), transparent 70%);
+}
+
+[dir='rtl'] .page-glow {
+    --glow-a-x: 92%;
+    --glow-b-x: 0%;
+}
+
+.dark .page-glow {
+    --glow-a: color-mix(in srgb, var(--color-teal-400) 7%, transparent);
+    --glow-b: color-mix(in srgb, var(--color-purple-400) 5%, transparent);
 }
 
 /* Gradient-washed surface for empty states and onboarding moments,
