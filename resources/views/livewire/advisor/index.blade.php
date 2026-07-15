@@ -230,9 +230,8 @@ new class extends Component {
      the screen like a native chat; 12rem ≈ header + main padding + bottom
      nav, and the safe-area insets cover the PWA's status bar and home
      indicator. --}}
-<div class="stagger-children relative mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:h-[calc(100dvh-12rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] max-lg:overflow-y-auto"
+<div class="stagger-children mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:h-[calc(100dvh-12rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] max-lg:overflow-y-auto"
     @if ($isAwaitingReply) wire:poll.1s @elseif ($isGenerating) wire:poll.2s @endif>
-    @include('partials.page-glow')
     <div class="flex items-start justify-between gap-4">
         <div>
             <flux:heading size="xl">{{ __('AI Advisor') }}</flux:heading>

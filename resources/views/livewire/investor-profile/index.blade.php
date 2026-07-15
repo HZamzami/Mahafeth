@@ -241,8 +241,7 @@ new class extends Component {
     }
 }; ?>
 
-<div class="stagger-children relative mx-auto flex w-full max-w-2xl flex-col gap-6">
-    @include('partials.page-glow')
+<div class="stagger-children mx-auto flex w-full max-w-2xl flex-col gap-6">
     <div>
         <flux:heading size="xl">{{ __('Investor Profile') }}</flux:heading>
         <flux:text class="mt-1 text-balance">

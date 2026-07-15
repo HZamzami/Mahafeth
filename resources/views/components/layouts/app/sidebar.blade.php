@@ -5,7 +5,7 @@
     @include('partials.head')
 </head>
 
-<body class="min-h-screen bg-surface-50 dark:bg-charcoal-950">
+<body class="app-ambient min-h-screen bg-surface-50 dark:bg-charcoal-950">
     <flux:sidebar sticky stashable
         class="border-e border-zinc-200 bg-surface-100 pt-[env(safe-area-inset-top)] print:hidden dark:border-zinc-700 dark:bg-zinc-900">
         <a href="{{ route('dashboard') }}" class="me-5 mb-2 mt-3 flex items-center space-x-2" wire:navigate.hover>
