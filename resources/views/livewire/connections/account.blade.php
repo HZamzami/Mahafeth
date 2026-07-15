@@ -75,15 +75,6 @@ new class extends Component {
     }
 
     /**
-     * Reset the transaction form to a clean slate for the given type.
-     */
-    public function updatedTxnType(): void
-    {
-        $this->reset('txnQuery', 'txnSymbol', 'txnName', 'txnMeta', 'txnQuantity', 'txnPrice', 'txnAmount');
-        $this->resetErrorBag();
-    }
-
-    /**
      * Choose an instrument from the search results. Catalogued instruments
      * carry no metadata (resolved from our catalog); market results pass their
      * search payload through so an uncatalogued symbol gets an Asset.
@@ -457,41 +448,47 @@ new class extends Component {
 
         {{-- Record-transaction modal. --}}
         <flux:modal name="record-transaction" class="md:w-[28rem]">
-            <form wire:submit="recordTransaction" class="space-y-5">
+            <form wire:submit="recordTransaction" class="space-y-6"
+                x-data="{ get isTrade() { return ['buy', 'sell'].includes($wire.txnType); } }">
                 <flux:heading size="lg">{{ __('Record transaction') }}</flux:heading>
 
-                <flux:radio.group wire:model.live="txnType" variant="segmented" size="sm">
-                    <flux:radio value="buy" :label="__('Buy')" />
-                    <flux:radio value="sell" :label="__('Sell')" />
-                    <flux:radio value="deposit" :label="__('Deposit')" />
-                    <flux:radio value="withdrawal" :label="__('Withdraw')" />
-                </flux:radio.group>
+                <flux:field>
+                    <flux:label>{{ __('Type') }}</flux:label>
+                    <flux:radio.group wire:model="txnType" variant="segmented" size="sm">
+                        <flux:radio value="buy" :label="__('Buy')" />
+                        <flux:radio value="sell" :label="__('Sell')" />
+                        <flux:radio value="deposit" :label="__('Deposit')" />
+                        <flux:radio value="withdrawal" :label="__('Withdraw')" />
+                    </flux:radio.group>
+                </flux:field>
 
-                @if (in_array($txnType, ['buy', 'sell']))
+                {{-- Buy / Sell. Both sections render server-side and toggle client-side,
+                     so switching type is instant with no round trip. --}}
+                <div x-show="isTrade" x-cloak class="space-y-4">
                     {{-- Instrument picker. --}}
                     @if ($txnSymbol !== null)
-                        <div class="flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                            <flux:avatar size="sm" color="auto" :name="$txnSymbol" :initials="mb_substr($txnSymbol, 0, 2)" />
+                        <div class="flex min-w-0 items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
+                            <flux:avatar class="shrink-0" size="sm" color="auto" :name="$txnSymbol" :initials="mb_substr($txnSymbol, 0, 2)" />
                             <div class="min-w-0 flex-1">
                                 <flux:text class="truncate font-medium !text-zinc-800 dark:!text-white"><bdi>{{ $txnName }}</bdi></flux:text>
-                                <flux:text class="text-xs" dir="ltr">{{ $txnSymbol }}</flux:text>
+                                <flux:text class="truncate text-xs" dir="ltr">{{ $txnSymbol }}</flux:text>
                             </div>
-                            <flux:button size="xs" variant="subtle" icon="x-mark" wire:click="clearInstrument"
+                            <flux:button class="shrink-0" size="xs" variant="subtle" icon="x-mark" wire:click="clearInstrument"
                                 :aria-label="__('Change instrument')" />
                         </div>
                     @else
-                        <div>
+                        <div class="min-w-0">
                             <flux:input icon="magnifying-glass" wire:model.live.debounce.350ms="txnQuery"
                                 :label="__('Instrument')" :placeholder="__('Search a stock, fund, or crypto…')" />
 
                             @if (trim($txnQuery) !== '')
-                                <div class="mt-2 max-h-64 divide-y divide-zinc-100 overflow-y-auto rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-700"
+                                <div class="mt-2 max-h-64 divide-y divide-zinc-100 overflow-y-auto overflow-x-hidden rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-700"
                                     wire:loading.class="opacity-60" wire:target="txnQuery">
                                     @forelse ($matches['catalog'] as $item)
                                         <button type="button" wire:key="cat-{{ $item['symbol'] }}"
                                             wire:click="selectInstrument('{{ $item['symbol'] }}', @js($item['name']))"
-                                            class="flex w-full items-center gap-3 px-3 py-2.5 text-start hover:bg-zinc-100 dark:hover:bg-zinc-700/50">
-                                            <flux:avatar size="sm" color="auto" :name="$item['symbol']" :initials="mb_substr($item['symbol'], 0, 2)" />
+                                            class="flex w-full min-w-0 items-center gap-3 px-3 py-2.5 text-start hover:bg-zinc-100 dark:hover:bg-zinc-700/50">
+                                            <flux:avatar class="shrink-0" size="sm" color="auto" :name="$item['symbol']" :initials="mb_substr($item['symbol'], 0, 2)" />
                                             <span class="min-w-0 flex-1">
                                                 <span class="block truncate text-sm font-medium text-zinc-900 dark:text-white"><bdi>{{ $item['name'] }}</bdi></span>
                                                 <span class="block truncate text-xs text-zinc-500 dark:text-zinc-400"><bdi dir="ltr">{{ $item['symbol'] }}</bdi></span>
@@ -503,8 +500,8 @@ new class extends Component {
                                     @foreach ($matches['market'] as $match)
                                         <button type="button" wire:key="mkt-{{ $match['symbol'] }}"
                                             wire:click="selectInstrument('{{ $match['symbol'] }}', @js($match['name']), @js($match))"
-                                            class="flex w-full items-center gap-3 px-3 py-2.5 text-start hover:bg-zinc-100 dark:hover:bg-zinc-700/50">
-                                            <flux:avatar size="sm" color="auto" :name="$match['symbol']" :initials="mb_substr($match['symbol'], 0, 2)" />
+                                            class="flex w-full min-w-0 items-center gap-3 px-3 py-2.5 text-start hover:bg-zinc-100 dark:hover:bg-zinc-700/50">
+                                            <flux:avatar class="shrink-0" size="sm" color="auto" :name="$match['symbol']" :initials="mb_substr($match['symbol'], 0, 2)" />
                                             <span class="min-w-0 flex-1">
                                                 <span class="block truncate text-sm font-medium text-zinc-900 dark:text-white"><bdi>{{ $match['name'] }}</bdi></span>
                                                 <span class="block truncate text-xs text-zinc-500 dark:text-zinc-400"><bdi dir="ltr">{{ $match['symbol'] }}{{ $match['exchange'] !== '' ? ' • '.$match['exchange'] : '' }}</bdi></span>
@@ -529,27 +526,35 @@ new class extends Component {
                             <flux:error name="txnQuantity" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ $txnType === 'sell' ? __('Sale price') : __('Price') }}</flux:label>
+                            <flux:label>
+                                <span x-show="$wire.txnType !== 'sell'">{{ __('Price per unit') }}</span>
+                                <span x-show="$wire.txnType === 'sell'" x-cloak>{{ __('Sale price per unit') }}</span>
+                            </flux:label>
                             <flux:input wire:model="txnPrice" type="number" step="any" min="0" dir="ltr" placeholder="0" />
                             <flux:error name="txnPrice" />
                         </flux:field>
                     </div>
-                @else
-                    <div class="grid grid-cols-[auto_1fr] gap-3">
-                        <flux:field class="w-28">
-                            <flux:label>{{ __('Currency') }}</flux:label>
-                            <flux:select wire:model="txnCurrency">
-                                <flux:select.option value="SAR">SAR</flux:select.option>
-                                <flux:select.option value="USD">USD</flux:select.option>
-                            </flux:select>
-                        </flux:field>
-                        <flux:field>
-                            <flux:label>{{ __('Amount') }}</flux:label>
-                            <flux:input wire:model="txnAmount" type="number" step="any" min="0" dir="ltr" placeholder="50000" />
-                            <flux:error name="txnAmount" />
-                        </flux:field>
-                    </div>
-                @endif
+
+                    <flux:text class="text-xs">
+                        {{ __('Enter the price for this trade — Mahafeth works out your average cost across all your buys.') }}
+                    </flux:text>
+                </div>
+
+                {{-- Deposit / Withdraw. --}}
+                <div x-show="!isTrade" x-cloak class="grid grid-cols-[auto_1fr] gap-3">
+                    <flux:field class="w-28">
+                        <flux:label>{{ __('Currency') }}</flux:label>
+                        <flux:select wire:model="txnCurrency">
+                            <flux:select.option value="SAR">SAR</flux:select.option>
+                            <flux:select.option value="USD">USD</flux:select.option>
+                        </flux:select>
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>{{ __('Amount') }}</flux:label>
+                        <flux:input wire:model="txnAmount" type="number" step="any" min="0" dir="ltr" placeholder="50000" />
+                        <flux:error name="txnAmount" />
+                    </flux:field>
+                </div>
 
                 <flux:field>
                     <flux:label>{{ __('Date') }}</flux:label>
