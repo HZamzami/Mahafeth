@@ -112,21 +112,44 @@ new class extends Component {
     </div>
 
     @if ($movers !== [])
-        <div class="mb-6 w-full rounded-lg bg-neutral-50 p-3 text-start dark:bg-zinc-800/60">
-            <flux:text class="mb-1 text-xs font-medium uppercase tracking-widest">
-                {{ __('What changed') }}
-                <span dir="ltr"
-                    class="{{ $scoreDelta >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
-                    {{ ($scoreDelta >= 0 ? '+' : '') . $scoreDelta }}</span>
-            </flux:text>
-            @foreach ($movers as $mover)
-                <flux:text class="text-sm">
-                    {{ __($mover['label']) }}
-                    <span dir="ltr"
-                        class="tabular-nums {{ $mover['delta'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
-                        {{ ($mover['delta'] >= 0 ? '+' : '') . $mover['delta'] }}</span>@if ($mover['driver_key'] !== null) · {{ __($mover['driver_key'], $mover['driver_params']) }}@endif
-                </flux:text>
-            @endforeach
+        <div
+            class="mb-6 w-full rounded-xl border border-neutral-200/70 bg-neutral-50 p-4 text-start dark:border-white/5 dark:bg-zinc-800/60">
+            <div class="mb-3 flex items-center justify-between gap-2">
+                <flux:text class="text-xs font-medium uppercase tracking-widest">{{ __('What changed') }}</flux:text>
+                <flux:badge size="sm" dir="ltr" :color="$scoreDelta >= 0 ? 'emerald' : 'red'"
+                    :icon="$scoreDelta >= 0 ? 'arrow-trending-up' : 'arrow-trending-down'">
+                    {{ ($scoreDelta >= 0 ? '+' : '') . $scoreDelta }}</flux:badge>
+            </div>
+            <div class="space-y-2.5">
+                @foreach ($movers as $mover)
+                    <div class="flex items-start gap-2.5">
+                        <span @class([
+                            'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full',
+                            'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' => $mover['delta'] >= 0,
+                            'bg-red-500/10 text-red-600 dark:text-red-400' => $mover['delta'] < 0,
+                        ])>
+                            @if ($mover['delta'] >= 0)
+                                <flux:icon.arrow-up-right variant="micro" class="size-3 rtl:-scale-x-100" />
+                            @else
+                                <flux:icon.arrow-down-right variant="micro" class="size-3 rtl:-scale-x-100" />
+                            @endif
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-baseline justify-between gap-2">
+                                <flux:text class="text-sm font-medium !text-zinc-800 dark:!text-white">
+                                    {{ __($mover['label']) }}</flux:text>
+                                <span dir="ltr"
+                                    class="text-sm font-medium tabular-nums {{ $mover['delta'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+                                    {{ ($mover['delta'] >= 0 ? '+' : '') . $mover['delta'] }}</span>
+                            </div>
+                            @if ($mover['driver_key'] !== null)
+                                <flux:text class="text-xs">{{ __($mover['driver_key'], $mover['driver_params']) }}
+                                </flux:text>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
         </div>
     @endif
 
