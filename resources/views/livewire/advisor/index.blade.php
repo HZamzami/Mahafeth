@@ -226,13 +226,15 @@ new class extends Component {
     }
 }; ?>
 
-{{-- min-h on mobile stretches the thread so the input sits at the bottom of
-     the screen like a native chat; 12rem ≈ header + main padding + bottom
-     nav, and the safe-area insets cover the PWA's status bar and home
-     indicator. No stagger-children here: this element re-renders on
-     wire:poll while a reply generates, and the entrance animation would
-     replay on every poll, making messages blink in and out. --}}
-<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:h-[calc(100dvh-12rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] max-lg:overflow-y-auto"
+{{-- Fixed height on mobile stretches the thread so the input sits at the
+     bottom of the screen like a native chat. 10.5rem = header (3.5rem) +
+     main top padding (1rem) + main bottom padding (6rem, which clears the
+     bottom nav), so the card ends on the same line as every other page;
+     the safe-area insets cover the PWA's status bar and home indicator.
+     No stagger-children here: this element re-renders on wire:poll while
+     a reply generates, and the entrance animation would replay on every
+     poll, making messages blink in and out. --}}
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-6 max-lg:h-[calc(100dvh-10.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] max-lg:overflow-y-auto"
     @if ($isAwaitingReply) wire:poll.1s @elseif ($isGenerating) wire:poll.2s @endif>
     <div class="flex items-start justify-between gap-4">
         <div>
@@ -242,8 +244,10 @@ new class extends Component {
             </flux:text>
         </div>
         @if ($messages->isNotEmpty())
+            {{-- Disabled mid-generation: clearing then would let the queued
+                 reply land in an emptied thread. --}}
             <flux:button size="sm" variant="subtle" icon="trash" wire:click="clearChat"
-                wire:confirm="{{ __('Clear the whole conversation?') }}">
+                wire:confirm="{{ __('Clear the whole conversation?') }}" :disabled="$isAwaitingReply">
                 {{ __('Clear conversation') }}</flux:button>
         @endif
     </div>
@@ -285,60 +289,65 @@ new class extends Component {
                         </flux:accordion.heading>
 
                         <flux:accordion.content>
-                    @if ($isStale && ! $isGenerating)
-                        <flux:callout class="mt-3" color="amber" icon="exclamation-triangle" inline>
-                            <flux:callout.text>
-                                {{ __('Your analysis has changed since this was generated.') }}
-                                <flux:link class="cursor-pointer" wire:click="generate">{{ __('Regenerate') }}</flux:link>
-                            </flux:callout.text>
-                        </flux:callout>
-                    @endif
+                            {{-- On phones the expanded insight scrolls inside a
+                                 capped region so it can never push the chat off
+                                 screen; pb-4 compensates for the card's slim py-1. --}}
+                            <div class="pb-4 max-lg:max-h-[45dvh] max-lg:overflow-y-auto">
+                                @if ($isStale && ! $isGenerating)
+                                    <flux:callout class="mt-3" color="amber" icon="exclamation-triangle" inline>
+                                        <flux:callout.text>
+                                            {{ __('Your analysis has changed since this was generated.') }}
+                                            <flux:link class="cursor-pointer" wire:click="generate">{{ __('Regenerate') }}</flux:link>
+                                        </flux:callout.text>
+                                    </flux:callout>
+                                @endif
 
-                    <flux:callout class="mt-3" color="blue" icon="light-bulb">
-                        <flux:callout.heading>{{ __('Executive Summary') }}</flux:callout.heading>
-                        <flux:callout.text>{{ $insight->summary }}</flux:callout.text>
-                    </flux:callout>
+                                <flux:callout class="mt-3" color="teal" icon="light-bulb">
+                                    <flux:callout.heading>{{ __('Executive Summary') }}</flux:callout.heading>
+                                    <flux:callout.text>{{ $insight->summary }}</flux:callout.text>
+                                </flux:callout>
 
-                    <div class="mt-3 space-y-3">
-                        @foreach ($insight->recommendations as $index => $recommendation)
-                        <div
-                            class="flex flex-col rounded-lg border border-neutral-200/60 bg-neutral-50 p-3 dark:border-neutral-700/60 dark:bg-zinc-800/50">
-                            <div class="flex items-start justify-between gap-2">
-                                <flux:heading size="sm">{{ $recommendation['title'] }}</flux:heading>
-                                <flux:badge size="sm" inset="top bottom"
-                                    :color="['high' => 'red', 'medium' => 'amber', 'low' => 'zinc'][$recommendation['priority']] ?? 'zinc'">
-                                    {{ __(ucfirst($recommendation['priority'])) }}</flux:badge>
-                            </div>
-                            <flux:text class="mt-1 text-sm">{{ $recommendation['body'] }}</flux:text>
-
-                            @if (($recommendation['evidence'] ?? []) !== [])
-                                <flux:accordion class="mt-2" transition>
-                                    <flux:accordion.item>
-                                        <flux:accordion.heading>
-                                            <span class="text-xs font-medium text-teal-700 dark:text-teal-300">
-                                                {{ __('Show the math') }}</span>
-                                        </flux:accordion.heading>
-                                        <flux:accordion.content>
-                                            <div class="mt-2 flex flex-wrap gap-1.5">
-                                                @foreach ($recommendation['evidence'] as $evidence)
-                                                    {{-- dir=auto keeps Arabic metric names reading right-to-left
-                                                         while the LTR span stops signs and % from shuffling. --}}
-                                                    <flux:badge size="sm" dir="auto">
-                                                        {{ $evidence['metric'] }}: <span dir="ltr">{{ $evidence['value'] }}</span></flux:badge>
-                                                @endforeach
+                                <div class="mt-3 space-y-3">
+                                    @foreach ($insight->recommendations as $index => $recommendation)
+                                        <div
+                                            class="flex flex-col rounded-lg border border-neutral-200/60 bg-neutral-50 p-3 dark:border-neutral-700/60 dark:bg-zinc-800/50">
+                                            <div class="flex items-start justify-between gap-2">
+                                                <flux:heading size="sm">{{ $recommendation['title'] }}</flux:heading>
+                                                <flux:badge size="sm" inset="top bottom"
+                                                    :color="['high' => 'red', 'medium' => 'amber', 'low' => 'zinc'][$recommendation['priority']] ?? 'zinc'">
+                                                    {{ __(ucfirst($recommendation['priority'])) }}</flux:badge>
                                             </div>
-                                        </flux:accordion.content>
-                                    </flux:accordion.item>
-                                </flux:accordion>
-                            @endif
+                                            <flux:text class="mt-1 text-sm">{{ $recommendation['body'] }}</flux:text>
 
-                            <flux:button class="mt-3 self-start" size="sm" icon="chat-bubble-oval-left"
-                                wire:click="discuss({{ $index }})" wire:loading.attr="disabled"
-                                :disabled="$isAwaitingReply">
-                                {{ __('Discuss this') }}</flux:button>
-                        </div>
-                        @endforeach
-                    </div>
+                                            @if (($recommendation['evidence'] ?? []) !== [])
+                                                <flux:accordion class="mt-2" transition>
+                                                    <flux:accordion.item>
+                                                        <flux:accordion.heading>
+                                                            <span class="text-xs font-medium text-teal-700 dark:text-teal-300">
+                                                                {{ __('Show the math') }}</span>
+                                                        </flux:accordion.heading>
+                                                        <flux:accordion.content>
+                                                            <div class="mt-2 flex flex-wrap gap-1.5">
+                                                                @foreach ($recommendation['evidence'] as $evidence)
+                                                                    {{-- dir=auto keeps Arabic metric names reading right-to-left
+                                                                         while the LTR span stops signs and % from shuffling. --}}
+                                                                    <flux:badge size="sm" dir="auto">
+                                                                        {{ $evidence['metric'] }}: <span dir="ltr">{{ $evidence['value'] }}</span></flux:badge>
+                                                                @endforeach
+                                                            </div>
+                                                        </flux:accordion.content>
+                                                    </flux:accordion.item>
+                                                </flux:accordion>
+                                            @endif
+
+                                            <flux:button class="mt-3 self-start" size="sm" icon="chat-bubble-oval-left"
+                                                wire:click="discuss({{ $index }})" wire:loading.attr="disabled"
+                                                :disabled="$isAwaitingReply">
+                                                {{ __('Discuss this') }}</flux:button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
                         </flux:accordion.content>
                     </flux:accordion.item>
                 </flux:accordion>
@@ -365,7 +374,9 @@ new class extends Component {
         <div class="flex flex-col card max-lg:min-h-0 max-lg:flex-1">
             {{-- Only pin to the bottom when a conversation exists; doing it on
                  the empty state scrolled the starter chips' title out of view. --}}
-            <div class="min-h-40 space-y-3 overflow-y-auto p-5 max-lg:min-h-0 max-lg:flex-1 lg:max-h-[70vh]" x-data
+            {{-- The mobile min-h floor keeps the thread usable when the insight
+                 accordion is open; the page root scrolls for the overflow. --}}
+            <div class="min-h-40 space-y-3 overflow-y-auto p-5 max-lg:flex-1 lg:max-h-[70vh]" x-data
                 x-init="@if ($messages->isNotEmpty()) $el.scrollTop = $el.scrollHeight @endif"
                 @chat-updated.window="$nextTick(() => $el.scrollTop = $el.scrollHeight)">
                 @forelse ($messages as $chatMessage)
