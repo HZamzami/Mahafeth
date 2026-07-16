@@ -1309,7 +1309,12 @@
     "Sale price per unit": "سعر بيع الوحدة",
     "Price per unit (:currency)": "سعر الوحدة (:currency)",
     "Sale price per unit (:currency)": "سعر بيع الوحدة (:currency)",
-    "Enter the purchase price per share in the instrument's own currency — Mahafeth works out your average cost across all your buys.": "أدخِل سعر شراء السهم بعملة الأداة نفسها، ويحسب «محافظ» متوسط تكلفتك عبر كل عمليات شرائك.",
+    "Average cost per unit": "متوسط تكلفة الوحدة",
+    "Average cost per unit (:currency)": "متوسط تكلفة الوحدة (:currency)",
+    "Enter your average cost per share. Add to a stock you already hold and Mahafeth blends it into a new average. The date is optional — set it only if you want this position on your performance chart.": "أدخِل متوسط تكلفة السهم. أضِف إلى سهم تملكه فعلًا فيمزجه «محافظ» في متوسط جديد. التاريخ اختياري، فحدِّده فقط إن أردت ظهور هذا المركز على مخطط أدائك.",
+    "Enter the price you sold at, in the instrument's own currency.": "أدخِل السعر الذي بِعت به، بعملة الأداة نفسها.",
+    "Owned since": "مملوك منذ",
+    "Owned since another date? Add it": "تملكه منذ تاريخ آخر؟ أضِفه",
     "Cost": "التكلفة",
     "Withdraw": "سحب",
     "Currency": "العملة",
@@ -1330,5 +1335,7 @@
     "Your report and every holding page now show realized profit and loss — what you actually locked in by selling — next to the paper gains on what you still hold. Sell a position down to zero and its profit still shows, even though it has left your holdings.": "يعرض تقريرك وكل صفحة أصل الآن الأرباح والخسائر المحققة — ما جنيته فعلًا بالبيع — إلى جانب الأرباح الدفترية على ما تملكه بعد. بِع مركزًا حتى الصفر ويبقى ربحه ظاهرًا، وإن غادر أصولك المملوكة.",
     "Manual accounts now search the whole market — add any listed stock, fund, or crypto, not just a short list. And instead of a flat quantity, you record dated buys, sells, deposits, and withdrawals; Mahafeth derives each position and its average cost from the ledger, so your own accounts carry cost basis and history like the rest of the app.": "حساباتك اليدوية صارت تبحث في السوق كله — أضِف أي سهم أو صندوق أو عملة رقمية مدرجة، لا قائمة قصيرة فحسب. وبدل كمية ثابتة، تسجّل عمليات شراء وبيع وإيداع وسحب بتواريخها، ويستخرج «محافظ» كل مركز ومتوسط تكلفته من دفتر العمليات، فتحمل حساباتك أساس التكلفة والتاريخ مثل بقية التطبيق.",
     "Every account shows what you paid": "كل حساب يُظهر ما دفعته",
+    "Add a stock in seconds": "أضِف سهمًا في ثوانٍ",
+    "Adding a holding is now a quick average-cost entry: pick the stock, type how many units you own and your average cost, and you are done. The purchase date is optional and defaults to today — add it only when you want the position placed on your performance chart. Adding to a stock you already hold blends into a new average.": "صار إدخال أصل إدخالًا سريعًا بمتوسط التكلفة: اختر السهم، واكتب عدد الوحدات التي تملكها ومتوسط تكلفتك، وانتهيت. تاريخ الشراء اختياري ويكون اليوم افتراضيًا، فأضِفه فقط حين تريد ظهور المركز على مخطط أدائك. والإضافة إلى سهم تملكه فعلًا تُمزج في متوسط جديد.",
     "Open any account and its total value now sits beside your cost basis and unrealized gain or loss, so a move to live market prices reads as a gain rather than a number that jumped on its own. When you record a trade, the price field is labelled in the instrument's own currency, so a US stock priced in dollars is never mistaken for your account currency.": "افتح أي حساب لتجد قيمته الإجمالية الآن إلى جانب أساس تكلفتك وربحك أو خسارتك غير المحققة، فيُقرأ الانتقال إلى أسعار السوق الحية ربحًا لا رقمًا قفز من تلقاء نفسه. وعند تسجيل صفقة، يُوسم حقل السعر بعملة الأداة نفسها، فلا يُخلط سهم أمريكي مسعّر بالدولار بعملة حسابك."
 }

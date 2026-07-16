@@ -74,6 +74,25 @@ class ConnectionsAccountTest extends TestCase
         $this->assertNotNull($user->latestSnapshot());
     }
 
+    public function test_a_buy_with_no_date_defaults_to_today(): void
+    {
+        $user = User::factory()->create();
+        $account = $this->manualAccount($user);
+        $this->actingAs($user);
+
+        Volt::test('connections.account', ['account' => $account])
+            ->set('txnType', 'buy')
+            ->call('selectInstrument', 'AAPL', 'Apple Inc.')
+            ->set('txnQuantity', '25')
+            ->set('txnPrice', '130')
+            ->set('txnDate', '')
+            ->call('recordTransaction')
+            ->assertHasNoErrors();
+
+        $transaction = $account->transactions()->firstOrFail();
+        $this->assertTrue($transaction->executed_at->isSameDay(now()));
+    }
+
     public function test_the_account_summary_reports_cost_basis_and_unrealized_pl(): void
     {
         $user = User::factory()->create();

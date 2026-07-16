@@ -37,6 +37,11 @@ class Changelog
                         'title' => __('Every account shows what you paid'),
                         'body' => __('Open any account and its total value now sits beside your cost basis and unrealized gain or loss, so a move to live market prices reads as a gain rather than a number that jumped on its own. When you record a trade, the price field is labelled in the instrument\'s own currency, so a US stock priced in dollars is never mistaken for your account currency.'),
                     ],
+                    [
+                        'type' => 'improved',
+                        'title' => __('Add a stock in seconds'),
+                        'body' => __('Adding a holding is now a quick average-cost entry: pick the stock, type how many units you own and your average cost, and you are done. The purchase date is optional and defaults to today — add it only when you want the position placed on your performance chart. Adding to a stock you already hold blends into a new average.'),
+                    ],
                 ],
             ],
             [

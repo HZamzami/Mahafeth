@@ -100,12 +100,16 @@ new class extends Component {
 
         $type = TransactionType::from($this->txnType);
 
+        // The date is optional on the fast add-a-stock path: an empty value files
+        // the position as owned since today.
+        $executedAt = $this->txnDate !== '' ? $this->txnDate : now()->toDateString();
+
         if (in_array($type, [TransactionType::Buy, TransactionType::Sell], true)) {
             $this->validate([
                 'txnSymbol' => ['required', 'string'],
                 'txnQuantity' => ['required', 'numeric', 'min:0.00000001'],
                 'txnPrice' => ['required', 'numeric', 'min:0'],
-                'txnDate' => ['required', 'date'],
+                'txnDate' => ['nullable', 'date'],
             ]);
 
             $recordTransaction->handle($this->account, $type, [
@@ -113,19 +117,19 @@ new class extends Component {
                 'meta' => $this->txnMeta,
                 'quantity' => (float) $this->txnQuantity,
                 'price' => (float) $this->txnPrice,
-                'executed_at' => $this->txnDate,
+                'executed_at' => $executedAt,
             ]);
         } else {
             $this->validate([
                 'txnCurrency' => ['required', 'in:SAR,USD'],
                 'txnAmount' => ['required', 'numeric', 'min:0.01'],
-                'txnDate' => ['required', 'date'],
+                'txnDate' => ['nullable', 'date'],
             ]);
 
             $recordTransaction->handle($this->account, $type, [
                 'currency' => $this->txnCurrency,
                 'amount' => (float) $this->txnAmount,
-                'executed_at' => $this->txnDate,
+                'executed_at' => $executedAt,
             ]);
         }
 
@@ -581,7 +585,7 @@ new class extends Component {
                         </flux:field>
                         <flux:field>
                             <flux:label>
-                                <span x-show="$wire.txnType !== 'sell'">{{ $priceCurrency ? __('Price per unit (:currency)', ['currency' => $priceCurrency]) : __('Price per unit') }}</span>
+                                <span x-show="$wire.txnType !== 'sell'">{{ $priceCurrency ? __('Average cost per unit (:currency)', ['currency' => $priceCurrency]) : __('Average cost per unit') }}</span>
                                 <span x-show="$wire.txnType === 'sell'" x-cloak>{{ $priceCurrency ? __('Sale price per unit (:currency)', ['currency' => $priceCurrency]) : __('Sale price per unit') }}</span>
                             </flux:label>
                             <flux:input wire:model="txnPrice" type="number" step="any" min="0" dir="ltr" placeholder="0" />
@@ -589,8 +593,11 @@ new class extends Component {
                         </flux:field>
                     </div>
 
-                    <flux:text class="text-xs">
-                        {{ __('Enter the purchase price per share in the instrument\'s own currency — Mahafeth works out your average cost across all your buys.') }}
+                    <flux:text class="text-xs" x-show="$wire.txnType !== 'sell'">
+                        {{ __('Enter your average cost per share. Add to a stock you already hold and Mahafeth blends it into a new average. The date is optional — set it only if you want this position on your performance chart.') }}
+                    </flux:text>
+                    <flux:text class="text-xs" x-show="$wire.txnType === 'sell'" x-cloak>
+                        {{ __('Enter the price you sold at, in the instrument\'s own currency.') }}
                     </flux:text>
                 </div>
 
@@ -610,11 +617,26 @@ new class extends Component {
                     </flux:field>
                 </div>
 
-                <flux:field>
-                    <flux:label>{{ __('Date') }}</flux:label>
-                    <flux:date-picker wire:model="txnDate" :max="now()->toDateString()" />
-                    <flux:error name="txnDate" />
-                </flux:field>
+                {{-- For a buy the date is optional (defaults to today) and tucked
+                     behind a disclosure so adding a position is just units + average
+                     cost; sells and cash keep it as a visible event date. A single
+                     date-picker stays bound to txnDate — only its visibility and
+                     label change per type. --}}
+                <div x-data="{ showBuyDate: false }">
+                    <button type="button" x-show="$wire.txnType === 'buy' && !showBuyDate"
+                        @click="showBuyDate = true" x-cloak
+                        class="text-sm text-teal-700 hover:underline dark:text-teal-400">
+                        {{ __('Owned since another date? Add it') }}
+                    </button>
+                    <flux:field x-show="$wire.txnType !== 'buy' || showBuyDate" x-cloak>
+                        <flux:label>
+                            <span x-show="$wire.txnType === 'buy'">{{ __('Owned since') }}</span>
+                            <span x-show="$wire.txnType !== 'buy'" x-cloak>{{ __('Date') }}</span>
+                        </flux:label>
+                        <flux:date-picker wire:model="txnDate" :max="now()->toDateString()" />
+                        <flux:error name="txnDate" />
+                    </flux:field>
+                </div>
 
                 <div class="flex justify-end gap-2">
                     <flux:modal.close><flux:button variant="ghost">{{ __('Cancel') }}</flux:button></flux:modal.close>
