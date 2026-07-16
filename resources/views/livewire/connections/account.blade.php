@@ -357,17 +357,23 @@ new class extends Component {
                 <flux:heading size="lg" dir="ltr">⃁ {{ Number::format($summary['totalValue'], 0) }}</flux:heading>
             </div>
             {{-- Market value against cost basis, so a revaluation from live
-                 prices reads as a gain/loss rather than an unexplained jump. --}}
+                 prices reads as a gain/loss rather than an unexplained jump. What
+                 you paid shows in the account's own currency when it holds a
+                 single one; a mixed account falls back to the base total. --}}
             @if ($summary['totalCost'] > 0)
                 @php($pl = $summary['totalValue'] - $summary['totalCost'])
                 <div class="mt-1 flex items-center justify-between gap-2">
                     <flux:text class="text-xs" dir="ltr">
-                        {{ __('Cost') }} ⃁ {{ Number::format($summary['totalCost'], 0) }}</flux:text>
+                        @if ($summary['currency'] !== null)
+                            {{ __('Paid') }} {{ Asset::symbolForCurrency($summary['currency']) }}{{ Number::format($summary['nativeTotalCost'], 0) }}
+                        @else
+                            {{ __('Cost') }} ⃁ {{ Number::format($summary['totalCost'], 0) }}
+                        @endif
+                    </flux:text>
                     <flux:text
                         class="text-xs tabular-nums {{ $pl >= 0 ? '!text-emerald-600 dark:!text-emerald-400' : '!text-red-600 dark:!text-red-400' }}"
                         dir="ltr">
-                        {{ $pl >= 0 ? '+' : '−' }}⃁ {{ Number::format(abs($pl), 0) }}
-                        ({{ $pl >= 0 ? '+' : '−' }}{{ number_format(abs($pl) / $summary['totalCost'] * 100, 1) }}%)
+                        {{ $pl >= 0 ? '+' : '−' }}{{ number_format(abs($pl) / $summary['totalCost'] * 100, 1) }}%
                     </flux:text>
                 </div>
             @endif
@@ -407,8 +413,10 @@ new class extends Component {
                     </div>
 
                     <div class="text-end">
+                        {{-- Value in the asset's own currency, the number the
+                             investor actually bought in. --}}
                         <flux:text class="font-medium tabular-nums !text-zinc-800 dark:!text-white" dir="ltr">
-                            ⃁ {{ Number::format($row['value'], 0) }}</flux:text>
+                            {{ Asset::symbolForCurrency($row['currency']) }}{{ Number::format($row['nativeValue'], 0) }}</flux:text>
                         @if ($row['assetClass'] !== AssetClass::Cash && $row['cost'] > 0)
                             <flux:text
                                 class="text-xs tabular-nums {{ $row['pl'] >= 0 ? '!text-emerald-600 dark:!text-emerald-400' : '!text-red-600 dark:!text-red-400' }}"

@@ -123,6 +123,13 @@ class ConnectionsAccountTest extends TestCase
             $row['plPct'],
             1e-9,
         );
+
+        // Native-currency figures: AAPL trades in USD, so the row and the
+        // single-currency account totals are stated in USD, not base.
+        $this->assertSame('USD', $row['currency']);
+        $this->assertEqualsWithDelta(25 * 130, $row['nativeCost'], 1e-6);
+        $this->assertSame('USD', $summary['currency']);
+        $this->assertEqualsWithDelta(25 * 130, $summary['nativeTotalCost'], 1e-6);
     }
 
     public function test_deleting_the_last_account_clears_the_stale_portfolio_snapshot(): void

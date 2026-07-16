@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ShariahStatus;
+use App\Models\Asset;
 use App\Services\Analytics\HoldingsSummarizer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Number;
@@ -55,7 +56,7 @@ new class extends Component {
 
                     <div class="shrink-0 text-end">
                         <flux:text class="text-sm font-medium tabular-nums !text-zinc-800 dark:!text-white" dir="ltr">
-                            ⃁ {{ Number::format($row['value'], 0) }}</flux:text>
+                            {{ Asset::symbolForCurrency($row['currency']) }}{{ Number::format($row['nativeValue'], 0) }}</flux:text>
                         <flux:text
                             class="text-xs tabular-nums {{ $row['pl'] >= 0 ? '!text-emerald-600 dark:!text-emerald-400' : '!text-red-600 dark:!text-red-400' }}"
                             dir="ltr">

@@ -25,7 +25,7 @@ class HoldingsSummarizer
     public function __construct(private FxRateService $fxRates) {}
 
     /**
-     * @return array{rows: list<array{symbol: string, name: string, quantity: float, value: float, cost: float, avgCost: ?float, pl: float, plPct: float, weight: float, shariah: ShariahStatus}>, totalValue: float, totalCost: float}
+     * @return array{rows: list<array{symbol: string, name: string, currency: string, quantity: float, value: float, cost: float, avgCost: ?float, nativeValue: float, nativeCost: float, pl: float, plPct: float, weight: float, shariah: ShariahStatus}>, totalValue: float, totalCost: float}
      */
     public function rows(User $user): array
     {
@@ -37,7 +37,7 @@ class HoldingsSummarizer
                 ->where('status', ConnectionStatus::Connected))
             ->get();
 
-        /** @var array<string, array{assetId: int, rate: float, quantity: float, cost: float, name: string, shariah: ShariahStatus}> $positions */
+        /** @var array<string, array{assetId: int, currency: string, rate: float, quantity: float, cost: float, nativeCost: float, name: string, shariah: ShariahStatus}> $positions */
         $positions = [];
 
         foreach ($holdings as $holding) {
@@ -46,14 +46,17 @@ class HoldingsSummarizer
 
             $positions[$symbol] ??= [
                 'assetId' => $holding->asset_id,
+                'currency' => $holding->asset->currency,
                 'rate' => $rate,
                 'quantity' => 0.0,
                 'cost' => 0.0,
+                'nativeCost' => 0.0,
                 'name' => $holding->asset->localizedName(),
                 'shariah' => $holding->asset->shariah_status,
             ];
             $positions[$symbol]['quantity'] += (float) $holding->quantity;
             $positions[$symbol]['cost'] += $holding->quantity * $holding->avg_cost * $rate;
+            $positions[$symbol]['nativeCost'] += $holding->quantity * $holding->avg_cost;
         }
 
         $closes = $this->latestCloses(array_column($positions, 'assetId'));
@@ -75,12 +78,17 @@ class HoldingsSummarizer
             $rows[] = [
                 'symbol' => $symbol,
                 'name' => $position['name'],
+                'currency' => $position['currency'],
                 'quantity' => $position['quantity'],
                 'value' => $value,
                 'cost' => $cost,
                 // Per-share purchase average: the number investors compare
                 // against the current price to see if they are up or down.
                 'avgCost' => $position['quantity'] > 0 ? $cost / $position['quantity'] : null,
+                // Value and cost in the asset's own currency, so a row can read
+                // in the currency it was actually bought in.
+                'nativeValue' => $position['quantity'] * $close,
+                'nativeCost' => $position['nativeCost'],
                 'pl' => $value - $cost,
                 'plPct' => $cost > 0 ? ($value - $cost) / $cost : 0.0,
                 'shariah' => $position['shariah'],
@@ -112,7 +120,12 @@ class HoldingsSummarizer
      * carries its cost basis and unrealized profit/loss, in base currency, so
      * the page can show market value against what was paid.
      *
-     * @return array{rows: list<array{holdingId: int, symbol: string, name: string, assetClass: AssetClass, quantity: float, avgCost: float, value: float, cost: float, pl: float, plPct: float, weight: float}>, totalValue: float, totalCost: float}
+     * Values are in base currency; each row also carries its native-currency
+     * value and cost (the currency the asset trades in). When every holding
+     * shares one currency, `currency` and the native totals are set so the page
+     * can show what was paid natively; a mixed account leaves them null.
+     *
+     * @return array{rows: list<array{holdingId: int, symbol: string, name: string, currency: string, assetClass: AssetClass, quantity: float, avgCost: float, value: float, cost: float, nativeValue: float, nativeCost: float, pl: float, plPct: float, weight: float}>, totalValue: float, totalCost: float, currency: ?string, nativeTotalValue: ?float, nativeTotalCost: ?float}
      */
     public function forAccount(Account $account): array
     {
@@ -123,23 +136,27 @@ class HoldingsSummarizer
         $rows = [];
 
         foreach ($holdings as $holding) {
-            $rate = $fxRates[$holding->asset->currency] ?? 1.0;
+            $currency = $holding->asset->currency;
+            $rate = $fxRates[$currency] ?? 1.0;
             $close = $closes[$holding->asset_id] ?? 0.0;
 
-            $value = $holding->quantity * $close * $rate;
-            $cost = $holding->quantity * $holding->avg_cost * $rate;
+            $nativeValue = $holding->quantity * $close;
+            $nativeCost = $holding->quantity * $holding->avg_cost;
 
             $rows[] = [
                 'holdingId' => $holding->id,
                 'symbol' => $holding->asset->symbol,
                 'name' => $holding->asset->localizedName(),
+                'currency' => $currency,
                 'assetClass' => $holding->asset->asset_class,
                 'quantity' => (float) $holding->quantity,
                 'avgCost' => (float) $holding->avg_cost,
-                'value' => $value,
-                'cost' => $cost,
-                'pl' => $value - $cost,
-                'plPct' => $cost > 0 ? ($value - $cost) / $cost : 0.0,
+                'value' => $nativeValue * $rate,
+                'cost' => $nativeCost * $rate,
+                'nativeValue' => $nativeValue,
+                'nativeCost' => $nativeCost,
+                'pl' => ($nativeValue - $nativeCost) * $rate,
+                'plPct' => $nativeCost > 0 ? ($nativeValue - $nativeCost) / $nativeCost : 0.0,
             ];
         }
 
@@ -153,10 +170,18 @@ class HoldingsSummarizer
             return $row;
         }, $rows);
 
+        // Only a single-currency account has a meaningful native total; summing
+        // native amounts across currencies would be nonsense.
+        $currencies = array_values(array_unique(array_column($rows, 'currency')));
+        $singleCurrency = count($currencies) === 1 ? $currencies[0] : null;
+
         return [
             'rows' => $rows,
             'totalValue' => $totalValue,
             'totalCost' => array_sum(array_column($rows, 'cost')),
+            'currency' => $singleCurrency,
+            'nativeTotalValue' => $singleCurrency !== null ? array_sum(array_column($rows, 'nativeValue')) : null,
+            'nativeTotalCost' => $singleCurrency !== null ? array_sum(array_column($rows, 'nativeCost')) : null,
         ];
     }
 
