@@ -106,6 +106,31 @@ class ConnectionsAccountTest extends TestCase
         );
     }
 
+    public function test_deleting_the_last_account_clears_the_stale_portfolio_snapshot(): void
+    {
+        $user = User::factory()->create();
+        $account = $this->manualAccount($user);
+        $this->actingAs($user);
+
+        $component = Volt::test('connections.account', ['account' => $account])
+            ->set('txnType', 'buy')
+            ->call('selectInstrument', 'AAPL', 'Apple Inc.')
+            ->set('txnQuantity', '25')
+            ->set('txnPrice', '130')
+            ->set('txnDate', '2026-01-05')
+            ->call('recordTransaction')
+            ->assertHasNoErrors();
+
+        $this->assertNotNull($user->fresh()->latestSnapshot());
+
+        $component->call('deleteAccount');
+
+        // With no accounts left, the portfolio is empty: its snapshot must go
+        // so the dashboard shows 0 rather than the last known total.
+        $this->assertNull($user->fresh()->latestSnapshot());
+        $this->assertSame(0, $user->fresh()->portfolioSnapshots()->count());
+    }
+
     public function test_a_second_buy_recomputes_the_average_cost(): void
     {
         $user = User::factory()->create();

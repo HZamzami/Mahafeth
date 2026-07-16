@@ -3,8 +3,10 @@
 namespace App\Services\Analytics;
 
 use App\Enums\ActivityType;
+use App\Enums\ConnectionStatus;
 use App\Enums\ObligationKind;
 use App\Models\ActivityEvent;
+use App\Models\Holding;
 use App\Models\InvestmentPlan;
 use App\Models\PortfolioSnapshot;
 use App\Models\User;
@@ -50,6 +52,16 @@ class PortfolioAnalyzer
         $data = $this->assembler->forUser($user, $from);
 
         if ($data['priceSeries'] === []) {
+            // Nothing to value. If the portfolio is genuinely empty — the last
+            // account deleted or disconnected, or everything sold to zero —
+            // clear stale snapshots so the dashboard falls back to its empty
+            // state instead of showing the last known total. A transient gap
+            // (holdings exist but prices haven't synced yet) keeps the previous
+            // snapshot untouched.
+            if (! $this->hasConnectedHoldings($user)) {
+                $user->portfolioSnapshots()->delete();
+            }
+
             return null;
         }
 
@@ -279,6 +291,19 @@ class PortfolioAnalyzer
         }
 
         return $states;
+    }
+
+    /**
+     * Whether the user still has any holding on a connected account — the same
+     * scope the data assembler values. False means the portfolio is empty, not
+     * merely missing price history.
+     */
+    private function hasConnectedHoldings(User $user): bool
+    {
+        return Holding::whereHas('account.connection', fn ($query) => $query
+            ->whereBelongsTo($user)
+            ->where('status', ConnectionStatus::Connected))
+            ->exists();
     }
 
     /**
