@@ -46,7 +46,7 @@ new class extends Component {
                 </flux:tabs>
 
                 @foreach ($sections as $key => $label)
-                    <flux:tab.panel :name="$key" class="!pt-2" wire:key="movers-panel-{{ $key }}">
+                    <flux:tab.panel :name="$key" class="!pt-4" wire:key="movers-panel-{{ $key }}">
                         @if (($movers[$key] ?? []) !== [])
                             <div class="divide-y divide-zinc-100 dark:divide-zinc-800">
                                 @foreach ($movers[$key] as $mover)

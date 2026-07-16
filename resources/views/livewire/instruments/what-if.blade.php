@@ -102,9 +102,9 @@ new class extends Component {
         {{ __('Simulate a trade in :symbol and see how your whole portfolio would change before you place it.', ['symbol' => $symbol]) }}
     </flux:text>
 
-    <form wire:submit="simulate" class="mt-4 space-y-3">
+    <form wire:submit="simulate" class="mt-4">
         @if ($owned)
-            <flux:radio.group wire:model="side" variant="segmented" size="sm">
+            <flux:radio.group wire:model="side" variant="segmented" size="sm" class="mb-5">
                 <flux:radio value="buy" :label="__('Buy more')" />
                 <flux:radio value="sell" :label="__('Sell')" />
             </flux:radio.group>

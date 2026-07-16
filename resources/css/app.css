@@ -359,7 +359,14 @@ body.offline .offline-banner {
     top: env(safe-area-inset-top) !important;
     height: 4px !important;
     z-index: 100 !important;
-    box-shadow: 0 0 8px var(--livewire-progress-bar-color, var(--color-teal-500));
+    box-shadow: 0 1px 6px var(--livewire-progress-bar-color, var(--color-teal-500));
+}
+
+/* NProgress ships a rotated, glowing "peg" at the bar's leading edge — a
+   diagonal sliver that reads as a stray shadow under the status bar. Hide it
+   and let the flat strip carry the progress on its own. */
+#nprogress .peg {
+    display: none !important;
 }
 
 @utility scrollbar-thin {

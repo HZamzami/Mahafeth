@@ -108,9 +108,11 @@ class HoldingsSummarizer
      * One account's positions as editable rows: each holding kept distinct
      * (with its id) and valued at the latest close, weighted within the
      * account. Positions without a stored close yet still list, valued at 0,
-     * so a just-added holding never vanishes from the editor.
+     * so a just-added holding never vanishes from the editor. Each row also
+     * carries its cost basis and unrealized profit/loss, in base currency, so
+     * the page can show market value against what was paid.
      *
-     * @return array{rows: list<array{holdingId: int, symbol: string, name: string, assetClass: AssetClass, quantity: float, avgCost: float, value: float, weight: float}>, totalValue: float}
+     * @return array{rows: list<array{holdingId: int, symbol: string, name: string, assetClass: AssetClass, quantity: float, avgCost: float, value: float, cost: float, pl: float, plPct: float, weight: float}>, totalValue: float, totalCost: float}
      */
     public function forAccount(Account $account): array
     {
@@ -124,6 +126,9 @@ class HoldingsSummarizer
             $rate = $fxRates[$holding->asset->currency] ?? 1.0;
             $close = $closes[$holding->asset_id] ?? 0.0;
 
+            $value = $holding->quantity * $close * $rate;
+            $cost = $holding->quantity * $holding->avg_cost * $rate;
+
             $rows[] = [
                 'holdingId' => $holding->id,
                 'symbol' => $holding->asset->symbol,
@@ -131,7 +136,10 @@ class HoldingsSummarizer
                 'assetClass' => $holding->asset->asset_class,
                 'quantity' => (float) $holding->quantity,
                 'avgCost' => (float) $holding->avg_cost,
-                'value' => $holding->quantity * $close * $rate,
+                'value' => $value,
+                'cost' => $cost,
+                'pl' => $value - $cost,
+                'plPct' => $cost > 0 ? ($value - $cost) / $cost : 0.0,
             ];
         }
 
@@ -145,7 +153,11 @@ class HoldingsSummarizer
             return $row;
         }, $rows);
 
-        return ['rows' => $rows, 'totalValue' => $totalValue];
+        return [
+            'rows' => $rows,
+            'totalValue' => $totalValue,
+            'totalCost' => array_sum(array_column($rows, 'cost')),
+        ];
     }
 
     /**

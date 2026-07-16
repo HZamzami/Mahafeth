@@ -32,6 +32,11 @@ class Changelog
                         'title' => __('See the gains you\'ve banked'),
                         'body' => __('Your report and every holding page now show realized profit and loss — what you actually locked in by selling — next to the paper gains on what you still hold. Sell a position down to zero and its profit still shows, even though it has left your holdings.'),
                     ],
+                    [
+                        'type' => 'improved',
+                        'title' => __('Every account shows what you paid'),
+                        'body' => __('Open any account and its total value now sits beside your cost basis and unrealized gain or loss, so a move to live market prices reads as a gain rather than a number that jumped on its own. When you record a trade, the price field is labelled in the instrument\'s own currency, so a US stock priced in dollars is never mistaken for your account currency.'),
+                    ],
                 ],
             ],
             [

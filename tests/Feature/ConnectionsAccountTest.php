@@ -8,6 +8,7 @@ use App\Enums\ConnectionStatus;
 use App\Models\Account;
 use App\Models\Connection;
 use App\Models\User;
+use App\Services\Analytics\HoldingsSummarizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Livewire\Volt\Volt;
@@ -71,6 +72,38 @@ class ConnectionsAccountTest extends TestCase
         $this->assertEqualsWithDelta(25.0, $holding->quantity, 1e-9);
         $this->assertEqualsWithDelta(130.0, $holding->avg_cost, 1e-9);
         $this->assertNotNull($user->latestSnapshot());
+    }
+
+    public function test_the_account_summary_reports_cost_basis_and_unrealized_pl(): void
+    {
+        $user = User::factory()->create();
+        $account = $this->manualAccount($user);
+        $this->actingAs($user);
+
+        Volt::test('connections.account', ['account' => $account])
+            ->set('txnType', 'buy')
+            ->call('selectInstrument', 'AAPL', 'Apple Inc.')
+            ->set('txnQuantity', '25')
+            ->set('txnPrice', '130')
+            ->set('txnDate', '2026-01-05')
+            ->call('recordTransaction')
+            ->assertHasNoErrors();
+
+        $summary = app(HoldingsSummarizer::class)->forAccount($account->fresh());
+
+        // AAPL is priced in USD; cost basis is that native cost converted to base.
+        $expectedCost = 25 * 130 * config('mahafeth.fx_rates.USD');
+
+        $this->assertEqualsWithDelta($expectedCost, $summary['totalCost'], 1e-6);
+
+        $row = $summary['rows'][0];
+        $this->assertEqualsWithDelta($expectedCost, $row['cost'], 1e-6);
+        $this->assertEqualsWithDelta($row['value'] - $row['cost'], $row['pl'], 1e-6);
+        $this->assertEqualsWithDelta(
+            $row['cost'] > 0 ? ($row['value'] - $row['cost']) / $row['cost'] : 0.0,
+            $row['plPct'],
+            1e-9,
+        );
     }
 
     public function test_a_second_buy_recomputes_the_average_cost(): void

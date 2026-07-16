@@ -280,16 +280,46 @@ new class extends Component {
                     ->orderByDesc('executed_at')->orderByDesc('id')->limit(100)->get()
                 : collect(),
             'matches' => $this->manual ? $this->instrumentMatches($catalog) : ['catalog' => [], 'market' => []],
+            'priceCurrency' => $this->priceCurrency($catalog),
         ];
+    }
+
+    /**
+     * The native currency a trade's price is entered in for the selected
+     * instrument — USD for MSFT even inside a SAR account — so the price field
+     * can label it. Null until an instrument is chosen.
+     */
+    private function priceCurrency(AssetCatalog $catalog): ?string
+    {
+        if ($this->txnSymbol === null) {
+            return null;
+        }
+
+        if (($this->txnMeta['currency'] ?? '') !== '') {
+            return $this->txnMeta['currency'];
+        }
+
+        if ($catalog->has($this->txnSymbol)) {
+            return $catalog->metadata($this->txnSymbol)['currency'];
+        }
+
+        return str_ends_with($this->txnSymbol, '.SR') ? 'SAR' : 'USD';
     }
 }; ?>
 
 <div class="stagger-children relative mx-auto flex w-full max-w-3xl flex-col gap-6">
     <div>
-        <flux:button size="sm" variant="ghost" icon="arrow-left" class="rtl:hidden" :href="route('connections')" wire:navigate>
-            {{ __('Accounts') }}</flux:button>
-        <flux:button size="sm" variant="ghost" icon="arrow-right" class="hidden rtl:inline-flex" :href="route('connections')" wire:navigate>
-            {{ __('Accounts') }}</flux:button>
+        {{-- Wrap each arrow in a block element so `hidden` wins: Flux's own
+             `inline-flex` on the button overrides a bare `hidden` class, which
+             would otherwise render both directions at once. --}}
+        <div class="rtl:hidden">
+            <flux:button size="sm" variant="ghost" icon="arrow-left" :href="route('connections')" wire:navigate>
+                {{ __('Accounts') }}</flux:button>
+        </div>
+        <div class="hidden rtl:block">
+            <flux:button size="sm" variant="ghost" icon="arrow-right" :href="route('connections')" wire:navigate>
+                {{ __('Accounts') }}</flux:button>
+        </div>
 
         <div class="mt-3 flex items-start justify-between gap-3">
             <div class="min-w-0">
@@ -317,9 +347,26 @@ new class extends Component {
             </div>
         </div>
 
-        <div class="mt-4 flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-3 dark:bg-zinc-800/60">
-            <flux:text class="text-xs font-medium uppercase tracking-widest">{{ __('Total value') }}</flux:text>
-            <flux:heading size="lg" dir="ltr">⃁ {{ Number::format($summary['totalValue'], 0) }}</flux:heading>
+        <div class="mt-4 rounded-xl bg-neutral-50 px-4 py-3 dark:bg-zinc-800/60">
+            <div class="flex items-center justify-between">
+                <flux:text class="text-xs font-medium uppercase tracking-widest">{{ __('Total value') }}</flux:text>
+                <flux:heading size="lg" dir="ltr">⃁ {{ Number::format($summary['totalValue'], 0) }}</flux:heading>
+            </div>
+            {{-- Market value against cost basis, so a revaluation from live
+                 prices reads as a gain/loss rather than an unexplained jump. --}}
+            @if ($summary['totalCost'] > 0)
+                @php($pl = $summary['totalValue'] - $summary['totalCost'])
+                <div class="mt-1 flex items-center justify-between gap-2">
+                    <flux:text class="text-xs" dir="ltr">
+                        {{ __('Cost') }} ⃁ {{ Number::format($summary['totalCost'], 0) }}</flux:text>
+                    <flux:text
+                        class="text-xs tabular-nums {{ $pl >= 0 ? '!text-emerald-600 dark:!text-emerald-400' : '!text-red-600 dark:!text-red-400' }}"
+                        dir="ltr">
+                        {{ $pl >= 0 ? '+' : '−' }}⃁ {{ Number::format(abs($pl), 0) }}
+                        ({{ $pl >= 0 ? '+' : '−' }}{{ number_format(abs($pl) / $summary['totalCost'] * 100, 1) }}%)
+                    </flux:text>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -358,7 +405,14 @@ new class extends Component {
                     <div class="text-end">
                         <flux:text class="font-medium tabular-nums !text-zinc-800 dark:!text-white" dir="ltr">
                             ⃁ {{ Number::format($row['value'], 0) }}</flux:text>
-                        <flux:text class="text-xs tabular-nums" dir="ltr">{{ Number::percentage($row['weight'] * 100, 1) }}</flux:text>
+                        @if ($row['assetClass'] !== AssetClass::Cash && $row['cost'] > 0)
+                            <flux:text
+                                class="text-xs tabular-nums {{ $row['pl'] >= 0 ? '!text-emerald-600 dark:!text-emerald-400' : '!text-red-600 dark:!text-red-400' }}"
+                                dir="ltr">
+                                {{ $row['pl'] >= 0 ? '+' : '−' }}{{ number_format(abs($row['plPct']) * 100, 1) }}%</flux:text>
+                        @else
+                            <flux:text class="text-xs tabular-nums" dir="ltr">{{ Number::percentage($row['weight'] * 100, 1) }}</flux:text>
+                        @endif
                     </div>
                 </div>
             @empty
@@ -527,8 +581,8 @@ new class extends Component {
                         </flux:field>
                         <flux:field>
                             <flux:label>
-                                <span x-show="$wire.txnType !== 'sell'">{{ __('Price per unit') }}</span>
-                                <span x-show="$wire.txnType === 'sell'" x-cloak>{{ __('Sale price per unit') }}</span>
+                                <span x-show="$wire.txnType !== 'sell'">{{ $priceCurrency ? __('Price per unit (:currency)', ['currency' => $priceCurrency]) : __('Price per unit') }}</span>
+                                <span x-show="$wire.txnType === 'sell'" x-cloak>{{ $priceCurrency ? __('Sale price per unit (:currency)', ['currency' => $priceCurrency]) : __('Sale price per unit') }}</span>
                             </flux:label>
                             <flux:input wire:model="txnPrice" type="number" step="any" min="0" dir="ltr" placeholder="0" />
                             <flux:error name="txnPrice" />
@@ -536,7 +590,7 @@ new class extends Component {
                     </div>
 
                     <flux:text class="text-xs">
-                        {{ __('Enter the price for this trade — Mahafeth works out your average cost across all your buys.') }}
+                        {{ __('Enter the purchase price per share in the instrument\'s own currency — Mahafeth works out your average cost across all your buys.') }}
                     </flux:text>
                 </div>
 
