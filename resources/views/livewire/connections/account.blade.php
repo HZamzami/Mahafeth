@@ -633,7 +633,11 @@ new class extends Component {
                             <span x-show="$wire.txnType === 'buy'">{{ __('Owned since') }}</span>
                             <span x-show="$wire.txnType !== 'buy'" x-cloak>{{ __('Date') }}</span>
                         </flux:label>
-                        <flux:date-picker wire:model="txnDate" :max="now()->toDateString()" />
+                        {{-- Flux's calendar defaults to the browser language over
+                             <html lang>, so pin it to the app locale (Arabic month
+                             names, Latin digits to match the rest of the app). --}}
+                        <flux:date-picker wire:model="txnDate" :max="now()->toDateString()"
+                            :locale="app()->getLocale() === 'ar' ? 'ar-u-nu-latn' : 'en'" />
                         <flux:error name="txnDate" />
                     </flux:field>
                 </div>

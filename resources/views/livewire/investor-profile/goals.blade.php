@@ -127,7 +127,8 @@ new class extends Component {
             <flux:input wire:model="name" :label="__('Goal name')" :placeholder="__('e.g. Retirement')" />
             <flux:input wire:model="targetAmount" type="number" min="1" step="1000"
                 :label="__('Target amount (⃁)')" />
-            <flux:date-picker wire:model="targetDate" selectable-header :label="__('Target date')" />
+            <flux:date-picker wire:model="targetDate" selectable-header :label="__('Target date')"
+                :locale="app()->getLocale() === 'ar' ? 'ar-u-nu-latn' : 'en'" />
             <flux:input wire:model="monthlyContribution" type="number" min="0" step="100"
                 :label="__('Monthly contribution (⃁, optional)')" />
 
