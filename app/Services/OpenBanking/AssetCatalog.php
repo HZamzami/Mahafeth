@@ -41,11 +41,12 @@ class AssetCatalog
      * The catalogued instruments a user can add to a manual account — the
      * priceable universe minus benchmarks and cash (cash is added through a
      * dedicated affordance). Optionally filtered by a case-insensitive query
-     * against the symbol or either name.
+     * against the symbol or either name, and by trading currency so a
+     * single-market account only offers instruments in its own currency.
      *
      * @return list<array{symbol: string, name: string, name_ar: ?string, asset_class: string}>
      */
-    public function investable(string $query = ''): array
+    public function investable(string $query = '', ?string $currency = null): array
     {
         $query = trim(mb_strtolower($query));
         $results = [];
@@ -57,6 +58,10 @@ class AssetCatalog
 
             // SPY and TASI are index benchmarks, not investable positions.
             if (in_array($symbol, ['SPY', 'TASI'], true)) {
+                continue;
+            }
+
+            if ($currency !== null && $params['currency'] !== $currency) {
                 continue;
             }
 

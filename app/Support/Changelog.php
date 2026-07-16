@@ -42,6 +42,11 @@ class Changelog
                         'title' => __('Add a stock in seconds'),
                         'body' => __('Adding a holding is now a quick average-cost entry: pick the stock, type how many units you own and your average cost, and you are done. The purchase date is optional and defaults to today — add it only when you want the position placed on your performance chart. Adding to a stock you already hold blends into a new average.'),
                     ],
+                    [
+                        'type' => 'improved',
+                        'title' => __('Wallets speak their own market'),
+                        'body' => __('When you create a manual account you now choose its market, Saudi or American, which sets its currency and the stocks you can add to it, just like a real single-market brokerage. Every holding then shows in the currency it trades in: a US stock in dollars, a Tadawul name in riyals, with what you paid shown natively. Your unified portfolio total still adds up in one base currency.'),
+                    ],
                 ],
             ],
             [

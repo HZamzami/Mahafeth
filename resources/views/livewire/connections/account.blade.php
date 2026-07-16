@@ -64,6 +64,8 @@ new class extends Component {
         $this->account = $account;
         $this->manual = $account->connection->isManual();
         $this->txnDate = now()->toDateString();
+        // Cash moves in the account's own currency — a wallet is one market.
+        $this->txnCurrency = $account->currency;
     }
 
     /**
@@ -258,17 +260,22 @@ new class extends Component {
             return ['catalog' => [], 'market' => []];
         }
 
+        // A wallet is a single market: only offer instruments that trade in the
+        // account's own currency (Saudi/Tadawul in SAR, American in USD).
+        $currency = $this->account->currency;
+
         $catalogMatches = array_map(fn (array $item): array => [
             'symbol' => $item['symbol'],
             'name' => $item['name'],
-        ], $catalog->investable($query));
+        ], $catalog->investable($query, $currency));
 
         $catalogSymbols = array_column($catalogMatches, 'symbol');
 
         $market = mb_strlen($query) >= 2
             ? array_values(array_filter(
                 app(SymbolSearch::class)->search($query),
-                fn (array $match): bool => ! in_array($match['symbol'], $catalogSymbols, true),
+                fn (array $match): bool => $match['currency'] === $currency
+                    && ! in_array($match['symbol'], $catalogSymbols, true),
             ))
             : [];
 
@@ -611,11 +618,11 @@ new class extends Component {
 
                 {{-- Deposit / Withdraw. --}}
                 <div x-show="!isTrade" x-cloak class="grid grid-cols-[auto_1fr] gap-3">
+                    {{-- Cash is fixed to the account's currency: a wallet is one market. --}}
                     <flux:field class="w-28">
                         <flux:label>{{ __('Currency') }}</flux:label>
                         <flux:select wire:model="txnCurrency">
-                            <flux:select.option value="SAR">SAR</flux:select.option>
-                            <flux:select.option value="USD">USD</flux:select.option>
+                            <flux:select.option value="{{ $account->currency }}">{{ $account->currency }}</flux:select.option>
                         </flux:select>
                     </flux:field>
                     <flux:field>

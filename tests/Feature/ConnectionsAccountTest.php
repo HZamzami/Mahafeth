@@ -132,6 +132,26 @@ class ConnectionsAccountTest extends TestCase
         $this->assertEqualsWithDelta(25 * 130, $summary['nativeTotalCost'], 1e-6);
     }
 
+    public function test_instrument_search_is_scoped_to_the_account_market(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $saudi = app(CreateManualAccount::class)->handle($user, 'Tadawul', AccountType::Brokerage, 'SAR');
+        Volt::test('connections.account', ['account' => $saudi])
+            ->set('txnType', 'buy')
+            ->set('txnQuery', 'a')
+            ->assertSee('Al Rajhi Bank')
+            ->assertDontSee('Apple Inc.');
+
+        $american = app(CreateManualAccount::class)->handle($user, 'IBKR', AccountType::Brokerage, 'USD');
+        Volt::test('connections.account', ['account' => $american])
+            ->set('txnType', 'buy')
+            ->set('txnQuery', 'a')
+            ->assertSee('Apple Inc.')
+            ->assertDontSee('Al Rajhi Bank');
+    }
+
     public function test_deleting_the_last_account_clears_the_stale_portfolio_snapshot(): void
     {
         $user = User::factory()->create();

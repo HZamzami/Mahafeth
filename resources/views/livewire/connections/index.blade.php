@@ -172,7 +172,7 @@ new class extends Component {
             <div>
                 <flux:heading size="lg">{{ __('New account') }}</flux:heading>
                 <flux:text class="mt-1 text-sm">
-                    {{ __('Name it after the broker or bank it represents.') }}
+                    {{ __('Name it after the broker or bank it represents, then pick its market: that sets the currency and which stocks you can add.') }}
                 </flux:text>
             </div>
 
@@ -186,9 +186,9 @@ new class extends Component {
                         <flux:select.option value="{{ $type->value }}">{{ $type->label() }}</flux:select.option>
                     @endforeach
                 </flux:select>
-                <flux:select wire:model="createCurrency" :label="__('Base currency')">
-                    <flux:select.option value="SAR">SAR</flux:select.option>
-                    <flux:select.option value="USD">USD</flux:select.option>
+                <flux:select wire:model="createCurrency" :label="__('Market')">
+                    <flux:select.option value="SAR">{{ __('Saudi · Tadawul (SAR)') }}</flux:select.option>
+                    <flux:select.option value="USD">{{ __('American · US (USD)') }}</flux:select.option>
                 </flux:select>
             </div>
 
