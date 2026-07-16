@@ -215,9 +215,13 @@
         <section class="welcome-reveal">
             <p class="text-center text-sm text-zinc-500">{{ __('Connects where Saudi investors actually invest') }}</p>
             <div class="welcome-marquee-mask mt-6 overflow-hidden">
-                <div class="welcome-marquee flex w-max items-center gap-4">
+                {{-- Two identical copies with no gap between them, each carrying a
+                     trailing gap (pe-4) so one copy is exactly half the strip and the
+                     -50% loop lands seamlessly; a between-copies gap would leave the
+                     loop short by half a gap and snap every cycle. --}}
+                <div class="welcome-marquee flex w-max items-center">
                     @foreach (range(1, 2) as $copy)
-                        <div class="flex items-center gap-4" @if ($copy === 2) aria-hidden="true" @endif>
+                        <div class="flex shrink-0 items-center gap-4 pe-4" @if ($copy === 2) aria-hidden="true" @endif>
                             @foreach ([
                                 ['Alinma Bank', 'مصرف الإنماء'],
                                 ['Alinma Capital', 'الإنماء المالية'],
