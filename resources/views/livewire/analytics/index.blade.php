@@ -29,8 +29,11 @@ new class extends Component {
     {
         $user = Auth::user();
 
+        // The version segment invalidates every cached entry when the shape of
+        // compute()'s result changes, so a deploy can't serve a pre-refactor
+        // array to a portfolio whose snapshot/sync/profile hasn't rotated.
         return sprintf(
-            'analytics:%d:%s:%s:%s',
+            'analytics:v2:%d:%s:%s:%s',
             $user->id,
             $user->latestSnapshot()?->id ?? 'none',
             $user->connections()->max('last_synced_at') ?? 'never',
@@ -366,7 +369,7 @@ new class extends Component {
                     @endforeach
 
                     {{-- Capital Market Line --}}
-                    @if ($frontierPlot['cml'] !== null)
+                    @if (($frontierPlot['cml'] ?? null) !== null)
                         <line x1="{{ $frontierPlot['cml']['x1'] }}" y1="{{ $frontierPlot['cml']['y1'] }}"
                             x2="{{ $frontierPlot['cml']['x2'] }}" y2="{{ $frontierPlot['cml']['y2'] }}"
                             stroke-width="1.5" stroke-dasharray="5 4"
@@ -450,7 +453,7 @@ new class extends Component {
                         <flux:text class="text-end text-[10px] uppercase tracking-wide">{{ __('Target') }}</flux:text>
                         <flux:text class="text-center text-[10px] uppercase tracking-wide">{{ __('Change') }}
                         </flux:text>
-                        @foreach (collect($frontier['recommended']['weights'])->sortDesc()->take(5) as $symbol => $weight)
+                        @foreach (collect($frontier['recommended']['weights'] ?? [])->sortDesc()->take(5) as $symbol => $weight)
                             @php($delta = $weight - ($weights[$symbol] ?? 0))
                             <flux:text class="text-sm">{{ $symbol }}</flux:text>
                             <flux:text class="text-end text-sm font-medium tabular-nums !text-zinc-800 dark:!text-white"

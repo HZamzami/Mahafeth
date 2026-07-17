@@ -64,7 +64,7 @@ class AnalyticsPageTest extends TestCase
         $this->actingAs($user)->get('/analytics')->assertOk();
 
         $key = sprintf(
-            'analytics:%d:%s:%s:%s',
+            'analytics:v2:%d:%s:%s:%s',
             $user->id,
             $user->latestSnapshot()?->id ?? 'none',
             $user->connections()->max('last_synced_at') ?? 'never',
@@ -78,6 +78,35 @@ class AnalyticsPageTest extends TestCase
             ->assertOk()
             ->assertSee('Correlation Matrix')
             ->assertSee('AAPL');
+    }
+
+    public function test_a_stale_pre_refactor_cache_entry_does_not_break_the_page(): void
+    {
+        $user = User::factory()->create();
+        $institution = Institution::factory()->create(['slug' => 'derayah']);
+        $connection = Connection::factory()->pending()->create([
+            'user_id' => $user->id,
+            'institution_id' => $institution->id,
+        ]);
+
+        app(SyncConnection::class)->handle($connection);
+
+        // Seed a v1-shaped entry — the frontier without `recommended` and the
+        // plot without `cml`, as an older deploy would have cached. The
+        // versioned key must ignore it and recompute a well-formed result
+        // rather than serving a shape the view can no longer read.
+        Cache::put(sprintf(
+            'analytics:%d:%s:%s:%s',
+            $user->id,
+            $user->latestSnapshot()?->id ?? 'none',
+            $user->connections()->max('last_synced_at') ?? 'never',
+            $user->riskProfile?->updated_at?->timestamp ?? 'none',
+        ), ['symbols' => ['AAPL'], 'frontier' => [], 'frontierPlot' => []], now()->addHour());
+
+        $this->actingAs($user)
+            ->get('/analytics')
+            ->assertOk()
+            ->assertSee('Correlation Matrix');
     }
 
     public function test_the_efficient_frontier_and_risk_sections_are_rendered(): void
