@@ -159,15 +159,22 @@ new class extends Component {
         // plotted is genuinely negative.
         $xMax = max($this->percentile($cloudRisks, 0.95), 1.1 * max($keyRisks));
         $yMax = max($this->percentile($cloudReturns, 0.98), 1.05 * max($keyReturns));
-        $yMin = min(0.0, ...$keyReturns);
+
+        // Floor the y-axis at 0 unless the portfolio itself is under water; a
+        // frontier tip that dips slightly negative is clamped into the box
+        // below rather than dragging the whole scale — and a stray negative
+        // label cramped into the corner — down with it.
+        $yMin = min(0.0, $frontier['current']['return'], $frontier['tangency']['return']);
 
         $xAxis = $this->niceAxis([0.0, $xMax]);
         $yAxis = $this->niceAxis([$yMin, $yMax]);
 
-        $plot = ['left' => 52, 'top' => 14, 'width' => 334, 'height' => 196];
+        $plot = ['left' => 56, 'top' => 14, 'width' => 330, 'height' => 196];
 
-        $projectX = fn (float $risk): float => round($plot['left'] + ($risk - $xAxis['min']) / ($xAxis['max'] - $xAxis['min']) * $plot['width'], 1);
-        $projectY = fn (float $return): float => round($plot['top'] + (1 - ($return - $yAxis['min']) / ($yAxis['max'] - $yAxis['min'])) * $plot['height'], 1);
+        $clamp = fn (float $value, float $min, float $max): float => min($max, max($min, $value));
+
+        $projectX = fn (float $risk): float => round($clamp($plot['left'] + ($risk - $xAxis['min']) / ($xAxis['max'] - $xAxis['min']) * $plot['width'], $plot['left'], $plot['left'] + $plot['width']), 1);
+        $projectY = fn (float $return): float => round($clamp($plot['top'] + (1 - ($return - $yAxis['min']) / ($yAxis['max'] - $yAxis['min'])) * $plot['height'], $plot['top'], $plot['top'] + $plot['height']), 1);
         $project = fn (array $point): array => ['x' => $projectX($point['risk']), 'y' => $projectY($point['return'])];
 
         // Drop samples outside the clipped window so no dot renders past the
@@ -326,7 +333,7 @@ new class extends Component {
                             x2="{{ $plot['left'] + $plot['width'] }}" y2="{{ $tick['y'] }}"
                             class="{{ $tick['zero'] ? 'stroke-neutral-300 dark:stroke-zinc-600' : 'stroke-neutral-100 dark:stroke-zinc-800' }}"
                             stroke-width="1" />
-                        <text x="{{ $plot['left'] - 6 }}" y="{{ $tick['y'] + 3 }}" text-anchor="end"
+                        <text x="{{ $plot['left'] - 10 }}" y="{{ $tick['y'] + 3 }}" text-anchor="end"
                             class="fill-neutral-400 text-[9px]">{{ $tick['label'] }}</text>
                     @endforeach
                     @foreach ($frontierPlot['xTicks'] as $tick)
