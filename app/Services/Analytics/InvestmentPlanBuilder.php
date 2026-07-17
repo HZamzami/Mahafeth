@@ -80,7 +80,7 @@ class InvestmentPlanBuilder
             targetVolatility: (float) $riskProfile->target_volatility,
         );
 
-        $pick = $frontier['target'] ?? $frontier['tangency'];
+        $pick = $frontier['target'] ?? $frontier['recommended'];
         $weights = $this->practicalWeights($pick['weights']);
 
         // Re-price the pruned allocation: pruning shifts the point slightly.

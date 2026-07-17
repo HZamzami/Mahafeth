@@ -60,6 +60,28 @@ class EfficientFrontierServiceTest extends TestCase
     }
 
     /**
+     * The tangency portfolio is the true max-Sharpe point and the current
+     * portfolio is always a candidate, so the efficiency gap can never be
+     * negative — moving to the frontier is, by definition, recoverable.
+     */
+    public function test_the_tangency_sharpe_is_never_below_the_current_sharpe(): void
+    {
+        $result = $this->service->analyze(
+            expectedReturns: ['A' => 0.08, 'B' => 0.12],
+            covarianceMatrix: [
+                'A' => ['A' => 0.02, 'B' => 0.01],
+                'B' => ['A' => 0.01, 'B' => 0.05],
+            ],
+            currentWeights: ['A' => 0.6, 'B' => 0.4],
+            riskFreeRate: 0.02,
+            samples: 500,
+        );
+
+        $this->assertGreaterThanOrEqual($result['current']['sharpe'], $result['tangency']['sharpe']);
+        $this->assertGreaterThanOrEqual(0.0, $result['efficiency_gap']);
+    }
+
+    /**
      * The recommendation maximizes a concentration-penalized objective
      * (sharpe − λ·HHI), not raw Sharpe — since the current portfolio is always
      * a candidate when it clears the cap, the recommendation is never worse
@@ -87,7 +109,7 @@ class EfficientFrontierServiceTest extends TestCase
 
         $this->assertGreaterThanOrEqual(
             $objective($result['current']['sharpe'], $currentWeights) - 1e-9,
-            $objective($result['tangency']['sharpe'], $result['tangency']['weights']),
+            $objective($result['recommended']['sharpe'], $result['recommended']['weights']),
         );
     }
 
@@ -112,12 +134,12 @@ class EfficientFrontierServiceTest extends TestCase
             samples: 6000,
         );
 
-        foreach ($result['tangency']['weights'] as $weight) {
+        foreach ($result['recommended']['weights'] as $weight) {
             $this->assertLessThanOrEqual(0.30 + 1e-6, $weight);
         }
 
         // Not a single-asset corner: the runaway asset E is held back.
-        $this->assertLessThanOrEqual(0.30 + 1e-6, $result['tangency']['weights']['E']);
+        $this->assertLessThanOrEqual(0.30 + 1e-6, $result['recommended']['weights']['E']);
     }
 
     /**
@@ -139,9 +161,9 @@ class EfficientFrontierServiceTest extends TestCase
             samples: 4000,
         );
 
-        $this->assertEqualsWithDelta(1.0, array_sum($result['tangency']['weights']), 1e-9);
+        $this->assertEqualsWithDelta(1.0, array_sum($result['recommended']['weights']), 1e-9);
 
-        foreach ($result['tangency']['weights'] as $weight) {
+        foreach ($result['recommended']['weights'] as $weight) {
             $this->assertGreaterThanOrEqual(0.0, $weight);
             $this->assertLessThanOrEqual(0.5 + 1e-6, $weight);
         }

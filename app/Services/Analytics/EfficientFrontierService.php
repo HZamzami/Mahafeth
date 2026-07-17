@@ -5,10 +5,12 @@ namespace App\Services\Analytics;
 /**
  * Efficient frontier by Monte Carlo simulation: thousands of random
  * long-only weight vectors form a risk/return cloud whose upper envelope
- * approximates the frontier. The recommended allocation (returned under the
- * `tangency` key) is the sample that maximizes a concentration-penalized
- * objective (sharpe − λ·HHI) within a single-asset weight cap, so it stays
- * diversified rather than collapsing to the max-Sharpe corner solution.
+ * approximates the frontier. The max-Sharpe sample is the `tangency`
+ * portfolio (it anchors the Capital Market Line and the efficiency gap). The
+ * `recommended` allocation is the sample that maximizes a concentration-
+ * penalized objective (sharpe − λ·HHI) within a single-asset weight cap, so
+ * the mix actually surfaced to the investor stays diversified rather than
+ * collapsing to the max-Sharpe corner solution.
  *
  * Seeded PRNG: identical inputs always produce identical results.
  */
@@ -24,6 +26,7 @@ class EfficientFrontierService
      *     cloud: list<array{risk: float, return: float}>,
      *     frontier: list<array{risk: float, return: float}>,
      *     tangency: array{weights: array<string, float>, risk: float, return: float, sharpe: float},
+     *     recommended: array{weights: array<string, float>, risk: float, return: float, sharpe: float},
      *     current: array{risk: float, return: float, sharpe: float},
      *     efficiency_gap: float,
      *     target: ?array{weights: array<string, float>, risk: float, return: float, sharpe: float}
@@ -97,9 +100,15 @@ class EfficientFrontierService
         return [
             'cloud' => $cloud,
             'frontier' => $this->upperEnvelope($cloud),
-            'tangency' => $recommended,
+            // The tangency portfolio is the true (unconstrained) max-Sharpe
+            // point: it anchors the Capital Market Line and the efficiency gap,
+            // which stays ≥ 0 because the current portfolio is a candidate.
+            'tangency' => $tangency,
+            // The recommendation is the diversified, weight-capped allocation
+            // actually surfaced to the investor — never a single-asset corner.
+            'recommended' => $recommended,
             'current' => $current,
-            'efficiency_gap' => $recommended['sharpe'] - $current['sharpe'],
+            'efficiency_gap' => $tangency['sharpe'] - $current['sharpe'],
             'target' => $target,
         ];
     }

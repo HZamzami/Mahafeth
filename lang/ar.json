@@ -564,7 +564,7 @@
     "Risk (volatility)": "المخاطر (التقلب)",
     "Expected return": "العائد المتوقع",
     "Your portfolio": "محفظتك",
-    "Recommended": "الموصى بها",
+    "Optimal (max Sharpe)": "المثلى (أعلى شارب)",
     "Efficiency Gap": "فجوة الكفاءة",
     "Sharpe ratio improvement available at the optimal allocation.": "تحسن نسبة شارب المتاح عند التوزيع الأمثل.",
     "Current vs Optimal": "الحالية مقابل المثلى",

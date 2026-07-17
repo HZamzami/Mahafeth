@@ -141,6 +141,7 @@ class PortfolioAnalyzer
             'frontier' => [
                 'points' => $frontier['frontier'],
                 'tangency' => $frontier['tangency'],
+                'recommended' => $frontier['recommended'],
                 'current' => $frontier['current'],
                 'efficiency_gap' => $frontier['efficiency_gap'],
             ],

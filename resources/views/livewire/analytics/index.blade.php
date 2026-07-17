@@ -86,7 +86,7 @@ new class extends Component {
             'frontier' => $frontier,
             'frontierPlot' => $this->frontierPlot($frontier),
             'weights' => $weights,
-            'rebalanceOrders' => $this->rebalanceOrders($weights, $frontier['tangency']['weights'] ?? [], (float) $totalValue, $data),
+            'rebalanceOrders' => $this->rebalanceOrders($weights, $frontier['recommended']['weights'] ?? [], (float) $totalValue, $data),
             'sectorContributions' => app(RiskDecomposer::class)->contributions($weights, $covariance, $sectors),
             'decomposition' => Auth::user()->latestSnapshot()?->metrics['risk_decomposition'] ?? null,
         ];
@@ -392,7 +392,7 @@ new class extends Component {
                         r="5.5" class="fill-emerald-500 stroke-white dark:stroke-zinc-900" stroke-width="2" />
                     <circle cx="{{ $frontierPlot['tangency']['x'] }}" cy="{{ $frontierPlot['tangency']['y'] }}" r="14"
                         fill="transparent" class="cursor-help">
-                        <title>{{ __('Recommended') }} — {{ __('Annualized Volatility') }} {{ Number::percentage($frontier['tangency']['risk'] * 100, 1) }}, {{ __('Annualized Return') }} {{ Number::percentage($frontier['tangency']['return'] * 100, 1) }}</title>
+                        <title>{{ __('Optimal (max Sharpe)') }} — {{ __('Annualized Volatility') }} {{ Number::percentage($frontier['tangency']['risk'] * 100, 1) }}, {{ __('Annualized Return') }} {{ Number::percentage($frontier['tangency']['return'] * 100, 1) }}</title>
                     </circle>
                 </svg>
 
@@ -401,7 +401,7 @@ new class extends Component {
                         <flux:text class="text-xs">{{ __('Your portfolio') }}</flux:text>
                     </span>
                     <span class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-emerald-500"></span>
-                        <flux:text class="text-xs">{{ __('Recommended') }}</flux:text>
+                        <flux:text class="text-xs">{{ __('Optimal (max Sharpe)') }}</flux:text>
                     </span>
                     <span class="flex items-center gap-2">
                         <span class="h-0 w-5 border-t-2 border-dashed border-teal-500"></span>
@@ -450,7 +450,7 @@ new class extends Component {
                         <flux:text class="text-end text-[10px] uppercase tracking-wide">{{ __('Target') }}</flux:text>
                         <flux:text class="text-center text-[10px] uppercase tracking-wide">{{ __('Change') }}
                         </flux:text>
-                        @foreach (collect($frontier['tangency']['weights'])->sortDesc()->take(5) as $symbol => $weight)
+                        @foreach (collect($frontier['recommended']['weights'])->sortDesc()->take(5) as $symbol => $weight)
                             @php($delta = $weight - ($weights[$symbol] ?? 0))
                             <flux:text class="text-sm">{{ $symbol }}</flux:text>
                             <flux:text class="text-end text-sm font-medium tabular-nums !text-zinc-800 dark:!text-white"

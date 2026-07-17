@@ -45,7 +45,7 @@ new class extends Component {
     private function rebalanceOrders($snapshot): array
     {
         $metrics = $snapshot?->metrics ?? [];
-        $targetWeights = $metrics['frontier']['tangency']['weights'] ?? [];
+        $targetWeights = $metrics['frontier']['recommended']['weights'] ?? $metrics['frontier']['tangency']['weights'] ?? [];
 
         if ($snapshot === null || $targetWeights === [] || ! isset($metrics['weights'])) {
             return [];
