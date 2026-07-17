@@ -75,7 +75,7 @@ class ClaudeInsightGenerator implements InsightGenerator
         $payload = app(PortfolioContext::class)->payload($snapshot, $riskProfile, $goals);
 
         $language = $locale === 'ar'
-            ? 'Write every field of your response in Arabic (Modern Standard Arabic, natural financial register).'
+            ? 'Write every field of your response in Arabic (Modern Standard Arabic, natural financial register). Always refer to diversification as "الارتباط" — never "التنويع" or "الترابط".'
             : 'Write every field of your response in English.';
 
         return <<<PROMPT

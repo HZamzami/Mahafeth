@@ -132,7 +132,7 @@ class ClaudeChatResponder implements ChatResponder
     private function systemBlocks(PortfolioSnapshot $snapshot, ?RiskProfile $riskProfile, string $locale, array $goals): array
     {
         $language = $locale === 'ar'
-            ? 'Reply in Arabic (Modern Standard Arabic, natural financial register).'
+            ? 'Reply in Arabic (Modern Standard Arabic, natural financial register). Always refer to diversification as "الارتباط" — never "التنويع" or "الترابط".'
             : 'Reply in English.';
 
         $asOf = $snapshot->as_of->toDateString();
