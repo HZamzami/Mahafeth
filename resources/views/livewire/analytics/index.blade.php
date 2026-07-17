@@ -336,7 +336,7 @@ new class extends Component {
                             x2="{{ $plot['left'] + $plot['width'] }}" y2="{{ $tick['y'] }}"
                             class="{{ $tick['zero'] ? 'stroke-neutral-300 dark:stroke-zinc-600' : 'stroke-neutral-100 dark:stroke-zinc-800' }}"
                             stroke-width="1" />
-                        <text x="{{ $plot['left'] - 18 }}" y="{{ $tick['y'] + 3 }}" text-anchor="end"
+                        <text x="{{ $plot['left'] - 20 }}" y="{{ $tick['y'] + 3 }}" text-anchor="end"
                             class="fill-neutral-400 text-[9px]">{{ $tick['label'] }}</text>
                     @endforeach
                     @foreach ($frontierPlot['xTicks'] as $tick)
