@@ -16,6 +16,21 @@ return [
     // Tracks the SAMA repo rate (4.25% since December 2025).
     'risk_free_rate' => env('MAHAFETH_RISK_FREE_RATE', 0.0425),
 
+    // Efficient-frontier recommendation guardrails. A naive max-Sharpe pick is
+    // an "error maximizer" that concentrates in one asset; these keep the
+    // suggested allocation diversified and consistent with the concentration
+    // alerts and health score elsewhere in the app.
+    'frontier' => [
+        // Single-asset cap for the recommended allocation; mirrors the
+        // AlertEvaluator concentration threshold. Relaxed to 1/n when there
+        // are too few assets for the cap to be feasible.
+        'max_weight' => 0.30,
+
+        // λ on the Herfindahl index (Σwᵢ²) in the recommendation objective
+        // (sharpe − λ·HHI): higher favours more even allocations.
+        'concentration_penalty' => 0.5,
+    ],
+
     'benchmark_symbol' => env('MAHAFETH_BENCHMARK', 'TASI'),
 
     // Indices overlaid on the performance chart for comparison.

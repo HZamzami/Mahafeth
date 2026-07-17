@@ -5,9 +5,10 @@ namespace App\Services\Analytics;
 /**
  * Efficient frontier by Monte Carlo simulation: thousands of random
  * long-only weight vectors form a risk/return cloud whose upper envelope
- * approximates the frontier. The max-Sharpe sample is the tangency
- * portfolio. The current portfolio is always included in the candidate set,
- * so the tangency Sharpe is never worse than the current one.
+ * approximates the frontier. The recommended allocation (returned under the
+ * `tangency` key) is the sample that maximizes a concentration-penalized
+ * objective (sharpe − λ·HHI) within a single-asset weight cap, so it stays
+ * diversified rather than collapsing to the max-Sharpe corner solution.
  *
  * Seeded PRNG: identical inputs always produce identical results.
  */
@@ -39,10 +40,25 @@ class EfficientFrontierService
         $riskFreeRate ??= (float) config('mahafeth.risk_free_rate');
         $symbols = array_keys($expectedReturns);
 
+        $cap = $this->effectiveCap(count($symbols));
+        $lambda = (float) config('mahafeth.frontier.concentration_penalty');
+
         $current = $this->evaluate($currentWeights, $expectedReturns, $covarianceMatrix, $riskFreeRate);
 
         $state = self::SEED;
         $cloud = [];
+
+        // The recommendation is the best concentration-penalized sample within
+        // the weight cap. Seed it with the current portfolio only when the
+        // current mix itself satisfies the cap; a concentrated portfolio must
+        // not leak back in as its own recommendation. When the seed is skipped,
+        // the fallback below guarantees a result.
+        $recommended = $this->passesCap($currentWeights, $cap)
+            ? ['weights' => $currentWeights] + $current + ['objective' => $this->objective($current, $currentWeights, $lambda)]
+            : null;
+
+        // The unconstrained max-Sharpe sample stands in when no sample clears
+        // the cap (degenerate inputs), so a recommendation is always returned.
         $tangency = ['weights' => $currentWeights] + $current;
         $target = null;
 
@@ -62,19 +78,82 @@ class EfficientFrontierService
                 $tangency = ['weights' => $weights] + $point;
             }
 
-            if ($targetVolatility !== null && $this->beatsTarget($point, $target, $targetVolatility)) {
-                $target = ['weights' => $weights] + $point;
+            if ($this->passesCap($weights, $cap)) {
+                $objective = $this->objective($point, $weights, $lambda);
+
+                if ($recommended === null || $objective > $recommended['objective']) {
+                    $recommended = ['weights' => $weights] + $point + ['objective' => $objective];
+                }
+
+                if ($targetVolatility !== null && $this->beatsTarget($point, $target, $targetVolatility)) {
+                    $target = ['weights' => $weights] + $point;
+                }
             }
         }
+
+        $recommended ??= $tangency;
+        unset($recommended['objective']);
 
         return [
             'cloud' => $cloud,
             'frontier' => $this->upperEnvelope($cloud),
-            'tangency' => $tangency,
+            'tangency' => $recommended,
             'current' => $current,
-            'efficiency_gap' => $tangency['sharpe'] - $current['sharpe'],
+            'efficiency_gap' => $recommended['sharpe'] - $current['sharpe'],
             'target' => $target,
         ];
+    }
+
+    /**
+     * The single-asset weight cap for the recommended allocation, relaxed when
+     * a fixed cap would be infeasible or degenerate. With n assets the
+     * smallest possible maximum weight is 1/n, but a cap at exactly 1/n admits
+     * only the perfectly even portfolio — a measure-zero target random
+     * sampling never lands on. Flooring at 1/(n−1) leaves a feasible region
+     * with positive measure while still binding once there are enough assets
+     * (the configured cap wins from five assets up).
+     */
+    private function effectiveCap(int $assetCount): float
+    {
+        $cap = (float) config('mahafeth.frontier.max_weight');
+
+        return max($cap, 1.0 / max(1, $assetCount - 1));
+    }
+
+    /**
+     * Whether no single asset exceeds the cap (with a tiny tolerance for the
+     * 1/n floor case, where the optimum sits exactly on the boundary).
+     *
+     * @param  array<string, float>  $weights
+     */
+    private function passesCap(array $weights, float $cap): bool
+    {
+        return $weights === [] || max($weights) <= $cap + 1e-9;
+    }
+
+    /**
+     * Recommendation objective: risk-adjusted return penalized for
+     * concentration, `sharpe − λ·HHI`, where HHI = Σwᵢ² is the Herfindahl
+     * index. This rewards diversified allocations over the corner solutions a
+     * naive max-Sharpe pick would return.
+     *
+     * @param  array{risk: float, return: float, sharpe: float}  $point
+     * @param  array<string, float>  $weights
+     */
+    private function objective(array $point, array $weights, float $lambda): float
+    {
+        return $point['sharpe'] - $lambda * $this->herfindahl($weights);
+    }
+
+    /**
+     * Herfindahl–Hirschman index of the allocation: Σwᵢ² — 1/n when perfectly
+     * even, 1 when fully concentrated.
+     *
+     * @param  array<string, float>  $weights
+     */
+    private function herfindahl(array $weights): float
+    {
+        return array_sum(array_map(fn (float $weight): float => $weight ** 2, $weights));
     }
 
     /**

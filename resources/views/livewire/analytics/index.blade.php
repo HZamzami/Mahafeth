@@ -144,12 +144,25 @@ new class extends Component {
     {
         $riskFree = (float) config('mahafeth.risk_free_rate');
 
-        $points = [...$frontier['cloud'], ['risk' => $frontier['current']['risk'], 'return' => $frontier['current']['return']]];
+        $cloudRisks = array_column($frontier['cloud'], 'risk');
+        $cloudReturns = array_column($frontier['cloud'], 'return');
 
-        // Include the origin and the risk-free rate so the Capital Market
-        // Line has its anchor on the y-axis.
-        $xAxis = $this->niceAxis([0.0, ...array_column($points, 'risk')]);
-        $yAxis = $this->niceAxis([$riskFree, ...array_column($points, 'return')]);
+        // Everything that must always stay in frame: the frontier arc, both
+        // markers, the risk-free anchor, and the origin.
+        $keyRisks = [0.0, $frontier['current']['risk'], $frontier['tangency']['risk'], ...array_column($frontier['frontier'], 'risk')];
+        $keyReturns = [$riskFree, $frontier['current']['return'], $frontier['tangency']['return'], ...array_column($frontier['frontier'], 'return')];
+
+        // Clip the axes to a robust percentile of the cloud so a handful of
+        // pathological all-in-one-asset samples can't dictate the scale and
+        // squash the meaningful region into a corner. The key points above are
+        // always kept in view, and the y-axis floors at 0 unless something
+        // plotted is genuinely negative.
+        $xMax = max($this->percentile($cloudRisks, 0.95), 1.1 * max($keyRisks));
+        $yMax = max($this->percentile($cloudReturns, 0.98), 1.05 * max($keyReturns));
+        $yMin = min(0.0, ...$keyReturns);
+
+        $xAxis = $this->niceAxis([0.0, $xMax]);
+        $yAxis = $this->niceAxis([$yMin, $yMax]);
 
         $plot = ['left' => 52, 'top' => 14, 'width' => 334, 'height' => 196];
 
@@ -157,9 +170,13 @@ new class extends Component {
         $projectY = fn (float $return): float => round($plot['top'] + (1 - ($return - $yAxis['min']) / ($yAxis['max'] - $yAxis['min'])) * $plot['height'], 1);
         $project = fn (array $point): array => ['x' => $projectX($point['risk']), 'y' => $projectY($point['return'])];
 
-        // Render every sample: the boundary line runs through actual cloud
-        // points, so all of its support must be visible.
-        $cloud = array_map($project, $frontier['cloud']);
+        // Drop samples outside the clipped window so no dot renders past the
+        // plot box; the frontier arc's support all sits within the window.
+        $cloud = array_values(array_map($project, array_filter(
+            $frontier['cloud'],
+            fn (array $point): bool => $point['risk'] >= $xAxis['min'] && $point['risk'] <= $xAxis['max']
+                && $point['return'] >= $yAxis['min'] && $point['return'] <= $yAxis['max'],
+        )));
 
         // Capital Market Line: E(R) = Rf + tangency Sharpe × σ, from the
         // risk-free anchor through the tangency portfolio, extended a bit.
@@ -186,6 +203,27 @@ new class extends Component {
             'xTicks' => array_map(fn (float $tick): array => ['x' => $projectX($tick), 'label' => round($tick * 100).'%'], $xAxis['ticks']),
             'yTicks' => array_map(fn (float $tick): array => ['y' => $projectY($tick), 'label' => round($tick * 100).'%', 'zero' => abs($tick) < 1e-9], $yAxis['ticks']),
         ];
+    }
+
+    /**
+     * The value at quantile $q (0–1) of $values by linear interpolation.
+     * Used to clip chart axes to the bulk of the cloud, ignoring outliers.
+     *
+     * @param  list<float>  $values
+     */
+    private function percentile(array $values, float $q): float
+    {
+        if ($values === []) {
+            return 0.0;
+        }
+
+        sort($values);
+
+        $rank = $q * (count($values) - 1);
+        $low = (int) floor($rank);
+        $high = (int) ceil($rank);
+
+        return $values[$low] + ($rank - $low) * ($values[$high] - $values[$low]);
     }
 
     /**
@@ -347,7 +385,7 @@ new class extends Component {
                         r="5.5" class="fill-emerald-500 stroke-white dark:stroke-zinc-900" stroke-width="2" />
                     <circle cx="{{ $frontierPlot['tangency']['x'] }}" cy="{{ $frontierPlot['tangency']['y'] }}" r="14"
                         fill="transparent" class="cursor-help">
-                        <title>{{ __('Optimal (max Sharpe)') }} — {{ __('Annualized Volatility') }} {{ Number::percentage($frontier['tangency']['risk'] * 100, 1) }}, {{ __('Annualized Return') }} {{ Number::percentage($frontier['tangency']['return'] * 100, 1) }}</title>
+                        <title>{{ __('Recommended') }} — {{ __('Annualized Volatility') }} {{ Number::percentage($frontier['tangency']['risk'] * 100, 1) }}, {{ __('Annualized Return') }} {{ Number::percentage($frontier['tangency']['return'] * 100, 1) }}</title>
                     </circle>
                 </svg>
 
@@ -356,7 +394,7 @@ new class extends Component {
                         <flux:text class="text-xs">{{ __('Your portfolio') }}</flux:text>
                     </span>
                     <span class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-emerald-500"></span>
-                        <flux:text class="text-xs">{{ __('Optimal (max Sharpe)') }}</flux:text>
+                        <flux:text class="text-xs">{{ __('Recommended') }}</flux:text>
                     </span>
                     <span class="flex items-center gap-2">
                         <span class="h-0 w-5 border-t-2 border-dashed border-teal-500"></span>

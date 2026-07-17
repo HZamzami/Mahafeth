@@ -59,21 +59,92 @@ class EfficientFrontierServiceTest extends TestCase
         }
     }
 
-    public function test_the_tangency_sharpe_is_never_below_the_current_sharpe(): void
+    /**
+     * The recommendation maximizes a concentration-penalized objective
+     * (sharpe − λ·HHI), not raw Sharpe — since the current portfolio is always
+     * a candidate when it clears the cap, the recommendation is never worse
+     * than the current mix on that objective.
+     */
+    public function test_the_recommendation_never_scores_below_the_current_on_the_objective(): void
     {
+        $lambda = (float) config('mahafeth.frontier.concentration_penalty');
+
+        $currentWeights = ['A' => 0.6, 'B' => 0.4];
+
         $result = $this->service->analyze(
             expectedReturns: ['A' => 0.08, 'B' => 0.12],
             covarianceMatrix: [
                 'A' => ['A' => 0.02, 'B' => 0.01],
                 'B' => ['A' => 0.01, 'B' => 0.05],
             ],
-            currentWeights: ['A' => 0.6, 'B' => 0.4],
+            currentWeights: $currentWeights,
             riskFreeRate: 0.02,
             samples: 500,
         );
 
-        $this->assertGreaterThanOrEqual($result['current']['sharpe'], $result['tangency']['sharpe']);
-        $this->assertGreaterThanOrEqual(0.0, $result['efficiency_gap']);
+        $objective = fn (float $sharpe, array $weights): float => $sharpe
+            - $lambda * array_sum(array_map(fn (float $weight): float => $weight ** 2, $weights));
+
+        $this->assertGreaterThanOrEqual(
+            $objective($result['current']['sharpe'], $currentWeights) - 1e-9,
+            $objective($result['tangency']['sharpe'], $result['tangency']['weights']),
+        );
+    }
+
+    /**
+     * With enough assets that the 30% cap binds, the recommended allocation
+     * spreads across holdings instead of collapsing into the highest-return
+     * asset the way a naive max-Sharpe pick would.
+     */
+    public function test_the_recommendation_respects_the_effective_weight_cap(): void
+    {
+        $result = $this->service->analyze(
+            expectedReturns: ['A' => 0.06, 'B' => 0.07, 'C' => 0.08, 'D' => 0.09, 'E' => 0.30],
+            covarianceMatrix: [
+                'A' => ['A' => 0.03, 'B' => 0.0, 'C' => 0.0, 'D' => 0.0, 'E' => 0.0],
+                'B' => ['A' => 0.0, 'B' => 0.03, 'C' => 0.0, 'D' => 0.0, 'E' => 0.0],
+                'C' => ['A' => 0.0, 'B' => 0.0, 'C' => 0.03, 'D' => 0.0, 'E' => 0.0],
+                'D' => ['A' => 0.0, 'B' => 0.0, 'C' => 0.0, 'D' => 0.03, 'E' => 0.0],
+                'E' => ['A' => 0.0, 'B' => 0.0, 'C' => 0.0, 'D' => 0.0, 'E' => 0.04],
+            ],
+            currentWeights: ['A' => 0.2, 'B' => 0.2, 'C' => 0.2, 'D' => 0.2, 'E' => 0.2],
+            riskFreeRate: 0.02,
+            samples: 6000,
+        );
+
+        foreach ($result['tangency']['weights'] as $weight) {
+            $this->assertLessThanOrEqual(0.30 + 1e-6, $weight);
+        }
+
+        // Not a single-asset corner: the runaway asset E is held back.
+        $this->assertLessThanOrEqual(0.30 + 1e-6, $result['tangency']['weights']['E']);
+    }
+
+    /**
+     * The cap relaxes to 1/(n−1) when a fixed 30% cap would be infeasible;
+     * three assets still yield a valid long-only allocation summing to one,
+     * with no weight above the relaxed 50% cap.
+     */
+    public function test_the_effective_cap_relaxes_for_few_assets(): void
+    {
+        $result = $this->service->analyze(
+            expectedReturns: ['A' => 0.08, 'B' => 0.12, 'C' => 0.30],
+            covarianceMatrix: [
+                'A' => ['A' => 0.02, 'B' => 0.0, 'C' => 0.0],
+                'B' => ['A' => 0.0, 'B' => 0.05, 'C' => 0.0],
+                'C' => ['A' => 0.0, 'B' => 0.0, 'C' => 0.06],
+            ],
+            currentWeights: ['A' => 1.0, 'B' => 0.0, 'C' => 0.0],
+            riskFreeRate: 0.02,
+            samples: 4000,
+        );
+
+        $this->assertEqualsWithDelta(1.0, array_sum($result['tangency']['weights']), 1e-9);
+
+        foreach ($result['tangency']['weights'] as $weight) {
+            $this->assertGreaterThanOrEqual(0.0, $weight);
+            $this->assertLessThanOrEqual(0.5 + 1e-6, $weight);
+        }
     }
 
     public function test_the_frontier_traces_the_upper_boundary_of_the_cloud(): void

@@ -20,6 +20,16 @@ class Changelog
     {
         return [
             [
+                'date' => '2026-07-17',
+                'items' => [
+                    [
+                        'type' => 'improved',
+                        'title' => __('A suggested mix you\'d actually hold'),
+                        'body' => __('The efficient frontier\'s suggested allocation no longer piles most of your money into a single winner. It now favours a diversified mix and caps any one asset, so the target it points you toward agrees with the concentration warnings and health score elsewhere in the app. The chart also zooms to the range that matters, so your portfolio and the recommended point are clearly apart instead of stacked on the line.'),
+                    ],
+                ],
+            ],
+            [
                 'date' => '2026-07-16',
                 'items' => [
                     [

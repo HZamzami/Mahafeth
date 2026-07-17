@@ -1,4 +1,6 @@
 {
+    "A suggested mix you'd actually hold": "توزيع مقترح تقتنيه فعلاً",
+    "The efficient frontier's suggested allocation no longer piles most of your money into a single winner. It now favours a diversified mix and caps any one asset, so the target it points you toward agrees with the concentration warnings and health score elsewhere in the app. The chart also zooms to the range that matters, so your portfolio and the recommended point are clearly apart instead of stacked on the line.": "لم يعد التوزيع المقترح في حد الكفاءة يكدّس معظم أموالك في أصل رابح واحد. صار يفضّل مزيجاً متنوعاً ويحدّ من وزن أي أصل، فيصبح الهدف الذي يوجّهك إليه متوافقاً مع تنبيهات التركّز ودرجة الصحة في بقية التطبيق. كما تُقرّب الرسمة على النطاق المهم، فتظهر محفظتك والنقطة الموصى بها متباعدتين بوضوح بدل تراكمهما على الخط.",
     "(and :count more error)": "(و :count خطأ إضافي)",
     "(and :count more errors)": "(و :count خطأ إضافي)|(و :count أخطاء إضافية)|(و :count أخطاء إضافية)",
     "2FA recovery codes": "رموز استرداد المصادقة الثنائية",
@@ -562,7 +564,7 @@
     "Risk (volatility)": "المخاطر (التقلب)",
     "Expected return": "العائد المتوقع",
     "Your portfolio": "محفظتك",
-    "Optimal (max Sharpe)": "المثلى (أعلى شارب)",
+    "Recommended": "الموصى بها",
     "Efficiency Gap": "فجوة الكفاءة",
     "Sharpe ratio improvement available at the optimal allocation.": "تحسن نسبة شارب المتاح عند التوزيع الأمثل.",
     "Current vs Optimal": "الحالية مقابل المثلى",
