@@ -13,6 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use Spatie\LaravelPasskeys\Models\Concerns\HasPasskeys;
 use Spatie\LaravelPasskeys\Models\Concerns\InteractsWithPasskeys;
@@ -20,7 +21,7 @@ use Spatie\LaravelPasskeys\Models\Concerns\InteractsWithPasskeys;
 class User extends Authenticatable implements HasLocalePreference, HasPasskeys // implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasPushSubscriptions, InteractsWithPasskeys, Notifiable;
+    use HasApiTokens, HasFactory, HasPushSubscriptions, InteractsWithPasskeys, Notifiable;
 
     /**
      * The attributes that are mass assignable.
