@@ -7,11 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\WhatIfRequest;
 use App\Services\Analytics\WhatIfSimulator;
 use App\Services\Markets\AssetResolver;
+use App\Services\Markets\CompanySummaryTranslator;
 use Illuminate\Http\JsonResponse;
 
 class InstrumentController extends Controller
 {
-    public function show(string $symbol, AssetResolver $resolver, FundamentalsProvider $fundamentalsProvider): JsonResponse
+    public function show(string $symbol, AssetResolver $resolver, FundamentalsProvider $fundamentalsProvider, CompanySummaryTranslator $translator): JsonResponse
     {
         $symbol = strtoupper($symbol);
         $resolver->resolve($symbol);
@@ -20,6 +21,17 @@ class InstrumentController extends Controller
 
         if ($fundamentals === null) {
             return response()->json(['data' => null]);
+        }
+
+        // The web page serves the English summary immediately and swaps to
+        // Arabic once the translation job lands; the API mirrors that as a
+        // `summary_pending` flag the client polls the same endpoint against.
+        if (app()->getLocale() === 'ar' && ($fundamentals['profile']['summary'] ?? null) !== null) {
+            $translated = $translator->toArabic($symbol, $fundamentals['profile']['summary']);
+            $fundamentals['profile']['summary'] = $translated['text'];
+            $fundamentals['summary_pending'] = $translated['pending'];
+        } else {
+            $fundamentals['summary_pending'] = false;
         }
 
         return response()->json(['data' => $fundamentals]);

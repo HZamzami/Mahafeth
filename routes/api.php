@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\V1\PasswordController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\SessionController;
+use App\Http\Controllers\Api\V1\ShariahController;
 use App\Http\Controllers\Api\V1\ZakatController;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +41,30 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('dashboard/refresh', [DashboardController::class, 'refresh'])
             ->middleware('throttle:6,1')
             ->name('dashboard.refresh');
+
+        Route::get('dashboard/trend', [DashboardController::class, 'trend'])
+            ->name('dashboard.trend');
+
+        Route::get('dashboard/performance', [DashboardController::class, 'performance'])
+            ->name('dashboard.performance');
+
+        Route::get('dashboard/alerts', [DashboardController::class, 'alerts'])
+            ->name('dashboard.alerts.index');
+
+        Route::post('dashboard/alerts/dismiss', [DashboardController::class, 'dismissAlert'])
+            ->name('dashboard.alerts.dismiss');
+
+        Route::get('dashboard/daily-move', [DashboardController::class, 'dailyMove'])
+            ->name('dashboard.daily-move');
+
+        Route::get('dashboard/shariah', [ShariahController::class, 'show'])
+            ->name('dashboard.shariah.show');
+
+        Route::post('dashboard/shariah/purifications', [ShariahController::class, 'storePurification'])
+            ->name('dashboard.shariah.purifications.store');
+
+        Route::post('dashboard/shariah/zakat-payments', [ShariahController::class, 'storeZakatPayment'])
+            ->name('dashboard.shariah.zakat-payments.store');
 
         Route::get('holdings', [HoldingController::class, 'index'])
             ->name('holdings.index');
